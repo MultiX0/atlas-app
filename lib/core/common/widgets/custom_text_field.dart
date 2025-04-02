@@ -1,4 +1,5 @@
 import 'package:atlas_app/imports.dart';
+import 'package:flutter/services.dart';
 
 class CustomTextFormField extends StatelessWidget {
   final String hintText;
@@ -17,11 +18,14 @@ class CustomTextFormField extends StatelessWidget {
   final void Function(String)? onFieldSubmitted;
   final String? initialValue;
   final bool readOnly;
+  final EdgeInsets? contentPadding;
+  final List<TextInputFormatter>? inputFormatters;
 
   const CustomTextFormField({
     super.key,
     required this.hintText,
     this.prefixIcon,
+    this.contentPadding,
     this.controller,
     this.obscureText = false,
     this.keyboardType = TextInputType.text,
@@ -36,11 +40,13 @@ class CustomTextFormField extends StatelessWidget {
     this.onFieldSubmitted,
     this.initialValue,
     this.readOnly = false,
+    this.inputFormatters,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      inputFormatters: inputFormatters,
       controller: controller,
       initialValue: initialValue,
       obscureText: obscureText,
@@ -56,9 +62,10 @@ class CustomTextFormField extends StatelessWidget {
       onFieldSubmitted: onFieldSubmitted,
       readOnly: readOnly,
       cursorColor: AppColors.primary,
+
       decoration: InputDecoration(
         hintText: hintText,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+        // contentPadding: contentPadding ?? const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
         hintStyle: TextStyle(
           fontFamily: accentFont,
           color: AppColors.mutedSilver.withValues(alpha: .65),
@@ -66,17 +73,20 @@ class CustomTextFormField extends StatelessWidget {
         filled: true,
         fillColor: AppColors.textFieldFillColor,
         border: InputBorder.none,
-        prefixIcon: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15),
-          child: Icon(prefixIcon, color: AppColors.mutedSilver.withValues(alpha: .65)),
-        ),
+        prefixIcon:
+            prefixIcon == null
+                ? null
+                : Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                  child: Icon(prefixIcon, color: AppColors.mutedSilver.withValues(alpha: .65)),
+                ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(Spacing.normalRaduis),
           // borderSide: BorderSide(color: AppColors.primary, width: .5),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(Spacing.normalRaduis),
-          borderSide: BorderSide(color: AppColors.primary, width: .5),
+          borderSide: const BorderSide(color: AppColors.primary, width: .5),
         ),
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(Spacing.normalRaduis),

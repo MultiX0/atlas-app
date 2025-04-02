@@ -2,7 +2,7 @@ import 'package:atlas_app/imports.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final Color? backgroundColor;
   final Color? textColor;
   final double? width;
@@ -21,7 +21,7 @@ class CustomButton extends StatelessWidget {
   const CustomButton({
     super.key,
     required this.text,
-    required this.onPressed,
+    this.onPressed,
     this.backgroundColor,
     this.textColor,
     this.width,
@@ -49,7 +49,7 @@ class CustomButton extends StatelessWidget {
           foregroundColor: textColor ?? Colors.black,
           backgroundColor:
               disabled
-                  ? (backgroundColor ?? AppColors.mutedSilver).withOpacity(0.5)
+                  ? (backgroundColor ?? AppColors.mutedSilver).withValues(alpha: .5)
                   : backgroundColor ?? AppColors.mutedSilver,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(borderRadius)),
         ),

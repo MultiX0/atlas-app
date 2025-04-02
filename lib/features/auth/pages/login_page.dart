@@ -1,9 +1,6 @@
-import 'package:atlas_app/core/common/widgets/custom_button.dart';
-import 'package:atlas_app/core/common/widgets/custom_text_field.dart';
 import 'package:atlas_app/core/common/widgets/line_pattrens_widget.dart';
 import 'package:atlas_app/core/common/widgets/or_widget.dart';
 import 'package:atlas_app/imports.dart';
-import 'package:flutter_lucide/flutter_lucide.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -36,28 +33,29 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     return Scaffold(
       body: Stack(
         children: [
-          LinesPattren(),
+          const LinesPattren(),
           Positioned.fill(
             child: SafeArea(
               child: Center(
                 child: ListView(
-                  padding: EdgeInsets.symmetric(vertical: 15, horizontal: 25),
+                  padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 25),
                   shrinkWrap: true,
                   children: [
-                    Center(child: Image.asset('assets/images/logo_atlas.png', height: 150)),
+                    const AppLogoWidget(),
                     const SizedBox(height: 25),
-                    Text(
+                    const Text(
                       "Sign in to Atlas",
                       textAlign: TextAlign.center,
                       style: TextStyle(fontFamily: accentFont, fontSize: 25),
                     ),
                     const SizedBox(height: 15),
-                    Text(
+                    const Text(
                       "Connect with a community of manga and manhwa enthusiasts. Discover original works, engage in discussions, and support independent creators.",
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(height: size.height * .05),
                     CustomTextFormField(
+                      controller: _emailController,
                       hintText: "Enter your email adress",
                       prefixIcon: LucideIcons.mail,
                       keyboardType: TextInputType.emailAddress,
@@ -65,6 +63,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                     SizedBox(height: size.height * .025),
                     CustomTextFormField(
+                      controller: _passwordController,
                       hintText: "password",
                       prefixIcon: LucideIcons.lock,
                       obscureText: true,
@@ -84,16 +83,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                     SizedBox(height: size.height * .025),
                     CustomButton(
-                      text: "Login",
+                      text: "Sign in",
                       onPressed: () {},
                       borderRadius: Spacing.normalRaduis,
                     ),
                     SizedBox(height: size.height * .03),
-                    OrWidget(),
+                    const OrWidget(),
                     SizedBox(height: size.height * .03),
                     CustomButton(
                       text: "Signup",
-                      onPressed: () {},
+                      onPressed: () => context.push(Routes.registerPage),
                       borderRadius: Spacing.normalRaduis,
                       backgroundColor: AppColors.primaryAccent,
                       textColor: AppColors.whiteColor,

@@ -13,6 +13,10 @@ class AppTheme {
   static var darkModeAppTheme = ThemeData.dark().copyWith(
     scaffoldBackgroundColor: AppColors.scaffoldBackground,
     cardColor: greyColor,
+    textSelectionTheme: TextSelectionThemeData(
+      selectionColor: AppColors.primary.withValues(alpha: .75),
+      selectionHandleColor: AppColors.primary,
+    ),
     iconTheme: IconThemeData(color: AppColors.whiteColor),
     appBarTheme: AppBarTheme(
       scrolledUnderElevation: 0,
@@ -62,8 +66,9 @@ class AppColors {
   static Color gold = HexColor('D4AF37');
   static Color primaryAccent = HexColor('1C1C1C');
   static Color errorColor = HexColor('E63946');
+  static Color greenColor = Colors.green.shade400;
   // static Color primary = HexColor('#008CFF');
-  static Color primary = Color.fromARGB(255, 78, 175, 255);
+  static const Color primary = Color.fromARGB(255, 78, 175, 255);
   static Color whiteColor = HexColor('#f1f2f4');
   static Color greyColor = HexColor('#848486');
   static Color textSecondary = HexColor("#989898");
@@ -87,9 +92,10 @@ class AppSizes {
 
   static double borderRadius = 10.0;
 
-  static final normalPadding = EdgeInsets.symmetric(vertical: 15, horizontal: 25);
+  static const normalPadding = EdgeInsets.symmetric(vertical: 15, horizontal: 25);
 }
 
 class Spacing {
   static const normalRaduis = 15.0;
+  static const normalGap = 20.0;
 }

@@ -1,11 +1,13 @@
 import 'package:atlas_app/features/auth/pages/login_page.dart';
+import 'package:atlas_app/features/auth/pages/register_page.dart';
 import 'package:atlas_app/features/onboarding/pages/first_page.dart';
+import 'package:atlas_app/features/splash/splash_page.dart';
 
 import 'imports.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation: '/',
+    initialLocation: Routes.splashPage,
     routes: [
       // StatefulShellRoute(
       //   branches: [],
@@ -13,8 +15,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       //     return const SizedBox();
       //   },
       // ),
-      buildRoute(path: '/', child: OnboardingFirstPage()),
-      buildRoute(path: Routes.loginPage, child: LoginPage(), fade: true),
+      buildRoute(path: Routes.splashPage, child: const SplashPage()),
+      buildRoute(path: Routes.onboardingPage, child: const OnboardingFirstPage()),
+      buildRoute(path: Routes.loginPage, child: const LoginPage(), fade: true),
+      buildRoute(path: Routes.registerPage, child: const RegisterPage(), fade: true),
     ],
   );
 });
