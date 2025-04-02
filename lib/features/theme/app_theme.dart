@@ -27,6 +27,7 @@ class AppTheme {
     ),
     drawerTheme: const DrawerThemeData(backgroundColor: drawerColor),
     primaryColor: redColor,
+
     textTheme: TextTheme(
       headlineLarge: TextStyle(fontFamily: primaryFont, color: whiteColor),
       headlineMedium: TextStyle(fontFamily: primaryFont, color: whiteColor),
@@ -62,7 +63,7 @@ class AppTheme {
 class AppColors {
   static Color scaffoldBackground = HexColor("#0B0B0B");
   static Color scaffoldForeground = HexColor("#202020");
-  static Color mutedSilver = HexColor('B8B8B8');
+  static const mutedSilver = Color(0xffB8B8B8);
   static Color gold = HexColor('D4AF37');
   static Color primaryAccent = HexColor('1C1C1C');
   static Color errorColor = HexColor('E63946');

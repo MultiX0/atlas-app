@@ -22,7 +22,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     ]);
     await Future.delayed(const Duration(milliseconds: 800), () {
       if (!mounted) return;
-      context.pushReplacement(Routes.onboardingPage);
+      context.pushReplacement(Routes.home);
     });
   }
 
@@ -32,7 +32,11 @@ class _SplashPageState extends ConsumerState<SplashPage> {
       body: Stack(
         children: [
           const LinesPattren(),
-          SafeArea(child: Center(child: AvifImage.asset('assets/images/logo_transparent.avif'))),
+          SafeArea(
+            child: Center(
+              child: AvifImage.asset('assets/images/logo_transparent.avif', width: 600),
+            ),
+          ),
         ],
       ),
     );

@@ -53,16 +53,12 @@ class CustomButton extends StatelessWidget {
                   : backgroundColor ?? AppColors.mutedSilver,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(borderRadius)),
         ),
-        onPressed: disabled ? null : (isLoading ? null : onPressed),
+        onPressed: disabled ? null : (isLoading ? () {} : onPressed),
         child:
             isLoading
-                ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
+                ? LoadingAnimationWidget.staggeredDotsWave(
+                  color: AppColors.scaffoldBackground,
+                  size: 20,
                 )
                 : Row(
                   mainAxisAlignment: MainAxisAlignment.center,

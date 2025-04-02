@@ -64,11 +64,11 @@ class _UpdatePasswordState extends ConsumerState<UpdatePassword> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+          padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 15),
           children: [
             const Text(
               "Enter a strong password to secure your account.",
-              style: TextStyle(fontFamily: accentFont, fontSize: 20),
+              style: TextStyle(fontFamily: accentFont, fontSize: 16),
             ),
             const SizedBox(height: Spacing.normalGap),
             if (widget.localUpdate) ...[

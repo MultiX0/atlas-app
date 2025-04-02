@@ -1,6 +1,6 @@
 import 'dart:developer';
 
-import 'package:atlas_app/core/common/utils/hashing.dart';
+import 'package:atlas_app/features/auth/controller/auth_controller.dart';
 import 'package:atlas_app/imports.dart';
 
 class FinalRegisterPage extends ConsumerStatefulWidget {
@@ -35,14 +35,13 @@ class _FinalRegisterPageState extends ConsumerState<FinalRegisterPage> {
   void next() {
     if (_formKey.currentState!.validate()) {
       final localMetaData = ref.read(localUserMetadata);
-      final salt = PasswordHash().generateSalt();
-      final hashedPassword = PasswordHash().hashPassword(_passwordController.text.trim(), salt);
-      final updatedMetaData = localMetaData!.copyWith(salt: salt, password: hashedPassword);
+      final updatedMetaData = localMetaData!.copyWith(password: _passwordController.text.trim());
       ref.read(localUserMetadata.notifier).state = updatedMetaData;
       final localUser = ref.read(localUserModel);
       ref.read(localUserModel.notifier).state = localUser!.copyWith(metadata: updatedMetaData);
 
       //TODO IMPLEMENT BACKEND CODE HERE
+      ref.read(authControllerProvider.notifier).signUp();
       log("complete");
       return;
     }
@@ -50,6 +49,7 @@ class _FinalRegisterPageState extends ConsumerState<FinalRegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(authControllerProvider);
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -61,6 +61,7 @@ class _FinalRegisterPageState extends ConsumerState<FinalRegisterPage> {
           child: CustomButton(
             text: "Continue",
             onPressed: acceptTerms ? () => next() : null,
+            isLoading: isLoading,
             // disabled: acceptTerms,
           ),
         ),

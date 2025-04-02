@@ -1,6 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'dart:convert';
 
+import 'package:atlas_app/core/common/constants/key_names.dart';
 import 'package:atlas_app/features/auth/models/user_metadata.dart';
 
 class UserModel {
@@ -8,13 +8,13 @@ class UserModel {
   final String username;
   final String userId;
   final String avatar;
-  final UserMetadata metadata;
+  final UserMetadata? metadata;
   UserModel({
     required this.fullName,
     required this.username,
     required this.userId,
     required this.avatar,
-    required this.metadata,
+    this.metadata,
   });
 
   UserModel copyWith({
@@ -35,28 +35,31 @@ class UserModel {
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
-      'fullName': fullName,
-      'username': username,
-      'userId': userId,
-      'avatar': avatar,
-      'metadata': metadata.toMap(),
+      KeyNames.fullName: fullName,
+      KeyNames.username: username,
+      KeyNames.id: userId,
+      KeyNames.avatar: avatar,
+    };
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      KeyNames.fullName: fullName,
+      KeyNames.username: username,
+      KeyNames.id: userId,
+      KeyNames.avatar: avatar,
     };
   }
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
-      fullName: map['fullName'] as String,
-      username: map['username'] as String,
-      userId: map['userId'] as String,
-      avatar: map['avatar'] as String,
-      metadata: UserMetadata.fromMap(map['metadata'] as Map<String, dynamic>),
+      fullName: map[KeyNames.fullName] ?? "",
+      username: map[KeyNames.username] ?? "",
+      userId: map[KeyNames.id] ?? "",
+      avatar: map[KeyNames.avatar] ?? "",
+      // metadata: UserMetadata.fromMap(map['metadata'] as Map<String, dynamic>),
     );
   }
-
-  String toJson() => json.encode(toMap());
-
-  factory UserModel.fromJson(String source) =>
-      UserModel.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
   String toString() {

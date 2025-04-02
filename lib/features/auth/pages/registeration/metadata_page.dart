@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:atlas_app/features/auth/controller/auth_controller.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart' as picker;
@@ -21,6 +22,9 @@ class _MetadataPageState extends ConsumerState<MetadataPage> {
   late TextEditingController _birthDateController;
   final _formKey = GlobalKey<FormState>();
   DateTime? selectedDate;
+
+  bool isUsernameTaken = false;
+
   @override
   void initState() {
     _fullNameController = TextEditingController();
@@ -68,18 +72,32 @@ class _MetadataPageState extends ConsumerState<MetadataPage> {
     );
   }
 
-  void next() {
+  void next() async {
+    if (isUsernameTaken) {
+      setState(() {
+        isUsernameTaken = false;
+      });
+    }
+
     if (_formKey.currentState!.validate()) {
       final localMetaData = ref.read(localUserMetadata);
       ref.read(localUserMetadata.notifier).state = localMetaData!.copyWith(birthDate: selectedDate);
-
+      final username = _usernameController.text.trim();
       ref.read(localUserModel.notifier).state = UserModel(
         fullName: _fullNameController.text.trim(),
-        username: _usernameController.text.trim(),
+        username: username,
         userId: "",
         avatar: emptyAvatar,
         metadata: localMetaData.copyWith(birthDate: selectedDate),
       );
+
+      final isTaken = await ref.read(authControllerProvider.notifier).isUsernameTaken(username);
+      if (isTaken) {
+        setState(() {
+          isUsernameTaken = isTaken;
+        });
+        return;
+      }
 
       widget.next();
       return;
@@ -88,6 +106,7 @@ class _MetadataPageState extends ConsumerState<MetadataPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(authControllerProvider);
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -96,7 +115,7 @@ class _MetadataPageState extends ConsumerState<MetadataPage> {
       child: Scaffold(
         bottomNavigationBar: Padding(
           padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 25),
-          child: CustomButton(text: "Continue", onPressed: next),
+          child: CustomButton(text: "Continue", onPressed: next, isLoading: isLoading),
         ),
         appBar: AppBar(
           leading: BackButton(
@@ -162,6 +181,9 @@ class _MetadataPageState extends ConsumerState<MetadataPage> {
           validator: (val) => validateUsername(val),
           inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^[a-z0-9_.]*$'))],
         ),
+        if (isUsernameTaken) ...[
+          buildLabel("This username is already in use. Try another!", color: AppColors.errorColor),
+        ],
         buildLabel("(Your unique handle on Atlas. No spaces or special characters.)"),
       ],
     );
@@ -218,7 +240,7 @@ class _MetadataPageState extends ConsumerState<MetadataPage> {
     return null; // Valid
   }
 
-  Widget buildLabel(String text, {double size = 14}) {
+  Widget buildLabel(String text, {double size = 14, Color color = AppColors.mutedSilver}) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: GestureDetector(

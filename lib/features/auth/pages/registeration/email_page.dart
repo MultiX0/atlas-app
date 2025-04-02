@@ -1,3 +1,4 @@
+import 'package:atlas_app/features/auth/controller/auth_controller.dart';
 import 'package:atlas_app/features/auth/models/user_metadata.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:flutter/services.dart';
@@ -14,6 +15,7 @@ class EmailPage extends ConsumerStatefulWidget {
 
 class _EmailPageState extends ConsumerState<EmailPage> {
   late TextEditingController _emailController;
+  bool emailTaken = false;
   final _formKey = GlobalKey<FormState>();
   @override
   void initState() {
@@ -27,15 +29,31 @@ class _EmailPageState extends ConsumerState<EmailPage> {
     super.dispose();
   }
 
-  void next() {
+  void next() async {
+    if (emailTaken) {
+      setState(() {
+        emailTaken = false;
+      });
+    }
+
     if (_formKey.currentState!.validate()) {
+      final email = _emailController.text.trim();
       ref.read(localUserMetadata.notifier).state = UserMetadata(
         salt: "",
-        email: _emailController.text.trim(),
+        email: email,
         password: '',
         birthDate: DateTime.now(),
         userId: '',
       );
+
+      final isTaken = await ref.read(authControllerProvider.notifier).isEmailTaken(email);
+      if (isTaken) {
+        setState(() {
+          emailTaken = true;
+        });
+        return;
+      }
+
       widget.next();
     } else {
       return;
@@ -44,11 +62,17 @@ class _EmailPageState extends ConsumerState<EmailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(authControllerProvider);
     return Scaffold(
       appBar: AppBar(),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 25),
-        child: CustomButton(text: "Continue", onPressed: next),
+        child: CustomButton(
+          text: "Continue",
+          onPressed: next,
+          // disabled: isLoading,
+          isLoading: isLoading,
+        ),
       ),
       body: Form(
         key: _formKey,
@@ -69,6 +93,7 @@ class _EmailPageState extends ConsumerState<EmailPage> {
               validator: (val) => emailValidator(val),
             ),
             const SizedBox(height: 15),
+            if (emailTaken) ...[buildEmailTakenAlert()],
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: GestureDetector(
@@ -83,6 +108,23 @@ class _EmailPageState extends ConsumerState<EmailPage> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Padding buildEmailTakenAlert() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: GestureDetector(
+        child: Text(
+          "this email is already registered with Atlas!",
+          style: TextStyle(
+            fontFamily: accentFont,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: AppColors.errorColor,
+          ),
         ),
       ),
     );

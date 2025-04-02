@@ -155,7 +155,6 @@ class _ConfirmEmailPageState extends ConsumerState<ConfirmEmailPage> {
   }
 
   Column buildBody(PinTheme submittedPinTheme, PinTheme defaultPinTheme, PinTheme focusedPinTheme) {
-    final currentMetadata = ref.watch(localUserMetadata);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -171,7 +170,7 @@ class _ConfirmEmailPageState extends ConsumerState<ConfirmEmailPage> {
                 "We've sent a 6-digit code to your email. Please enter it below to verify your email.\n",
             children: [
               TextSpan(
-                text: '${currentMetadata?.email}',
+                text: widget.email,
                 style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
               ),
             ],

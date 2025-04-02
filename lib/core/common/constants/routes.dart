@@ -6,4 +6,9 @@ class Routes {
   static const forgotPasswordEmailPage = '/forgotPasswordEmailPage';
   static const forgotPasswordConfirmEmailPage = '/forgotPasswordConfirmEmailPage';
   static const updatePasswordPage = '/updatePasswordPage';
+  static const home = '/home';
+  static const aiPage = '/aiPage';
+  static const explore = '/explore';
+  static const clips = '/clips';
+  static const user = '/user';
 }

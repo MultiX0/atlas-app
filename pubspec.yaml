@@ -74,6 +74,8 @@ dependencies:
   intl: ^0.20.2
   firebase_storage: ^12.4.5
   convert: ^3.1.2
+  flutter_tabler_icons: ^1.43.0
+  fancy_shimmer_image: ^2.0.3
 
 dev_dependencies:
   flutter_test:

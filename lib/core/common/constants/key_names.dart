@@ -7,4 +7,5 @@ class KeyNames {
   static const username = 'username';
   static const avatar = 'avatar';
   static const salt = 'salt';
+  static const id = 'id';
 }

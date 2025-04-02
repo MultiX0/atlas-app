@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:atlas_app/imports.dart';
 
 class UserMetadata {
@@ -49,5 +50,10 @@ class UserMetadata {
       userId: map[KeyNames.userId] ?? "",
       salt: map[KeyNames.salt] ?? "",
     );
+  }
+
+  @override
+  String toString() {
+    return 'UserMetadata(password: $password, birthDate: $birthDate, userId: $userId, email: $email, salt: $salt)';
   }
 }
