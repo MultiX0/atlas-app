@@ -19,6 +19,7 @@ class AuthController extends StateNotifier<bool> {
     try {
       state = true;
       await _db.login(email: email, password: password);
+      _ref.read(userState.notifier).initlizeUser();
       state = false;
     } catch (e) {
       state = false;
