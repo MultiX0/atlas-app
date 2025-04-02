@@ -1,4 +1,3 @@
-import 'package:atlas_app/core/common/widgets/line_pattrens_widget.dart';
 import 'package:atlas_app/core/common/widgets/or_widget.dart';
 import 'package:atlas_app/imports.dart';
 
@@ -71,6 +70,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: GestureDetector(
+                        onTap: () => context.push(Routes.forgotPasswordEmailPage),
                         child: Text(
                           "Forgot your password?",
                           style: TextStyle(

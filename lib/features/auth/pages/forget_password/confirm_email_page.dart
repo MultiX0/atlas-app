@@ -1,16 +1,17 @@
 import 'dart:async';
+
 import 'package:atlas_app/imports.dart';
 
-class PinCodeConfirmPage extends ConsumerStatefulWidget {
-  const PinCodeConfirmPage({super.key, required this.next, required this.prevs});
-  final VoidCallback next;
-  final VoidCallback prevs;
+class ConfirmEmailPage extends ConsumerStatefulWidget {
+  const ConfirmEmailPage({super.key, required this.email});
+
+  final String email;
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _PinCodeConfirmPageState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _ConfirmEmailPageState();
 }
 
-class _PinCodeConfirmPageState extends ConsumerState<PinCodeConfirmPage> {
+class _ConfirmEmailPageState extends ConsumerState<ConfirmEmailPage> {
   String? notCorrect;
   int _resendCooldown = 0;
   Timer? _timer;
@@ -100,7 +101,7 @@ class _PinCodeConfirmPageState extends ConsumerState<PinCodeConfirmPage> {
 
   void next() {
     if (correctCode) {
-      widget.next();
+      context.pushReplacement("${Routes.updatePasswordPage}/f");
       return;
     }
   }
@@ -133,34 +134,22 @@ class _PinCodeConfirmPageState extends ConsumerState<PinCodeConfirmPage> {
         border: Border.all(color: Colors.transparent),
       ),
     );
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        widget.prevs();
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          leading: BackButton(
-            onPressed: () {
-              widget.prevs();
-            },
-          ),
+    return Scaffold(
+      appBar: AppBar(title: const Text("Enter Your Reset Code")),
+      body: Center(
+        child: ListView(
+          padding: const EdgeInsets.all(30.0),
+          shrinkWrap: true,
+          children: [
+            const AppLogoWidget(),
+            const SizedBox(height: 25),
+            buildBody(submittedPinTheme, defaultPinTheme, focusedPinTheme),
+          ],
         ),
-        body: Center(
-          child: ListView(
-            padding: const EdgeInsets.all(30.0),
-            shrinkWrap: true,
-            children: [
-              const AppLogoWidget(),
-              const SizedBox(height: 25),
-              buildBody(submittedPinTheme, defaultPinTheme, focusedPinTheme),
-            ],
-          ),
-        ),
-        bottomNavigationBar: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 25),
-          child: CustomButton(text: "Continue", onPressed: next),
-        ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 25),
+        child: CustomButton(text: "Continue", onPressed: next),
       ),
     );
   }
