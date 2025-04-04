@@ -9,6 +9,8 @@ class Routes {
   static const home = '/home';
   static const aiPage = '/aiPage';
   static const explore = '/explore';
+  static const library = '/library';
   static const clips = '/clips';
   static const user = '/user';
+  static const search = '/searchPage';
 }

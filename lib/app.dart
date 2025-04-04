@@ -4,7 +4,6 @@ import 'package:atlas_app/core/providers/supabase_provider.dart';
 import 'package:atlas_app/core/services/syste_chrome.dart';
 import 'package:atlas_app/features/auth/providers/user_state.dart';
 import 'package:atlas_app/router.dart';
-import 'package:toastification/toastification.dart';
 
 import 'imports.dart';
 

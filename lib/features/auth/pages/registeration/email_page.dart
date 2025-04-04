@@ -97,7 +97,7 @@ class _EmailPageState extends ConsumerState<EmailPage> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: GestureDetector(
-                child: Text(
+                child: const Text(
                   "This will be used for account security and future updates.",
                   style: TextStyle(
                     fontFamily: accentFont,

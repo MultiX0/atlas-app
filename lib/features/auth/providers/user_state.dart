@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:atlas_app/core/providers/supabase_provider.dart';
 import 'package:atlas_app/features/auth/db/auth_db.dart';
+import 'package:atlas_app/features/profile/db/profile_db.dart';
 import 'package:atlas_app/imports.dart';
 
 class UserStateHelper {
@@ -25,6 +26,8 @@ class UserState extends StateNotifier<UserStateHelper?> {
   final Ref _ref;
 
   AuthDb get _db => AuthDb();
+  ProfileDb get _profileDb => ProfileDb();
+
   UserState({required Ref ref}) : _ref = ref, super(null) {
     initlizeUser();
   }
@@ -40,7 +43,9 @@ class UserState extends StateNotifier<UserStateHelper?> {
       }
 
       final userId = _client.auth.currentSession!.user.id;
-      final user = await _db.getUserData(userId, withMetadata: true);
+      UserModel user = await _db.getUserData(userId, withMetadata: true);
+      final followsCount = await _profileDb.getFollowsCountString(userId);
+      user = user.copyWith(followsCount: followsCount);
       log("user data: $user");
       state = UserStateHelper(user: user, isLoading: false, hasError: false);
     } catch (e) {

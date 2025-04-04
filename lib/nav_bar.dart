@@ -1,3 +1,5 @@
+import 'package:atlas_app/features/auth/providers/user_state.dart';
+import 'package:atlas_app/features/profile/provider/providers.dart';
 import 'package:flutter/cupertino.dart';
 import 'imports.dart';
 // import '../pages/new_version_page.dart';
@@ -19,6 +21,9 @@ class _MyNavBarState extends ConsumerState<MyNavBar> {
       page = index;
     });
 
+    final me = ref.read(userState);
+    ref.read(selectedUserIdProvider.notifier).state = me?.user?.userId ?? "";
+
     widget.navigationShell.goBranch(
       index,
       initialLocation: index == widget.navigationShell.currentIndex,
@@ -32,10 +37,7 @@ class _MyNavBarState extends ConsumerState<MyNavBar> {
     return Stack(
       children: [
         Scaffold(
-          body: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
-            child: widget.navigationShell,
-          ),
+          body: widget.navigationShell,
 
           bottomNavigationBar: LayoutBuilder(
             builder: (context, constraints) {
@@ -56,7 +58,7 @@ class _MyNavBarState extends ConsumerState<MyNavBar> {
                 navBarHeight = 120;
               }
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 15),
+                padding: const EdgeInsets.fromLTRB(15, 5, 15, 15),
                 child: CupertinoTheme(
                   data: const CupertinoThemeData(
                     textTheme: CupertinoTextThemeData(
@@ -74,11 +76,8 @@ class _MyNavBarState extends ConsumerState<MyNavBar> {
                     items: const [
                       BottomNavigationBarItem(icon: Icon(TablerIcons.smart_home), label: "Home"),
                       BottomNavigationBarItem(icon: Icon(TablerIcons.sparkles), label: "Ask Ai"),
-                      BottomNavigationBarItem(
-                        icon: Icon(TablerIcons.layout_grid),
-                        label: "Explore",
-                      ),
-                      BottomNavigationBarItem(icon: Icon(TablerIcons.device_tv), label: "Clips"),
+                      BottomNavigationBarItem(icon: Icon(TablerIcons.category_2), label: "Explore"),
+                      BottomNavigationBarItem(icon: Icon(LucideIcons.library), label: "Library"),
                       BottomNavigationBarItem(icon: Icon(TablerIcons.user), label: "Profile"),
                     ],
                   ),

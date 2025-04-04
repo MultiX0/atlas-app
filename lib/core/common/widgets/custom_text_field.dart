@@ -20,6 +20,8 @@ class CustomTextFormField extends StatelessWidget {
   final bool readOnly;
   final EdgeInsets? contentPadding;
   final List<TextInputFormatter>? inputFormatters;
+  final bool filled;
+  final double raduis;
 
   const CustomTextFormField({
     super.key,
@@ -36,6 +38,8 @@ class CustomTextFormField extends StatelessWidget {
     this.maxLines = 1,
     this.minLines,
     this.onTap,
+    this.raduis = Spacing.normalRaduis,
+    this.filled = true,
     this.textInputAction,
     this.onFieldSubmitted,
     this.initialValue,
@@ -70,7 +74,7 @@ class CustomTextFormField extends StatelessWidget {
           fontFamily: accentFont,
           color: AppColors.mutedSilver.withValues(alpha: .65),
         ),
-        filled: true,
+        filled: filled,
         fillColor: AppColors.textFieldFillColor,
         border: InputBorder.none,
         prefixIcon:
@@ -81,23 +85,23 @@ class CustomTextFormField extends StatelessWidget {
                   child: Icon(prefixIcon, color: AppColors.mutedSilver.withValues(alpha: .65)),
                 ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(Spacing.normalRaduis),
+          borderRadius: BorderRadius.circular(raduis),
           // borderSide: BorderSide(color: AppColors.primary, width: .5),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(Spacing.normalRaduis),
+          borderRadius: BorderRadius.circular(raduis),
           borderSide: const BorderSide(color: AppColors.primary, width: .5),
         ),
         disabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(Spacing.normalRaduis),
+          borderRadius: BorderRadius.circular(raduis),
           // borderSide: BorderSide(color: AppColors.primary, width: .5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(Spacing.normalRaduis),
+          borderRadius: BorderRadius.circular(raduis),
           borderSide: BorderSide(color: AppColors.errorColor, width: .5),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(Spacing.normalRaduis),
+          borderRadius: BorderRadius.circular(raduis),
           borderSide: BorderSide(color: AppColors.errorColor, width: .5),
         ),
       ),

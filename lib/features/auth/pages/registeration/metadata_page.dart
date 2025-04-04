@@ -88,6 +88,7 @@ class _MetadataPageState extends ConsumerState<MetadataPage> {
         username: username,
         userId: "",
         avatar: emptyAvatar,
+        banner: emptyBanner,
         metadata: localMetaData.copyWith(birthDate: selectedDate),
       );
 

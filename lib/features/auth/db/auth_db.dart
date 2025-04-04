@@ -68,7 +68,7 @@ class AuthDb {
         ),
       );
 
-      await _usersTable.insert(user0.toJson());
+      await _usersTable.insert(user0.toMap());
       await _usersMetadataTable.insert(user0.metadata!.toMap());
 
       return user0;

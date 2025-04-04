@@ -107,10 +107,10 @@ class _FinalRegisterPageState extends ConsumerState<FinalRegisterPage> {
             log(acceptTerms.toString());
           },
         ),
-        Expanded(
+        const Expanded(
           child: Text.rich(
             softWrap: true,
-            const TextSpan(
+            TextSpan(
               text: "I agree to the ",
               children: [
                 TextSpan(text: 'Terms of Service', style: TextStyle(color: AppColors.primary)),

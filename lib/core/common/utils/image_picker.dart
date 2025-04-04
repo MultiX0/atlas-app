@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:atlas_app/features/theme/app_theme.dart';
 import 'package:image_cropper/image_cropper.dart' as c;
@@ -22,12 +23,12 @@ Future<List<File>> imagePicker(bool single) async {
   }
 }
 
-Future<File?> avatarPicker() async {
+Future<File?> profilePhotoPicker({bool isAvatar = true, required Size size}) async {
   try {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
-      final croppedImage = await imageCropper(File(image.path));
+      final croppedImage = await imageCropper(File(image.path), isAvatar, size);
       if (croppedImage != null) {
         return croppedImage;
       }
@@ -39,9 +40,12 @@ Future<File?> avatarPicker() async {
   }
 }
 
-Future<File?> imageCropper(File imageFile) async {
+Future<File?> imageCropper(File imageFile, bool isAvatar, Size size) async {
   c.CroppedFile? croppedFile = await c.ImageCropper().cropImage(
-    aspectRatio: const c.CropAspectRatio(ratioX: 400, ratioY: 400),
+    aspectRatio: c.CropAspectRatio(
+      ratioX: isAvatar ? 100 : size.width,
+      ratioY: isAvatar ? 100 : size.width * 0.30,
+    ),
     compressFormat: c.ImageCompressFormat.png,
     compressQuality: 70,
     sourcePath: imageFile.path,
