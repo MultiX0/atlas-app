@@ -23,7 +23,7 @@ class ManhwaSearchPage extends ConsumerWidget {
     }
 
     return GridView.count(
-      padding: const EdgeInsets.fromLTRB(15, 0, 15, 15),
+      padding: const EdgeInsets.fromLTRB(13, 0, 13, 15),
       childAspectRatio: 1 / 1.5,
       crossAxisCount: 3,
       crossAxisSpacing: 10,
@@ -58,7 +58,7 @@ class ManhwaSearchPage extends ConsumerWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      comic.titles[0].title,
+                      comic.englishTitle,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(

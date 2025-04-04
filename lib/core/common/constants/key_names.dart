@@ -8,16 +8,18 @@ class KeyNames {
   static const avatar = 'avatar';
   static const salt = 'salt';
   static const id = 'id';
+  static const external_links = 'external_links';
   static const comic_id = 'comic_id';
   static const banner = 'banner';
   static const genre_id = 'genre_id';
   static const from = 'from';
+  static const title_english = 'title_english';
   static const to = 'to';
   static const string = 'string';
   static const type = 'type';
   static const title = 'title';
   static const created_at = 'created_at';
-  static const mal_id = 'mal_id';
+  static const ani_id = 'ani_id';
   static const chapters = 'chapters';
   static const volumes = 'volumes';
   static const status = 'status';
@@ -45,4 +47,6 @@ class KeyNames {
   static const pages_read = 'pages_read';
   static const is_favorite = 'is_favorite';
   static const chapters_read = 'chapters_read';
+  static const url = 'url';
+  static const site = 'site';
 }

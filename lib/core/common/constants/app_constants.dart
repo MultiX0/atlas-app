@@ -6,3 +6,4 @@ const emptyBanner =
     'https://firebasestorage.googleapis.com/v0/b/atlas-manhwa.firebasestorage.app/o/empty_banner.avif?alt=media&token=7c948926-e505-486a-a523-cfe1d66cb91f';
 
 const malAPI = 'https://api.jikan.moe/v4/manga';
+const aniListAPI = "https://graphql.anilist.co";

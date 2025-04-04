@@ -43,9 +43,12 @@ class ManhwaSearchState extends StateNotifier<ManhwaSearchHelper> {
     state = state.copyWith(error: error);
   }
 
-  void search() async {
+  void search({int limit = 25}) async {
+    final more = _ref.read(searchGlobalProvider);
     final query = _ref.read(searchQueryProvider);
-    await _ref.read(comicsControllerProvider.notifier).searchComics(query);
+    await _ref
+        .read(comicsControllerProvider.notifier)
+        .searchComics(query, more: more, limit: limit);
   }
 }
 

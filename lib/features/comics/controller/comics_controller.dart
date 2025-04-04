@@ -22,10 +22,10 @@ class ComicsController extends StateNotifier<bool> {
   ComicsController({required Ref ref}) : _ref = ref, super(false);
   ComicsDb get db => _ref.watch(comicsDBProvider);
 
-  Future<List<ComicModel>> searchComics(String query, {int limit = 20}) async {
+  Future<List<ComicModel>> searchComics(String query, {int limit = 20, bool more = false}) async {
     try {
       log('here');
-      return await db.searchComics(query, limit: limit);
+      return await db.searchComics(query, limit: limit, more: more);
     } catch (e) {
       log(e.toString());
       rethrow;

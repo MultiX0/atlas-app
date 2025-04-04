@@ -76,6 +76,7 @@ dependencies:
   convert: ^3.1.2
   flutter_tabler_icons: ^1.43.0
   fancy_shimmer_image: ^2.0.3
+  collection: ^1.19.1
 
 dev_dependencies:
   flutter_test:

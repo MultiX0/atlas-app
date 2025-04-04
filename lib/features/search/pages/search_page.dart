@@ -13,11 +13,13 @@ class SearchPage extends ConsumerStatefulWidget {
 class _SearchPageState extends ConsumerState<SearchPage> with SingleTickerProviderStateMixin {
   late TextEditingController _searchController;
   late TabController _tabController;
+  late FocusNode _focusNode;
 
   @override
   void initState() {
     _searchController = TextEditingController();
     _tabController = TabController(length: 3, vsync: this);
+    _focusNode = FocusNode();
     super.initState();
   }
 
@@ -25,11 +27,21 @@ class _SearchPageState extends ConsumerState<SearchPage> with SingleTickerProvid
   void dispose() {
     _searchController.dispose();
     _tabController.dispose();
+    _focusNode.dispose();
     super.dispose();
+  }
+
+  void onTap() {
+    if (_tabController.index == 0) {
+      ref.read(searchQueryProvider.notifier).state = _searchController.text.trim();
+      ref.read(manhwaSearchStateProvider.notifier).search(limit: 35);
+    }
+    _focusNode.unfocus();
   }
 
   @override
   Widget build(BuildContext context) {
+    final more = ref.watch(searchGlobalProvider);
     return Scaffold(
       appBar: AppBar(
         title: const Text("Search"),
@@ -49,6 +61,7 @@ class _SearchPageState extends ConsumerState<SearchPage> with SingleTickerProvid
             child: Row(
               children: [
                 buildSearchField(),
+
                 const SizedBox(width: 8),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -57,17 +70,39 @@ class _SearchPageState extends ConsumerState<SearchPage> with SingleTickerProvid
                     foregroundColor: AppColors.whiteColor,
                     padding: const EdgeInsets.all(18),
                   ),
-                  onPressed: () {
-                    if (_tabController.index == 0) {
-                      ref.read(searchQueryProvider.notifier).state = _searchController.text.trim();
-                      ref.read(manhwaSearchStateProvider.notifier).search();
-                    }
-                  },
+                  onPressed: onTap,
                   child: const Center(child: Icon(LucideIcons.search)),
                 ),
               ],
             ),
           ),
+          if (more) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+              child: InkWell(
+                onTap: () {
+                  ref.read(searchGlobalProvider.notifier).state = true;
+                  onTap();
+                },
+                child: const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    textAlign: TextAlign.start,
+
+                    "Dont You see what you're looking for ?",
+                    style: TextStyle(
+                      fontFamily: accentFont,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 15),
+          ],
+
           Expanded(
             child: TabBarView(
               controller: _tabController,
@@ -83,6 +118,7 @@ class _SearchPageState extends ConsumerState<SearchPage> with SingleTickerProvid
     return Expanded(
       child: CustomTextFormField(
         raduis: 12,
+        focusNode: _focusNode,
         controller: _searchController,
         hintText: "Searching...",
         onChanged: (val) {},

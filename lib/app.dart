@@ -19,6 +19,7 @@ class _AppState extends ConsumerState<App> {
   void initState() {
     super.initState();
     editChromeSystem();
+    handleUserAuth();
   }
 
   void handleUserAuth() async {
@@ -26,8 +27,6 @@ class _AppState extends ConsumerState<App> {
     client.auth.onAuthStateChange.listen((changes) {
       if (changes.session != null && changes.session?.user != null) {
         ref.read(userState);
-      } else {
-        ref.read(userState.notifier).clearState();
       }
     });
   }
