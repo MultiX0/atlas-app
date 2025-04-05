@@ -14,4 +14,5 @@ class Routes {
   static const user = '/user';
   static const search = '/searchPage';
   static const manhwaPage = '/manhwaPage';
+  static const addComicReview = '/addComicReviewPage';
 }

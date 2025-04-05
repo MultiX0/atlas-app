@@ -43,10 +43,11 @@ class _ManhwaPageState extends ConsumerState<ManhwaPage> {
         headerSliverBuilder: ((context, innerBoxIsScrolled) {
           return [
             const ManhwaDataHeader(),
-            SliverPersistentHeader(
-              delegate: _CondensedHeaderDelegate(comic: comic, visible: innerBoxIsScrolled),
-              pinned: true,
-            ),
+            // if (comic.englishTitle.length < 50)
+            //   SliverPersistentHeader(
+            //     delegate: _CondensedHeaderDelegate(comic: comic, visible: innerBoxIsScrolled),
+            //     pinned: true,
+            //   ),
           ];
         }),
         body: const ManhwaDataBody(),
@@ -55,6 +56,7 @@ class _ManhwaPageState extends ConsumerState<ManhwaPage> {
   }
 }
 
+// ignore: unused_element
 class _CondensedHeaderDelegate extends SliverPersistentHeaderDelegate {
   final ComicModel comic;
   final bool visible;

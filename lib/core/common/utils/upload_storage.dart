@@ -11,7 +11,12 @@ class UploadStorage {
     int? quiality,
   }) async {
     try {
-      final file = await compressFile(image, (isAdmin != null && isAdmin) ? 80 : quiality ?? 50);
+      File file;
+      if (image.path.split('.').last != 'avif') {
+        file = await compressFile(image, (isAdmin != null && isAdmin) ? 80 : quiality ?? 70);
+      } else {
+        file = image;
+      }
       final ref = FirebaseStorage.instance.ref().child(path);
       final uploadTask = await ref.putFile(file);
       return await uploadTask.ref.getDownloadURL();

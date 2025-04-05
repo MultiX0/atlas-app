@@ -36,7 +36,7 @@ class KeyNames {
   static const name = 'name';
   static const novel_id = 'novel_id';
   static const story = 'story';
-  static const user_id = 'user_id';
+  // static const user_id = 'user_id';
   static const poster = 'poster';
   static const post_id = 'post_id';
   static const content = 'content';
@@ -50,4 +50,14 @@ class KeyNames {
   static const url = 'url';
   static const site = 'site';
   static const theme_color = 'theme_color';
+  static const writing_quality = 'writing_quality';
+  static const story_development = 'story_development';
+  static const character_design = 'character_design';
+  static const update_stability = 'update_stability';
+  static const world_background = 'world_background';
+  static const overall = 'overall';
+  static const review_text = 'review_text';
+  static const updated_at = 'updated_at';
+  static const spoilers = 'spoilers';
+  static const images = 'images';
 }

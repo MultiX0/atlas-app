@@ -10,6 +10,7 @@ import 'package:atlas_app/features/comics/pages/manhwa_page.dart';
 import 'package:atlas_app/features/explore/pages/explore_page.dart';
 import 'package:atlas_app/features/onboarding/pages/first_page.dart';
 import 'package:atlas_app/features/profile/pages/profile_page.dart';
+import 'package:atlas_app/features/reviews/pages/add_comic_review.dart';
 import 'package:atlas_app/features/search/pages/search_page.dart';
 import 'package:atlas_app/features/splash/splash_page.dart';
 import 'package:atlas_app/nav_bar.dart';
@@ -24,25 +25,34 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: Routes.splashPage,
     redirect: (context, state) {
-      final isUserLoggedIn = ref.watch(userState) != null;
+      final userStateValue = ref.watch(userState);
+      final isUserLoggedIn = userStateValue != null && userStateValue.user != null;
+      final isLoading = userStateValue?.isLoading ?? false;
       final loginRoute = state.uri.toString() == Routes.loginPage;
       final registerRoute = state.uri.toString() == Routes.registerPage;
       final forgetPasswordPage =
           state.uri.toString() == Routes.forgotPasswordConfirmEmailPage ||
           state.uri.toString() == Routes.forgotPasswordEmailPage ||
           state.uri.toString() == Routes.updatePasswordPage;
-
       final firstPageRoute = state.uri.toString() == Routes.onboardingPage;
+      final splashRoute = state.uri.toString() == Routes.splashPage;
 
-      if (state.uri.toString() == Routes.splashPage && isUserLoggedIn) {
-        log("currentlly on the splash page");
-        return null;
+      if (splashRoute) {
+        log("on splash page");
+        if (isLoading) {
+          return null; // Stay on splash while loading
+        }
+        if (isUserLoggedIn) {
+          log("user logged in, redirecting to home");
+          return Routes.home; // Redirect to home if user is logged in
+        }
+        log("user not logged in, redirecting to onboarding");
+        return Routes.onboardingPage; // Redirect to onboarding if not logged in
       }
 
       if (!isUserLoggedIn) {
         log("user is not logged in");
         log(state.uri.toString());
-
         if (loginRoute || registerRoute || forgetPasswordPage || firstPageRoute) {
           return null;
         } else {
@@ -50,10 +60,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         }
       }
 
-      if (isUserLoggedIn) {
-        if (loginRoute || registerRoute || firstPageRoute) {
-          return Routes.home;
-        }
+      if (isUserLoggedIn && (loginRoute || registerRoute || firstPageRoute)) {
+        return Routes.home;
       }
 
       return null;
@@ -91,6 +99,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       buildRoute(path: Routes.forgotPasswordEmailPage, child: const EmailFieldPage(), fade: true),
       buildRoute(path: Routes.search, child: const SearchPage(), fade: true),
       buildRoute(path: Routes.manhwaPage, child: const ManhwaPage(), fade: true),
+      buildRoute(path: Routes.addComicReview, child: const AddComicReview(), fade: true),
 
       GoRoute(
         path: "${Routes.updatePasswordPage}/:local",

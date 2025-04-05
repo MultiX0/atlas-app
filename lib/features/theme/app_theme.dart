@@ -65,7 +65,7 @@ class AppColors {
   static Color scaffoldForeground = HexColor("#202020");
   static const mutedSilver = Color(0xffB8B8B8);
   static Color gold = HexColor('D4AF37');
-  static Color primaryAccent = HexColor('1C1C1C');
+  static const primaryAccent = Color(0xff1C1C1C);
   static Color errorColor = HexColor('E63946');
   static Color greenColor = Colors.green.shade400;
   // static Color primary = HexColor('#008CFF');

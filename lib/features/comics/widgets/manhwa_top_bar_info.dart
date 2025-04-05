@@ -10,6 +10,9 @@ class ManhwaTopBarInfo extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final comic = ref.watch(selectedComicProvider)!;
+    if (comic.englishTitle.length > 40) {
+      return const SizedBox(height: 50);
+    }
 
     return Visibility(
       maintainInteractivity: false,

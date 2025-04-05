@@ -8,9 +8,14 @@ final navsProvider = Provider<Navs>((ref) => Navs(ref: ref));
 class Navs {
   final Ref _ref;
   Navs({required Ref ref}) : _ref = ref;
+  GoRouter get router => _ref.read(routerProvider);
 
   void goToComicsPage(ComicModel comic) {
     _ref.read(selectedComicProvider.notifier).state = comic;
-    _ref.read(routerProvider).push(Routes.manhwaPage);
+    router.push(Routes.manhwaPage);
+  }
+
+  void goToAddComicReviewPage() {
+    router.push(Routes.addComicReview);
   }
 }

@@ -6,31 +6,43 @@ import 'package:path/path.dart' as path;
 class AvifConverter {
   static const MethodChannel _channel = MethodChannel('com.example.avif_converter');
 
-  /// Converts an image file to AVIF format with specified quality
+  /// Converts an image file to AVIF format with specified quality.
   ///
-  /// [imageFile] is the source image file
-  /// [quality] is the AVIF encoding quality (0-100), defaults to 70
-  /// [outputPath] optional custom output path, if not provided will use same directory with .avif extension
+  /// [imageFile] is the source image file.
+  /// [quality] is the AVIF encoding quality (0-100), defaults to 70.
+  /// [outputPath] is an optional custom output path; if null, uses the same directory with .avif extension.
   ///
-  /// Returns the converted AVIF file or null if conversion failed
-  static Future<File?> convertToAvif(File imageFile, {int quality = 70, String? outputPath}) async {
-    try {
-      final String outputFilePath =
-          outputPath ??
-          path.join(imageFile.parent.path, '${path.basenameWithoutExtension(imageFile.path)}.avif');
+  /// Returns the converted AVIF file or null if conversion fails.
+  static Future<File?> convertToAvif(File imageFile, {int quality = 90, String? outputPath}) async {
+    if (!imageFile.existsSync()) {
+      log('Input file does not exist: ${imageFile.path}');
+      return null;
+    }
 
-      final bool success = await _channel.invokeMethod('convertToAvif', {
+    final String defaultOutputPath = path.join(
+      imageFile.parent.path,
+      '${path.basenameWithoutExtension(imageFile.path)}.avif',
+    );
+    final String finalOutputPath = outputPath ?? defaultOutputPath;
+
+    try {
+      final bool? success = await _channel.invokeMethod('convertToAvif', {
         'inputPath': imageFile.path,
-        'outputPath': outputFilePath,
+        'outputPath': finalOutputPath,
         'quality': quality,
       });
 
-      if (success) {
-        return File(outputFilePath);
+      if (success == true) {
+        final outputFile = File(finalOutputPath);
+        return outputFile.existsSync() ? outputFile : null;
       }
+      log('Conversion failed or returned false');
+      return null;
+    } on PlatformException catch (e) {
+      log('Platform error converting to AVIF: ${e.message}');
       return null;
     } catch (e) {
-      log('Error converting image to AVIF: $e');
+      log('Unexpected error converting to AVIF: $e');
       return null;
     }
   }

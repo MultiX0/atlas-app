@@ -1,5 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 
+import 'dart:developer';
+
 import 'package:atlas_app/features/comics/controller/comics_controller.dart';
 import 'package:atlas_app/features/comics/models/comic_model.dart';
 import 'package:atlas_app/features/search/providers/providers.dart';
@@ -53,12 +55,12 @@ class ManhwaSearchState extends StateNotifier<ManhwaSearchHelper> {
 
   void updateSpecificComic(ComicModel comicModel) {
     if (state.comics.isEmpty) return;
+    final targetIndex = state.comics.indexWhere((c) => c.aniId == comicModel.aniId);
+    log("target index: $targetIndex");
 
     final updatedList = List<ComicModel>.from(
       state.comics.where((c) => c.aniId != comicModel.aniId),
-    )..add(comicModel);
-
-    updatedList.sort((a, b) => b.englishTitle.compareTo(a.englishTitle));
+    )..insert(targetIndex, comicModel);
 
     state = state.copyWith(comics: updatedList);
   }

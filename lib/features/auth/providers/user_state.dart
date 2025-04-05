@@ -1,6 +1,5 @@
 import 'dart:developer';
 
-import 'package:atlas_app/core/providers/supabase_provider.dart';
 import 'package:atlas_app/features/auth/db/auth_db.dart';
 import 'package:atlas_app/features/profile/db/profile_db.dart';
 import 'package:atlas_app/imports.dart';
@@ -9,32 +8,45 @@ class UserStateHelper {
   final UserModel? user;
   final bool isLoading;
   final bool hasError;
+  final bool isInitlized;
   final String? error;
-  UserStateHelper({this.user, required this.isLoading, required this.hasError, this.error});
+  UserStateHelper({
+    this.user,
+    required this.isLoading,
+    required this.hasError,
+    this.error,
+    this.isInitlized = false,
+  });
 
-  UserStateHelper copyWith({UserModel? user, bool? isLoading, bool? hasError, String? error}) {
+  UserStateHelper copyWith({
+    UserModel? user,
+    bool? isLoading,
+    bool? hasError,
+    String? error,
+    bool? isInitlized,
+  }) {
     return UserStateHelper(
       user: user ?? this.user,
       isLoading: isLoading ?? this.isLoading,
       hasError: hasError ?? this.hasError,
+      isInitlized: isInitlized ?? this.isInitlized,
       error: error ?? this.error,
     );
   }
 }
 
 class UserState extends StateNotifier<UserStateHelper?> {
+  // ignore: unused_field
   final Ref _ref;
 
   AuthDb get _db => AuthDb();
   ProfileDb get _profileDb => ProfileDb();
 
-  UserState({required Ref ref}) : _ref = ref, super(null) {
-    initlizeUser();
-  }
+  UserState({required Ref ref}) : _ref = ref, super(null);
 
-  SupabaseClient get _client => _ref.watch(supabaseProvider);
+  SupabaseClient get _client => Supabase.instance.client;
 
-  void initlizeUser() async {
+  Future<void> initlizeUser() async {
     try {
       state = UserStateHelper(isLoading: true, hasError: false);
       if (_client.auth.currentSession == null) {
@@ -42,7 +54,7 @@ class UserState extends StateNotifier<UserStateHelper?> {
         return;
       }
 
-      if (state?.user != null) {
+      if (state!.isInitlized) {
         return;
       }
 
@@ -51,7 +63,7 @@ class UserState extends StateNotifier<UserStateHelper?> {
       final followsCount = await _profileDb.getFollowsCountString(userId);
       user = user.copyWith(followsCount: followsCount);
       log("user data: $user");
-      state = UserStateHelper(user: user, isLoading: false, hasError: false);
+      state = UserStateHelper(user: user, isLoading: false, hasError: false, isInitlized: true);
     } catch (e) {
       state = UserStateHelper(isLoading: false, hasError: true, error: e.toString());
       log(e.toString());

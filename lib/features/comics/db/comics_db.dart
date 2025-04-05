@@ -83,8 +83,6 @@ class ComicsDb {
 
   Future<void> insertComics(List<ComicModel> comics) async {
     try {
-      const uuid = Uuid();
-      Map<int, String> _ids = {};
       List<Map<String, dynamic>> _comics = [];
       final _unFoundIds =
           await client.rpc(
@@ -104,10 +102,7 @@ class ComicsDb {
         log("Processing comic with ani_id: ${comic.aniId}");
 
         final map = comic.toMap();
-        final id = uuid.v4();
-        map[KeyNames.id] = id;
-
-        _ids[comic.aniId] = id;
+        map[KeyNames.last_update_at] = DateTime.now().toUtc().toIso8601String();
         _comics.add(map);
       }
 
@@ -128,11 +123,10 @@ class ComicsDb {
       // Now handle related data
       for (final comic in comics) {
         try {
-          final id = _ids[comic.aniId]!;
           await Future.wait([
-            insertComicTitles(comic.titles, id),
-            insertComicsGenres(comic.genres, id),
-            insertComicsPublishDate(comic.publishedDate, id),
+            insertComicTitles(comic.titles, comic.comicId),
+            insertComicsGenres(comic.genres, comic.comicId),
+            insertComicsPublishDate(comic.publishedDate, comic.comicId),
           ]);
         } catch (e) {
           continue;
@@ -142,6 +136,12 @@ class ComicsDb {
       log(e.toString());
       rethrow;
     }
+  }
+
+  ComicModel makeIdForComic(ComicModel comic) {
+    const uuid = Uuid();
+    final id = uuid.v4();
+    return comic.copyWith(comicId: id);
   }
 
   Future<void> updateComic(ComicModel comic) async {
@@ -173,11 +173,15 @@ class ComicsDb {
         final data = await searchMalApi(searchQuery: query, limit: limit);
         final comics =
             data.map((comic) => ComicModel.fromMap(comic as Map<String, dynamic>)).toSet().toList();
-        _ref.read(manhwaSearchStateProvider.notifier).updateComics(comics);
+        List<ComicModel> finalComics = [];
+        for (final c in comics) {
+          finalComics.add(makeIdForComic(c));
+        }
+        _ref.read(manhwaSearchStateProvider.notifier).updateComics(finalComics);
         _ref.read(searchGlobalProvider.notifier).state = false;
         _ref.read(manhwaSearchStateProvider.notifier).handleLoading(false);
         _ref.read(manhwaSearchStateProvider.notifier).handleError(null);
-        await insertComics(comics);
+        await insertComics(finalComics);
         return comics;
       }
 

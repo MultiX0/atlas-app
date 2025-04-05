@@ -77,6 +77,10 @@ dependencies:
   flutter_tabler_icons: ^1.43.0
   fancy_shimmer_image: ^2.0.3
   collection: ^1.19.1
+  flutter_rating_bar: ^4.0.1
+  msh_checkbox: ^2.0.1
+  firebase_core: ^3.13.0
+  loader_overlay: ^5.0.0
 
 dev_dependencies:
   flutter_test:

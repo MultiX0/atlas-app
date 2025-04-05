@@ -67,6 +67,7 @@ class _ManhwaDataHeaderState extends ConsumerState<ManhwaDataHeader> {
                       Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(15),
+                          color: AppColors.scaffoldBackground,
                           border: Border.all(color: AppColors.scaffoldBackground, width: 2),
                           boxShadow: [
                             BoxShadow(blurRadius: 25, spreadRadius: 0.1, color: shadowColor),
@@ -114,7 +115,7 @@ class _ManhwaDataHeaderState extends ConsumerState<ManhwaDataHeader> {
                               const SizedBox(height: 10),
                               Container(
                                 padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
-                                decoration: BoxDecoration(color: AppColors.primaryAccent),
+                                decoration: const BoxDecoration(color: AppColors.primaryAccent),
                                 child: Text(
                                   "Chapters: ${comic.chapters ?? "uknown"}",
                                   style: const TextStyle(fontSize: 13),

@@ -1,8 +1,10 @@
-import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/see_more_text.dart';
 import 'package:atlas_app/features/auth/providers/user_state.dart';
+import 'package:atlas_app/features/comics/models/comic_model.dart';
 import 'package:atlas_app/features/comics/providers/providers.dart';
+import 'package:atlas_app/features/navs/navs.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ManhwaDataBody extends ConsumerStatefulWidget {
@@ -45,7 +47,9 @@ class _ManhwaDataBodyState extends ConsumerState<ManhwaDataBody> {
               ),
               const SizedBox(height: 5),
               SeeMoreWidget(
-                comic.synopsis.trim(),
+                comic.synopsis.trim().isEmpty
+                    ? "There is not synopsis for this work"
+                    : comic.synopsis.trim(),
                 textStyle: const TextStyle(color: AppColors.mutedSilver, fontFamily: primaryFont),
                 seeMoreStyle: TextStyle(color: seeMoreTextColor, fontWeight: FontWeight.bold),
                 seeLessStyle: TextStyle(color: seeMoreTextColor, fontWeight: FontWeight.bold),
@@ -61,15 +65,29 @@ class _ManhwaDataBodyState extends ConsumerState<ManhwaDataBody> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 5),
-                child: Text(
-                  "Reviews",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    fontFamily: accentFont,
-                  ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 5),
+                child: Row(
+                  children: [
+                    const Text(
+                      "Reviews",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        fontFamily: accentFont,
+                      ),
+                    ),
+                    const Spacer(),
+                    GestureDetector(
+                      child: const Row(
+                        children: [
+                          Text("See all"),
+                          SizedBox(width: 5),
+                          Icon(LucideIcons.chevron_right),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 15),
@@ -101,29 +119,7 @@ class _ManhwaDataBodyState extends ConsumerState<ManhwaDataBody> {
                 ),
               ),
               const SizedBox(height: 10),
-              GestureDetector(
-                onTap: () => CustomToast.soon(),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-
-                  decoration: BoxDecoration(
-                    color: AppColors.scaffoldBackground,
-                    borderRadius: BorderRadius.circular(15),
-
-                    border: Border.all(color: AppColors.blackColor, width: 3),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "See all",
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                      ),
-                      Icon(LucideIcons.chevron_right, color: AppColors.whiteColor),
-                    ],
-                  ),
-                ),
-              ),
+              buildRatingBar(comic),
             ],
           ),
         ),
@@ -144,6 +140,8 @@ class _ManhwaDataBodyState extends ConsumerState<ManhwaDataBody> {
                 ),
                 const SizedBox(height: 5),
                 ...comic.externalLinks!.asMap().entries.map((e) {
+                  final linksColor =
+                      comic.color != null ? HexColor(comic.color!) : AppColors.primary;
                   final link = e.value;
                   final i = e.key + 1;
                   return GestureDetector(
@@ -152,10 +150,10 @@ class _ManhwaDataBodyState extends ConsumerState<ManhwaDataBody> {
                       padding: const EdgeInsets.symmetric(vertical: 5),
                       child: Text(
                         "$i - ${link.site}",
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
                           decoration: TextDecoration.underline,
-                          color: AppColors.primary,
+                          color: linksColor,
                         ),
                       ),
                     ),
@@ -166,6 +164,24 @@ class _ManhwaDataBodyState extends ConsumerState<ManhwaDataBody> {
           ),
         ],
       ],
+    );
+  }
+
+  Widget buildRatingBar(ComicModel comic) {
+    final starColor = comic.color != null ? HexColor(comic.color!) : AppColors.primary;
+
+    return Center(
+      child: GestureDetector(
+        onTap: () => ref.read(navsProvider).goToAddComicReviewPage(),
+        child: RatingBarIndicator(
+          itemPadding: const EdgeInsets.symmetric(horizontal: 5),
+          rating: 3,
+          itemBuilder: (context, index) => Icon(Icons.star, color: starColor),
+          itemCount: 6,
+          itemSize: 40.0,
+          direction: Axis.horizontal,
+        ),
+      ),
     );
   }
 

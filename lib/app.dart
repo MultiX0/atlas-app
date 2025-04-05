@@ -1,9 +1,9 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:atlas_app/core/providers/supabase_provider.dart';
 import 'package:atlas_app/core/services/syste_chrome.dart';
 import 'package:atlas_app/features/auth/providers/user_state.dart';
 import 'package:atlas_app/router.dart';
+import 'package:loader_overlay/loader_overlay.dart';
 
 import 'imports.dart';
 
@@ -19,28 +19,25 @@ class _AppState extends ConsumerState<App> {
   void initState() {
     super.initState();
     editChromeSystem();
-    handleUserAuth();
+    WidgetsBinding.instance.addPostFrameCallback((_) => initAuth());
   }
 
-  void handleUserAuth() async {
-    final client = ref.read(supabaseProvider);
-    client.auth.onAuthStateChange.listen((changes) {
-      if (changes.session != null && changes.session?.user != null) {
-        ref.read(userState);
-      }
-    });
+  Future<void> initAuth() async {
+    await ref.read(userState.notifier).initlizeUser();
   }
 
   @override
   Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
-    return ToastificationWrapper(
-      child: MaterialApp.router(
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.darkModeAppTheme,
-        routeInformationParser: router.routeInformationParser,
-        routeInformationProvider: router.routeInformationProvider,
-        routerDelegate: router.routerDelegate,
+    return GlobalLoaderOverlay(
+      child: ToastificationWrapper(
+        child: MaterialApp.router(
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.darkModeAppTheme,
+          routeInformationParser: router.routeInformationParser,
+          routeInformationProvider: router.routeInformationProvider,
+          routerDelegate: router.routerDelegate,
+        ),
       ),
     );
   }
