@@ -42,6 +42,10 @@ class UserState extends StateNotifier<UserStateHelper?> {
         return;
       }
 
+      if (state?.user != null) {
+        return;
+      }
+
       final userId = _client.auth.currentSession!.user.id;
       UserModel user = await _db.getUserData(userId, withMetadata: true);
       final followsCount = await _profileDb.getFollowsCountString(userId);

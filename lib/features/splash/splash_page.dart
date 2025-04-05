@@ -1,3 +1,4 @@
+import 'package:atlas_app/features/auth/providers/user_state.dart';
 import 'package:atlas_app/imports.dart';
 
 class SplashPage extends ConsumerStatefulWidget {
@@ -15,6 +16,8 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   }
 
   void handleNext() async {
+    final state = ref.read(userState);
+
     await Future.wait([
       precacheImage(const AssetAvifImage('assets/images/pattren.avif'), context),
       precacheImage(const AssetImage('assets/images/logo_atlas.png'), context),
@@ -22,7 +25,10 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     ]);
     await Future.delayed(const Duration(milliseconds: 800), () {
       if (!mounted) return;
-      context.pushReplacement(Routes.home);
+
+      if (state != null && state.user != null) {
+        context.pushReplacement(Routes.home);
+      }
     });
   }
 

@@ -6,6 +6,7 @@ import 'package:atlas_app/features/auth/pages/forget_password/update_password.da
 import 'package:atlas_app/features/auth/pages/login_page.dart';
 import 'package:atlas_app/features/auth/pages/register_page.dart';
 import 'package:atlas_app/features/auth/providers/user_state.dart';
+import 'package:atlas_app/features/comics/pages/manhwa_page.dart';
 import 'package:atlas_app/features/explore/pages/explore_page.dart';
 import 'package:atlas_app/features/onboarding/pages/first_page.dart';
 import 'package:atlas_app/features/profile/pages/profile_page.dart';
@@ -33,7 +34,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       final firstPageRoute = state.uri.toString() == Routes.onboardingPage;
 
-      if (state.uri.toString() == Routes.splashPage) {
+      if (state.uri.toString() == Routes.splashPage && isUserLoggedIn) {
         log("currentlly on the splash page");
         return null;
       }
@@ -89,6 +90,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       buildRoute(path: Routes.registerPage, child: const RegisterPage(), fade: true),
       buildRoute(path: Routes.forgotPasswordEmailPage, child: const EmailFieldPage(), fade: true),
       buildRoute(path: Routes.search, child: const SearchPage(), fade: true),
+      buildRoute(path: Routes.manhwaPage, child: const ManhwaPage(), fade: true),
 
       GoRoute(
         path: "${Routes.updatePasswordPage}/:local",

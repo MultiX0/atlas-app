@@ -49,4 +49,5 @@ class KeyNames {
   static const chapters_read = 'chapters_read';
   static const url = 'url';
   static const site = 'site';
+  static const theme_color = 'theme_color';
 }

@@ -9,9 +9,12 @@ final getUserByIdProvider = FutureProvider.family<UserModel, String>((ref, userI
 });
 
 class ProfileController extends StateNotifier<bool> {
+  // ignore: unused_field
   final Ref _ref;
   ProfileController({required Ref ref}) : _ref = ref, super(false);
 
+  // ignore: unused_element
   AuthDb get _authDb => AuthDb();
+  // ignore: unused_element
   ProfileDb get _profileDb => ProfileDb();
 }

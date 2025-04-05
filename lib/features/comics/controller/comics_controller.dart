@@ -31,4 +31,13 @@ class ComicsController extends StateNotifier<bool> {
       rethrow;
     }
   }
+
+  Future<void> handleComicUpdate(ComicModel comic) async {
+    try {
+      await db.handleUpdateComic(comic);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
 }

@@ -25,12 +25,15 @@ class ComicModel {
   final List<GenresModel> genres;
   final ComicPublishedModel publishedDate;
   final List<ExternalLinksModel>? externalLinks;
+  final DateTime? lastUpdateAt;
+  final String? color;
   final String image;
   ComicModel({
     required this.aniId,
     required this.englishTitle,
     required this.type,
     this.chapters,
+    this.lastUpdateAt,
     this.volumes,
     this.banner,
     required this.status,
@@ -39,6 +42,7 @@ class ComicModel {
     required this.title_synonyms,
     required this.titles,
     required this.genres,
+    this.color,
     required this.comicId,
     required this.publishedDate,
     required this.image,
@@ -63,6 +67,8 @@ class ComicModel {
     String? image,
     String? banner,
     String? englishTitle,
+    DateTime? lastUpdateAt,
+    String? color,
     List<ExternalLinksModel>? externalLinks,
   }) {
     return ComicModel(
@@ -77,11 +83,13 @@ class ComicModel {
       titles: titles ?? this.titles,
       genres: genres ?? this.genres,
       comicId: comicId ?? this.comicId,
+      lastUpdateAt: lastUpdateAt ?? this.lastUpdateAt,
       publishedDate: publishedDate ?? this.publishedDate,
       image: image ?? this.image,
       banner: banner ?? this.banner,
       englishTitle: englishTitle ?? this.englishTitle,
       externalLinks: externalLinks ?? this.externalLinks,
+      color: color ?? this.color,
     );
   }
 
@@ -97,7 +105,9 @@ class ComicModel {
       KeyNames.title_synonyms: title_synonyms,
       KeyNames.id: comicId,
       KeyNames.title_english: englishTitle,
+      KeyNames.theme_color: color,
       KeyNames.banner: banner,
+      KeyNames.last_update_at: lastUpdateAt?.toIso8601String(),
       KeyNames.external_links: externalLinks?.map((external) => external.toMap()).toList(),
       // 'titles': titles.map((x) => x.toMap()).toList(),
       // 'genres': genres.map((x) => x.toMap()).toList(),
@@ -122,12 +132,17 @@ class ComicModel {
     return ComicModel(
       comicId: map[KeyNames.id] ?? "",
       aniId: map[KeyNames.ani_id] ?? -1,
+      lastUpdateAt:
+          map[KeyNames.last_update_at] == null
+              ? null
+              : DateTime.parse(map[KeyNames.last_update_at]),
       type: map[KeyNames.type] ?? "",
       englishTitle: map[KeyNames.title_english],
       chapters: map[KeyNames.chapters],
       volumes: map[KeyNames.volumes],
       status: map[KeyNames.status] ?? "",
       score: map[KeyNames.score] ?? 0.0,
+      color: map[KeyNames.theme_color],
       externalLinks:
           map[KeyNames.external_links] != null
               ? List<ExternalLinksModel>.from(

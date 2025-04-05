@@ -50,6 +50,18 @@ class ManhwaSearchState extends StateNotifier<ManhwaSearchHelper> {
         .read(comicsControllerProvider.notifier)
         .searchComics(query, more: more, limit: limit);
   }
+
+  void updateSpecificComic(ComicModel comicModel) {
+    if (state.comics.isEmpty) return;
+
+    final updatedList = List<ComicModel>.from(
+      state.comics.where((c) => c.aniId != comicModel.aniId),
+    )..add(comicModel);
+
+    updatedList.sort((a, b) => b.englishTitle.compareTo(a.englishTitle));
+
+    state = state.copyWith(comics: updatedList);
+  }
 }
 
 final manhwaSearchStateProvider = StateNotifierProvider<ManhwaSearchState, ManhwaSearchHelper>((

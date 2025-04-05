@@ -144,6 +144,17 @@ class ComicsDb {
     }
   }
 
+  Future<void> updateComic(ComicModel comic) async {
+    try {
+      final map = comic.toMap();
+      map.remove(KeyNames.id);
+      await _comicsTable.update(map).eq(KeyNames.ani_id, comic.aniId);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
   Future<List<ComicModel>> searchComics(String query, {int limit = 20, more = false}) async {
     if (query.isEmpty) return [];
     query = query.trim().toLowerCase();
@@ -195,6 +206,29 @@ class ComicsDb {
       _ref.read(manhwaSearchStateProvider.notifier).handleError(e.toString());
       log(e.toString());
       return [];
+    }
+  }
+
+  Future<void> handleUpdateComic(ComicModel comic) async {
+    try {
+      final now = DateTime.now().toUtc();
+      if (comic.lastUpdateAt != null &&
+          comic.lastUpdateAt!.add(const Duration(hours: 24)).isAfter(now)) {
+        log("next update in ${comic.lastUpdateAt!.add(const Duration(hours: 24))}");
+        return;
+      }
+
+      final comicModel = await getComicById(comic.aniId);
+      log("updating { ${comicModel.aniId} } ...");
+      _ref
+          .read(manhwaSearchStateProvider.notifier)
+          .updateSpecificComic(comicModel.copyWith(lastUpdateAt: DateTime.now().toUtc()));
+      await updateComic(
+        comicModel.copyWith(lastUpdateAt: DateTime.now().toUtc(), comicId: comic.comicId),
+      );
+    } catch (e) {
+      log(e.toString());
+      rethrow;
     }
   }
 
@@ -275,171 +309,251 @@ class ComicsDb {
       rethrow;
     }
   }
-}
 
-List<Map<String, dynamic>> filterComics(List<Map<dynamic, dynamic>> data) {
-  final seenIds = <dynamic>{};
-  final unique = <Map<String, dynamic>>[];
-  final _data = data.where((d) => d["isAdult"] == false).toList();
+  Future<ComicModel> getComicById(int id) async {
+    const String query = '''
+    query GetMangaById(\$id: Int) {
+      Media(id: \$id, type: MANGA) {
+        id
+        title {
+          romaji
+          english
+          native
+        }
+        status
+        format
+        description
+        startDate {
+          year
+          month
+          day
+        }
+        endDate {
+          year
+          month
+          day
+        }
+        season
+        seasonYear
+        episodes
+        chapters
+        volumes
+        genres
+        synonyms
+        isAdult
+        averageScore
+        popularity
+        tags {
+          name
+          description
+        }
+        studios {
+          edges {
+            node {
+              id
+              name
+            }
+          }
+        }
+        externalLinks {
+          url
+          site
+        }
+        coverImage {
+          extraLarge
+          large
+          medium
+          color
+        }
+        bannerImage
+      }
+    }
+  ''';
 
-  for (final comic in _data) {
-    final aniId = comic["id"];
-    if (!seenIds.contains(aniId)) {
-      seenIds.add(aniId);
+    final variables = {'id': id};
 
-      final genreMap = {
-        for (var genre in genres) genre["name"].toString().toLowerCase(): genre["id"],
-      };
+    try {
+      final res = await dio.post(aniListAPI, data: {'query': query, 'variables': variables});
 
-      final enrichedGenres =
-          (comic["genres"] as List<dynamic>)
-              .map((g) {
-                final genreName = g.toString().toLowerCase();
-                final genreId = genreMap[genreName];
+      if (res.statusCode! >= 200 && res.statusCode! <= 299) {
+        final media = res.data["data"]["Media"];
+        final comicMap = Map<String, dynamic>.from(media);
+        final comicMapFixed = filterComics([comicMap]);
+        return ComicModel.fromMap(comicMapFixed.first);
+      }
 
-                if (genreId == null) return null;
-
-                return {
-                  "id": genreId,
-                  "type": "manga",
-                  "name": g,
-                  "url": "https://myanimelist.net/manga/genre/0/$g",
-                };
-              })
-              .nonNulls
-              .toList();
-
-      final convertedComic = {
-        KeyNames.ani_id: aniId,
-        "banner": comic["bannerImage"],
-        "external_links": comic["externalLinks"] ?? [],
-        "images": {
-          "jpg": {
-            "image_url": comic["coverImage"]["extraLarge"],
-            "small_image_url": comic["coverImage"]["medium"],
-            "large_image_url": comic["coverImage"]["large"],
-          },
-          "webp": {
-            "image_url": comic["coverImage"]["extraLarge"],
-            "small_image_url": comic["coverImage"]["medium"],
-            "large_image_url": comic["coverImage"]["large"],
-          },
-        },
-        "approved": true,
-        "titles": [
-          {"type": "Default", "title": comic["title"]["romaji"]},
-          if (comic["title"]["native"] != null)
-            {"type": "Japanese", "title": comic["title"]["native"]},
-          if (comic["title"]["english"] != null)
-            {"type": "English", "title": comic["title"]["english"]},
-        ],
-        "title_english": comic["title"]?["english"] ?? comic["title"]["romaji"],
-        "title_synonyms": comic["synonyms"] ?? [],
-        "type": comic["format"],
-        "chapters": comic["chapters"],
-        "volumes": comic["volumes"],
-        "status": comic["status"],
-        "publishing": comic["status"] != "FINISHED",
-        "published": {
-          "from": _formatDate(comic["startDate"]),
-          "to": _formatDate(comic["endDate"]),
-          "prop": {"from": comic["startDate"], "to": comic["endDate"]},
-          "string": _dateRangeToString(comic["startDate"], comic["endDate"]),
-        },
-        "score": comic["averageScore"] != null ? comic["averageScore"] / 10.0 : null,
-        "scored": null,
-        "scored_by": null,
-        "rank": null,
-        "popularity": comic["popularity"],
-        "members": null,
-        "favorites": null,
-        "synopsis": _stripHtmlTags(comic["description"]),
-        "background": "",
-        "authors": [],
-        "serializations": [],
-        "genres": enrichedGenres,
-        "explicit_genres": [],
-        "themes": _extractThemes(comic["tags"]),
-        "demographics": [],
-      };
-
-      unique.add(convertedComic);
+      throw DioException(requestOptions: res.requestOptions);
+    } catch (e) {
+      log("Error fetching manga by ID: $e");
+      rethrow;
     }
   }
 
-  return unique;
-}
+  List<Map<String, dynamic>> filterComics(List<Map<dynamic, dynamic>> data) {
+    final seenIds = <dynamic>{};
+    final unique = <Map<String, dynamic>>[];
+    final _data = data.where((d) => d["isAdult"] == false).toList();
 
-String? _formatDate(Map<String, dynamic>? date) {
-  if (date == null || date["year"] == null) return null;
+    for (final comic in _data) {
+      final aniId = comic["id"];
+      if (!seenIds.contains(aniId)) {
+        seenIds.add(aniId);
 
-  final year = date["year"].toString().padLeft(4, '0');
-  final month = (date["month"] ?? 1).toString().padLeft(2, '0');
-  final day = (date["day"] ?? 1).toString().padLeft(2, '0');
-  return "$year-$month-${day}T00:00:00+00:00";
-}
+        final genreMap = {
+          for (var genre in genres) genre["name"].toString().toLowerCase(): genre["id"],
+        };
 
-String _dateRangeToString(Map<String, dynamic>? from, Map<String, dynamic>? to) {
-  String format(Map<String, dynamic>? d) {
-    if (d == null || d["year"] == null) return "Unknown";
-    return "${_monthName(d["month"] ?? 1)} ${d["day"] ?? 1}, ${d["year"]}";
+        final enrichedGenres =
+            (comic["genres"] as List<dynamic>)
+                .map((g) {
+                  final genreName = g.toString().toLowerCase();
+                  final genreId = genreMap[genreName];
+
+                  if (genreId == null) return null;
+
+                  return {
+                    "id": genreId,
+                    "type": "manga",
+                    "name": g,
+                    "url": "https://myanimelist.net/manga/genre/0/$g",
+                  };
+                })
+                .nonNulls
+                .toList();
+
+        final convertedComic = {
+          KeyNames.ani_id: aniId,
+          "banner": comic["bannerImage"],
+          "external_links": comic["externalLinks"] ?? [],
+          "images": {
+            "jpg": {
+              "image_url": comic["coverImage"]["extraLarge"],
+              "small_image_url": comic["coverImage"]["medium"],
+              "large_image_url": comic["coverImage"]["large"],
+            },
+            "webp": {
+              "image_url": comic["coverImage"]["extraLarge"],
+              "small_image_url": comic["coverImage"]["medium"],
+              "large_image_url": comic["coverImage"]["large"],
+            },
+          },
+          "approved": true,
+          "titles": [
+            {"type": "Default", "title": comic["title"]["romaji"]},
+            if (comic["title"]["native"] != null)
+              {"type": "Japanese", "title": comic["title"]["native"]},
+            if (comic["title"]["english"] != null)
+              {"type": "English", "title": comic["title"]["english"]},
+          ],
+          "title_english": comic["title"]?["english"] ?? comic["title"]["romaji"],
+          "title_synonyms": comic["synonyms"] ?? [],
+          "type": comic["format"],
+          "chapters": comic["chapters"],
+          "volumes": comic["volumes"],
+          "status": comic["status"],
+          "publishing": comic["status"] != "FINISHED",
+          "published": {
+            "from": _formatDate(comic["startDate"]),
+            "to": _formatDate(comic["endDate"]),
+            "prop": {"from": comic["startDate"], "to": comic["endDate"]},
+            "string": _dateRangeToString(comic["startDate"], comic["endDate"]),
+          },
+          "score": comic["averageScore"] != null ? comic["averageScore"] / 10.0 : null,
+          "scored": null,
+          "scored_by": null,
+          "rank": null,
+          "popularity": comic["popularity"],
+          "members": null,
+          "favorites": null,
+          "synopsis": _stripHtmlTags(comic["description"]),
+          "background": "",
+          "authors": [],
+          "serializations": [],
+          "genres": enrichedGenres,
+          KeyNames.theme_color: comic["coverImage"]["color"],
+          "explicit_genres": [],
+          "themes": _extractThemes(comic["tags"]),
+          "demographics": [],
+        };
+
+        unique.add(convertedComic);
+      }
+    }
+
+    return unique;
   }
 
-  return "${format(from)} to ${format(to)}";
-}
+  String? _formatDate(Map<String, dynamic>? date) {
+    if (date == null || date["year"] == null) return null;
 
-String _monthName(int month) {
-  const months = [
-    "",
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-  return months[month];
-}
+    final year = date["year"].toString().padLeft(4, '0');
+    final month = (date["month"] ?? 1).toString().padLeft(2, '0');
+    final day = (date["day"] ?? 1).toString().padLeft(2, '0');
+    return "$year-$month-${day}T00:00:00+00:00";
+  }
 
-String _stripHtmlTags(String? htmlText) {
-  if (htmlText == null) return "";
-  final exp = RegExp(r"<[^>]*>", multiLine: true, caseSensitive: true);
-  return htmlText.replaceAll(exp, '').trim();
-}
+  String _dateRangeToString(Map<String, dynamic>? from, Map<String, dynamic>? to) {
+    String format(Map<String, dynamic>? d) {
+      if (d == null || d["year"] == null) return "Unknown";
+      return "${_monthName(d["month"] ?? 1)} ${d["day"] ?? 1}, ${d["year"]}";
+    }
 
-List<Map<String, dynamic>> _extractThemes(List<dynamic>? tags) {
-  if (tags == null) return [];
+    return "${format(from)} to ${format(to)}";
+  }
 
-  final themeTags = [
-    "Time Manipulation",
-    "Revenge",
-    "Time Skip",
-    "Age Regression",
-    "Dungeon",
-    "Gods",
-    "Magic",
-    "Demons",
-    "Video Games",
-    "Surreal Comedy",
-    "Female Harem",
-  ];
+  String _monthName(int month) {
+    const months = [
+      "",
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    return months[month];
+  }
 
-  return tags
-      .where((tag) => themeTags.contains(tag["name"]))
-      .map(
-        (tag) => {
-          "mal_id": null,
-          "type": "manga",
-          "name": tag["name"],
-          "url":
-              "https://myanimelist.net/manga/genre/0/${tag["name"].toString().replaceAll(' ', '_')}",
-        },
-      )
-      .toList();
+  String _stripHtmlTags(String? htmlText) {
+    if (htmlText == null) return "";
+    final exp = RegExp(r"<[^>]*>", multiLine: true, caseSensitive: true);
+    return htmlText.replaceAll(exp, '').trim();
+  }
+
+  List<Map<String, dynamic>> _extractThemes(List<dynamic>? tags) {
+    if (tags == null) return [];
+
+    final themeTags = [
+      "Time Manipulation",
+      "Revenge",
+      "Time Skip",
+      "Age Regression",
+      "Dungeon",
+      "Gods",
+      "Magic",
+      "Demons",
+      "Video Games",
+      "Surreal Comedy",
+      "Female Harem",
+    ];
+
+    return tags
+        .where((tag) => themeTags.contains(tag["name"]))
+        .map(
+          (tag) => {
+            "mal_id": null,
+            "type": "manga",
+            "name": tag["name"],
+            "url":
+                "https://myanimelist.net/manga/genre/0/${tag["name"].toString().replaceAll(' ', '_')}",
+          },
+        )
+        .toList();
+  }
 }

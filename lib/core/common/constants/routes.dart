@@ -13,4 +13,5 @@ class Routes {
   static const clips = '/clips';
   static const user = '/user';
   static const search = '/searchPage';
+  static const manhwaPage = '/manhwaPage';
 }
