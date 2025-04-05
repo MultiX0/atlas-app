@@ -1,0 +1,2 @@
+-keep class com.awxkee.avifcoder.** { *; }
+-keep class com.awxkee.avifcoder.HeifCoder { *; }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "567685771459",
+    "project_id": "atlas-manhwa",
+    "storage_bucket": "atlas-manhwa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:567685771459:android:44f410d3f2be051de97276",
+        "android_client_info": {
+          "package_name": "com.atlas.manhwa.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD056aj9o-aDSQOdW2xU5sLzrwdghykO6A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
