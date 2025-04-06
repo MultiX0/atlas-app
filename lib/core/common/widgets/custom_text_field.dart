@@ -66,7 +66,7 @@ class CustomTextFormField extends StatelessWidget {
       onFieldSubmitted: onFieldSubmitted,
       readOnly: readOnly,
       cursorColor: AppColors.primary,
-
+      style: const TextStyle(fontFamily: enPrimaryFont),
       decoration: InputDecoration(
         hintText: hintText,
         // contentPadding: contentPadding ?? const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
@@ -74,6 +74,7 @@ class CustomTextFormField extends StatelessWidget {
           fontFamily: accentFont,
           color: AppColors.mutedSilver.withValues(alpha: .65),
         ),
+
         filled: filled,
         fillColor: AppColors.textFieldFillColor,
         border: InputBorder.none,

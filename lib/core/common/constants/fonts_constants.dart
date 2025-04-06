@@ -1,3 +1,8 @@
-const primaryFont = 'Manrope';
+const enPrimaryFont = 'Manrope';
+const enAccentFont = 'Urbanist';
+const primaryFont = enPrimaryFont;
+const accentFont = enAccentFont;
+
 const appTitleFont = 'BebasNeue';
-const accentFont = 'Urbanist';
+const arabicPrimaryFont = 'Vazirmatn';
+const arabicAccentFont = 'Zain';

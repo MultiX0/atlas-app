@@ -21,7 +21,7 @@ class AppTheme {
     appBarTheme: AppBarTheme(
       scrolledUnderElevation: 0,
       elevation: 0,
-      titleTextStyle: const TextStyle(fontFamily: accentFont, fontSize: 24),
+      titleTextStyle: const TextStyle(fontFamily: arabicAccentFont, fontSize: 24),
       backgroundColor: Colors.transparent,
       iconTheme: IconThemeData(color: whiteColor),
     ),

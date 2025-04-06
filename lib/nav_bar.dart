@@ -22,7 +22,7 @@ class _MyNavBarState extends ConsumerState<MyNavBar> {
     });
 
     final me = ref.read(userState);
-    ref.read(selectedUserIdProvider.notifier).state = me?.user?.userId ?? "";
+    ref.read(selectedUserIdProvider.notifier).state = me.user?.userId ?? "";
 
     widget.navigationShell.goBranch(
       index,
@@ -62,7 +62,7 @@ class _MyNavBarState extends ConsumerState<MyNavBar> {
                 child: CupertinoTheme(
                   data: const CupertinoThemeData(
                     textTheme: CupertinoTextThemeData(
-                      tabLabelTextStyle: TextStyle(fontFamily: accentFont),
+                      tabLabelTextStyle: TextStyle(fontFamily: arabicAccentFont),
                     ),
                   ),
 
@@ -74,11 +74,14 @@ class _MyNavBarState extends ConsumerState<MyNavBar> {
                     activeColor: AppColors.primary,
                     inactiveColor: AppColors.mutedSilver,
                     items: const [
-                      BottomNavigationBarItem(icon: Icon(TablerIcons.smart_home), label: "Home"),
+                      BottomNavigationBarItem(
+                        icon: Icon(TablerIcons.smart_home),
+                        label: "الرئيسية",
+                      ),
                       BottomNavigationBarItem(icon: Icon(TablerIcons.sparkles), label: "Ask Ai"),
-                      BottomNavigationBarItem(icon: Icon(TablerIcons.category_2), label: "Explore"),
-                      BottomNavigationBarItem(icon: Icon(LucideIcons.library), label: "Library"),
-                      BottomNavigationBarItem(icon: Icon(TablerIcons.user), label: "Profile"),
+                      BottomNavigationBarItem(icon: Icon(TablerIcons.category_2), label: "استكشاف"),
+                      BottomNavigationBarItem(icon: Icon(LucideIcons.library), label: "المكتبة"),
+                      BottomNavigationBarItem(icon: Icon(TablerIcons.user), label: "أنا"),
                     ],
                   ),
                 ),

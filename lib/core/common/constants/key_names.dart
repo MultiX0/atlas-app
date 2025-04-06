@@ -60,4 +60,5 @@ class KeyNames {
   static const updated_at = 'updated_at';
   static const spoilers = 'spoilers';
   static const images = 'images';
+  static const ar_synopsis = 'ar_synopsis';
 }

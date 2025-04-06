@@ -6,6 +6,7 @@ import 'package:atlas_app/core/common/utils/upload_storage.dart';
 import 'package:atlas_app/features/reviews/db/reviews_db.dart';
 import 'package:atlas_app/features/reviews/models/comic_review_model.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:loader_overlay/loader_overlay.dart';
 import 'package:uuid/uuid.dart';
 
 final reviewsControllerProvider = StateNotifierProvider<ReviewsController, bool>((ref) {
@@ -29,9 +30,11 @@ class ReviewsController extends StateNotifier<bool> {
     required String reviewText,
     required double overall,
     required bool spoilers,
+    required BuildContext context,
   }) async {
     try {
       state = true;
+      context.loaderOverlay.show();
       final _images = await uploadImages(images, comicId: comicId, userId: userId);
 
       final review = ComicReviewModel(
@@ -49,9 +52,14 @@ class ReviewsController extends StateNotifier<bool> {
       );
 
       await db.insertComicReview(review);
+      // ignore: use_build_context_synchronously
+      context.loaderOverlay.hide();
       state = false;
     } catch (e) {
       state = false;
+      // ignore: use_build_context_synchronously
+      context.loaderOverlay.hide();
+
       log(e.toString());
       rethrow;
     }

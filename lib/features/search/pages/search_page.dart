@@ -14,12 +14,14 @@ class _SearchPageState extends ConsumerState<SearchPage> with SingleTickerProvid
   late TextEditingController _searchController;
   late TabController _tabController;
   late FocusNode _focusNode;
+  int index = 0;
 
   @override
   void initState() {
     _searchController = TextEditingController();
     _tabController = TabController(length: 3, vsync: this);
     _focusNode = FocusNode();
+    _tabController.addListener(changeTabIndex);
     super.initState();
   }
 
@@ -28,7 +30,14 @@ class _SearchPageState extends ConsumerState<SearchPage> with SingleTickerProvid
     _searchController.dispose();
     _tabController.dispose();
     _focusNode.dispose();
+    _tabController.removeListener(changeTabIndex);
     super.dispose();
+  }
+
+  void changeTabIndex() {
+    setState(() {
+      index = _tabController.index;
+    });
   }
 
   void onTap() {
@@ -44,14 +53,15 @@ class _SearchPageState extends ConsumerState<SearchPage> with SingleTickerProvid
     final more = ref.watch(searchGlobalProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Search"),
+        title: const Text("البحث"),
         bottom: TabBar(
           controller: _tabController,
+          labelStyle: const TextStyle(fontFamily: arabicAccentFont),
           dividerHeight: 0.3,
           labelColor: AppColors.primary,
           dividerColor: AppColors.mutedSilver.withValues(alpha: .45),
           indicatorColor: AppColors.primary,
-          tabs: const [Tab(text: "Manhwa"), Tab(text: "Novels"), Tab(text: "People")],
+          tabs: const [Tab(text: "مانهوا"), Tab(text: "روايات"), Tab(text: "مستخدمين")],
         ),
       ),
       body: Column(
@@ -76,7 +86,7 @@ class _SearchPageState extends ConsumerState<SearchPage> with SingleTickerProvid
               ],
             ),
           ),
-          if (more) ...[
+          if (more && index == 0) ...[
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 15),
               child: InkWell(
@@ -86,13 +96,13 @@ class _SearchPageState extends ConsumerState<SearchPage> with SingleTickerProvid
                 },
                 child: const Align(
                   alignment: Alignment.centerLeft,
-                  child: Text(
+                  child: LanguageText(
                     textAlign: TextAlign.start,
 
-                    "Dont You see what you're looking for ?",
+                    "ألا ترى ما تبحث عنه؟",
                     style: TextStyle(
                       fontFamily: accentFont,
-                      fontSize: 14,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: AppColors.primary,
                     ),
@@ -120,7 +130,8 @@ class _SearchPageState extends ConsumerState<SearchPage> with SingleTickerProvid
         raduis: 12,
         focusNode: _focusNode,
         controller: _searchController,
-        hintText: "Searching...",
+
+        hintText: "عن ماذا تبحث",
         onChanged: (val) {},
       ),
     );

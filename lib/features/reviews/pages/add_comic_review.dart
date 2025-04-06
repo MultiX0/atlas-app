@@ -66,9 +66,10 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
       ref
           .read(reviewsControllerProvider.notifier)
           .insertComicReview(
+            context: context,
             comicId: comic.comicId,
             images: images,
-            userId: me!.user!.userId,
+            userId: me.user!.userId,
             writingQuality: writingQuality,
             reviewText: _controller.text.trim(),
             storyDevelopment: storyDevelopment,
@@ -90,14 +91,14 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
     final me = ref.watch(userState);
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Add a Review"),
+        title: const Text("اضافة مراجعة"),
         centerTitle: true,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 5),
             child: IconButton(
               onPressed: handleSubmit,
-              tooltip: "Post",
+              tooltip: "نشر",
               icon: const Icon(TablerIcons.check),
               color: overAllColor,
             ),
@@ -111,7 +112,12 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
           children: [
             const Padding(
               padding: EdgeInsets.all(8.0),
-              child: Text("Note: You can drag the stars."),
+              child: LanguageText(
+                accent: true,
+
+                "ملحوظة: يمكنك سحب النجوم.",
+                style: TextStyle(fontFamily: arabicAccentFont),
+              ),
             ),
             const SizedBox(height: 10),
             buildCard(
@@ -119,27 +125,27 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
               child: Column(
                 children: [
                   buildRating(
-                    "Writing Quality",
+                    "جودة الكتابة",
                     rating: writingQuality,
                     onRatingUpdate: (rating) => setState(() => writingQuality = rating),
                   ),
                   buildRating(
-                    "Story Development",
+                    "بناء القصة",
                     rating: storyDevelopment,
                     onRatingUpdate: (rating) => setState(() => storyDevelopment = rating),
                   ),
                   buildRating(
-                    "Character Design",
+                    "تصميم الشخصيات",
                     rating: characterDesign,
                     onRatingUpdate: (rating) => setState(() => characterDesign = rating),
                   ),
                   buildRating(
-                    "Update Stability",
+                    "تطور الأحداث",
                     rating: updateStability,
                     onRatingUpdate: (rating) => setState(() => updateStability = rating),
                   ),
                   buildRating(
-                    "World Background",
+                    "بناء العالم",
                     rating: worldBackground,
                     onRatingUpdate: (rating) => setState(() => worldBackground = rating),
                   ),
@@ -150,7 +156,10 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
                     raduis: 15,
                     child: Row(
                       children: [
-                        const Text("Overall"),
+                        const Text(
+                          "إجمالي",
+                          style: TextStyle(fontFamily: arabicAccentFont, fontSize: 15),
+                        ),
                         const Spacer(),
                         Text(
                           overall.toStringAsFixed(1),
@@ -176,7 +185,7 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
                     children: [
                       CircleAvatar(
                         backgroundColor: AppColors.blackColor,
-                        backgroundImage: CachedNetworkAvifImageProvider(me!.user!.avatar),
+                        backgroundImage: CachedNetworkAvifImageProvider(me.user!.avatar),
                       ),
                       const SizedBox(width: 10),
                       Text("@${me.user?.username}"),
@@ -192,18 +201,22 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
                       maxLength: 280,
                       validator: (val) {
                         if (val == null || val.isEmpty) {
-                          return 'please fill the review content';
+                          return 'يرجى ملء محتوى المراجعة';
                         }
 
                         if (val.length < 40) {
-                          return 'Review should be more than 40 characters';
+                          return 'يجب أن تكون المراجعة أكثر من 40 حرفًا';
                         }
 
                         return null;
                       },
                       maxLines: null,
+                      style: const TextStyle(fontFamily: arabicAccentFont),
+
                       decoration: const InputDecoration(
-                        hintText: "Review should be more than 40 characters",
+                        errorStyle: TextStyle(fontFamily: arabicPrimaryFont, fontSize: 12),
+                        hintStyle: TextStyle(fontFamily: arabicAccentFont),
+                        hintText: "يجب أن تكون المراجعة أكثر من 40 حرفًا",
                         border: InputBorder.none,
                       ),
                     ),
@@ -225,13 +238,24 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
                     foregroundColor: overAllColor,
                   ),
                   onPressed: handleImages,
-                  label: const Text("Upload Images"),
+                  label: const LanguageText(
+                    accent: true,
+
+                    "اضافة صور",
+                    style: TextStyle(fontFamily: arabicAccentFont),
+                  ),
                   icon: Icon(TablerIcons.photo, color: overAllColor),
                 ),
                 const Spacer(),
-                Text(
-                  "Spoilers",
-                  style: TextStyle(fontWeight: FontWeight.bold, color: overAllColor),
+                LanguageText(
+                  accent: true,
+                  "يحتوي على حرق",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: overAllColor,
+                    fontFamily: arabicAccentFont,
+                    fontSize: 16,
+                  ),
                 ),
                 const SizedBox(width: 15),
 
@@ -254,8 +278,10 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
             const SizedBox(height: 10),
             const Padding(
               padding: EdgeInsets.all(8.0),
-              child: Text(
-                "Note: When you post a review, it will also be shared as a post in the main feed to help others. You can delete the post anytime if you choose to.",
+              child: LanguageText(
+                accent: true,
+                "ملاحظة: عند نشر تقييم، سيتم نشره كمنشور في موجز الأخبار الرئيسي لمساعدة الآخرين. يمكنك حذف المنشور في أي وقت.",
+                style: TextStyle(fontFamily: arabicAccentFont),
               ),
             ),
           ],
@@ -280,7 +306,7 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
           Text(
             text,
             style: const TextStyle(
-              fontFamily: accentFont,
+              fontFamily: arabicAccentFont,
               fontWeight: FontWeight.bold,
               fontSize: 20,
             ),

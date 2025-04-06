@@ -23,7 +23,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   }
 
   Widget buildBodyController() {
-    final me = ref.watch(userState)!.user!;
+    final me = ref.watch(userState).user!;
     final userId = ref.watch(selectedUserIdProvider);
     bool isMe = me.userId == userId;
 

@@ -26,8 +26,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: Routes.splashPage,
     redirect: (context, state) {
       final userStateValue = ref.watch(userState);
-      final isUserLoggedIn = userStateValue != null && userStateValue.user != null;
-      final isLoading = userStateValue?.isLoading ?? false;
+      final isUserLoggedIn = userStateValue.user != null;
+      final isLoading = userStateValue.isLoading;
       final loginRoute = state.uri.toString() == Routes.loginPage;
       final registerRoute = state.uri.toString() == Routes.registerPage;
       final forgetPasswordPage =

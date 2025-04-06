@@ -30,6 +30,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -71,7 +74,7 @@ dependencies:
   uuid: ^4.5.1
   shared_preferences: ^2.5.3
   flutter_datetime_picker_plus: ^2.2.0
-  intl: ^0.20.2
+  intl: ^0.19.0
   firebase_storage: ^12.4.5
   convert: ^3.1.2
   flutter_tabler_icons: ^1.43.0
@@ -136,6 +139,50 @@ flutter:
     - family: Urbanist
       fonts:
         - asset: assets/fonts/Urbanist-VariableFont_wght.ttf
+
+    - family: Lateef
+      fonts:
+        - asset: assets/fonts/Lateef-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/Lateef-Light.ttf
+          weight: 300
+        - asset: assets/fonts/Lateef-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Lateef-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Lateef-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Lateef-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Lateef-ExtraBold.ttf
+          weight: 800
+
+    - family: Zain
+      fonts:
+        - asset: assets/fonts/Zain-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/Zain-Light.ttf
+          weight: 300
+        - asset: assets/fonts/Zain-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Zain-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Zain-Black.ttf
+          weight: 900
+        - asset: assets/fonts/Zain-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/Zain-Italic.ttf
+          style: italic
+          weight: 400
+        - asset: assets/fonts/Zain-LightItalic.ttf
+          style: italic
+          weight: 300
+
+    - family: Vazirmatn
+      fonts:
+        - asset: assets/fonts/Vazirmatn-VariableFont_wght.ttf
+
+
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
   #

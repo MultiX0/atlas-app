@@ -21,7 +21,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     log("---------- test ----------");
 
     final userStateValue = ref.read(userState);
-    final isUserLoggedIn = userStateValue != null && userStateValue.user != null;
+    final isUserLoggedIn = userStateValue.user != null;
     log(isUserLoggedIn.toString());
   }
 

@@ -26,7 +26,7 @@ class _ExplorePageState extends ConsumerState<ExplorePage> with SingleTickerProv
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Explore"),
+        title: const Text("أستكشف"),
         actions: [
           IconButton(
             onPressed: () => context.push(Routes.search),
@@ -37,10 +37,11 @@ class _ExplorePageState extends ConsumerState<ExplorePage> with SingleTickerProv
         bottom: TabBar(
           controller: _controller,
           dividerHeight: 0.3,
+          labelStyle: const TextStyle(fontFamily: arabicAccentFont),
           labelColor: AppColors.primary,
           dividerColor: AppColors.mutedSilver.withValues(alpha: .45),
           indicatorColor: AppColors.primary,
-          tabs: const [Tab(text: "Clips"), Tab(text: "Manhwa"), Tab(text: "Novels")],
+          tabs: const [Tab(text: "مقاطع قصيرة"), Tab(text: "مانهوا"), Tab(text: "روايات")],
         ),
       ),
       body: TabBarView(

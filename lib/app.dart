@@ -1,5 +1,4 @@
 // ignore_for_file: use_build_context_synchronously
-
 import 'package:atlas_app/core/services/syste_chrome.dart';
 import 'package:atlas_app/features/auth/providers/user_state.dart';
 import 'package:atlas_app/router.dart';
@@ -30,6 +29,12 @@ class _AppState extends ConsumerState<App> {
   Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
     return GlobalLoaderOverlay(
+      overlayColor: AppColors.blackColor.withValues(alpha: .85),
+      overlayWidgetBuilder: (_) {
+        return Center(
+          child: LoadingAnimationWidget.fourRotatingDots(color: AppColors.whiteColor, size: 35),
+        );
+      },
       child: ToastificationWrapper(
         child: MaterialApp.router(
           debugShowCheckedModeBanner: false,

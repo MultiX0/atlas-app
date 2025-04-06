@@ -9,7 +9,7 @@ class ProfileHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final me = ref.watch(userState)!.user!;
+    final me = ref.watch(userState).user!;
     bool isMe = me.userId == user.userId;
     final size = MediaQuery.sizeOf(context);
 

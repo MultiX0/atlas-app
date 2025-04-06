@@ -102,7 +102,7 @@ class _ManhwaDataHeaderState extends ConsumerState<ManhwaDataHeader> {
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
-                                    fontFamily: accentFont,
+                                    fontFamily: enAccentFont,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 20,
                                   ),
@@ -110,15 +110,20 @@ class _ManhwaDataHeaderState extends ConsumerState<ManhwaDataHeader> {
                               ),
                               Text(
                                 "Published: ${comic.publishedDate.from == null ? "N/A" : appDateFormat(comic.publishedDate.from!)}",
+                                style: const TextStyle(fontFamily: enPrimaryFont),
                               ),
-                              Text("Status: ${comic.status.toLowerCase()}"),
+                              Text(
+                                "Status: ${comic.status.toLowerCase()}",
+
+                                style: const TextStyle(fontFamily: enPrimaryFont),
+                              ),
                               const SizedBox(height: 10),
                               Container(
                                 padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
                                 decoration: const BoxDecoration(color: AppColors.primaryAccent),
                                 child: Text(
                                   "Chapters: ${comic.chapters ?? "uknown"}",
-                                  style: const TextStyle(fontSize: 13),
+                                  style: const TextStyle(fontSize: 13, fontFamily: enPrimaryFont),
                                 ),
                               ),
                             ],

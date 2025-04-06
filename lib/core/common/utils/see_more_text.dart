@@ -10,6 +10,7 @@ class SeeMoreWidget extends StatefulWidget {
       color: Colors.black,
       fontWeight: FontWeight.w400,
     ),
+    this.textDirection = TextDirection.ltr,
     this.animationDuration = const Duration(milliseconds: 200),
     this.seeMoreText = "See More",
     this.seeMoreStyle = const TextStyle(
@@ -31,6 +32,8 @@ class SeeMoreWidget extends StatefulWidget {
 
   /// use to style text content;
   final TextStyle textStyle;
+
+  final TextDirection textDirection;
 
   /// use to animate less to more or vice versa
   final Duration animationDuration;
@@ -61,6 +64,7 @@ class _SeeMoreWidgetState extends State<SeeMoreWidget> {
   Widget build(BuildContext context) {
     if (widget.text.length < widget.trimLength) {
       return RichText(
+        textDirection: widget.textDirection,
         textAlign: TextAlign.justify,
         text: TextSpan(text: widget.text, style: widget.textStyle),
       );
@@ -68,6 +72,8 @@ class _SeeMoreWidgetState extends State<SeeMoreWidget> {
     return AnimatedCrossFade(
       firstChild: RichText(
         // maxLines: 3,
+        textDirection: widget.textDirection,
+
         textAlign: TextAlign.justify,
         text: TextSpan(
           text: widget.text.substring(0, widget.trimLength),
@@ -89,6 +95,8 @@ class _SeeMoreWidgetState extends State<SeeMoreWidget> {
       ),
       secondChild: RichText(
         textAlign: TextAlign.justify,
+        textDirection: widget.textDirection,
+
         text: TextSpan(
           text: widget.text,
           style: widget.textStyle,

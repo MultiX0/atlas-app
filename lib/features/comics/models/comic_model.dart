@@ -26,6 +26,7 @@ class ComicModel {
   final ComicPublishedModel publishedDate;
   final List<ExternalLinksModel>? externalLinks;
   final DateTime? lastUpdateAt;
+  final String ar_synopsis;
   final String? color;
   final String image;
   ComicModel({
@@ -46,6 +47,7 @@ class ComicModel {
     required this.comicId,
     required this.publishedDate,
     required this.image,
+    required this.ar_synopsis,
     this.externalLinks,
   });
 
@@ -69,6 +71,7 @@ class ComicModel {
     String? englishTitle,
     DateTime? lastUpdateAt,
     String? color,
+    String? ar_synopsis,
     List<ExternalLinksModel>? externalLinks,
   }) {
     return ComicModel(
@@ -90,6 +93,7 @@ class ComicModel {
       englishTitle: englishTitle ?? this.englishTitle,
       externalLinks: externalLinks ?? this.externalLinks,
       color: color ?? this.color,
+      ar_synopsis: ar_synopsis ?? this.ar_synopsis,
     );
   }
 
@@ -107,6 +111,7 @@ class ComicModel {
       KeyNames.title_english: englishTitle,
       KeyNames.theme_color: color,
       KeyNames.banner: banner,
+      KeyNames.ar_synopsis: ar_synopsis,
       KeyNames.last_update_at: lastUpdateAt?.toIso8601String(),
       KeyNames.external_links: externalLinks?.map((external) => external.toMap()).toList(),
       // 'titles': titles.map((x) => x.toMap()).toList(),
@@ -143,6 +148,7 @@ class ComicModel {
       status: map[KeyNames.status] ?? "",
       score: map[KeyNames.score] ?? 0.0,
       color: map[KeyNames.theme_color],
+      ar_synopsis: map[KeyNames.ar_synopsis] ?? "",
       externalLinks:
           map[KeyNames.external_links] != null
               ? List<ExternalLinksModel>.from(

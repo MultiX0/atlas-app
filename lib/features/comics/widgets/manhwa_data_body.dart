@@ -18,7 +18,7 @@ class _ManhwaDataBodyState extends ConsumerState<ManhwaDataBody> {
   @override
   Widget build(BuildContext context) {
     final comic = ref.watch(selectedComicProvider)!;
-    final me = ref.watch(userState)!;
+    final me = ref.watch(userState);
     final seeMoreTextColor =
         comic.color == null ? AppColors.primary.withValues(alpha: .7) : HexColor(comic.color!);
     return ListView(
@@ -29,9 +29,9 @@ class _ManhwaDataBodyState extends ConsumerState<ManhwaDataBody> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              buildStatisticsColumn(title: "Posts", value: "21.7K"),
-              buildStatisticsColumn(title: "Views", value: "16.5K"),
-              buildStatisticsColumn(title: "Reviews", value: "1.2K"),
+              buildStatisticsColumn(title: "منشور", value: "21.7K"),
+              buildStatisticsColumn(title: "مشاهدة", value: "16.5K"),
+              buildStatisticsColumn(title: "مراجعة", value: "1.2K"),
             ],
           ),
         ),
@@ -41,20 +41,41 @@ class _ManhwaDataBodyState extends ConsumerState<ManhwaDataBody> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Synopsis",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, fontFamily: accentFont),
+              const LanguageText(
+                accent: true,
+                "ملخص",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  fontFamily: arabicAccentFont,
+                ),
               ),
               const SizedBox(height: 5),
               SeeMoreWidget(
-                comic.synopsis.trim().isEmpty
-                    ? "There is not synopsis for this work"
-                    : comic.synopsis.trim(),
-                textStyle: const TextStyle(color: AppColors.mutedSilver, fontFamily: primaryFont),
-                seeMoreStyle: TextStyle(color: seeMoreTextColor, fontWeight: FontWeight.bold),
-                seeLessStyle: TextStyle(color: seeMoreTextColor, fontWeight: FontWeight.bold),
-                seeMoreText: "  See More",
-                seeLessText: "  See Less",
+                textDirection: TextDirection.rtl,
+
+                comic.ar_synopsis.trim().isEmpty
+                    ? "لايوجد ملخص لهذا العمل, نحن نعمل على اضافته حاليا"
+                    : comic.ar_synopsis.trim(),
+                textStyle: const TextStyle(
+                  color: AppColors.mutedSilver,
+                  fontFamily: arabicPrimaryFont,
+                  fontSize: 14,
+                ),
+
+                seeMoreStyle: TextStyle(
+                  color: seeMoreTextColor,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: accentFont,
+                ),
+                seeLessStyle: TextStyle(
+                  color: seeMoreTextColor,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: accentFont,
+                ),
+
+                seeMoreText: "  عرض المزيد",
+                seeLessText: "  عرض أقل",
               ),
             ],
           ),
@@ -69,19 +90,21 @@ class _ManhwaDataBodyState extends ConsumerState<ManhwaDataBody> {
                 padding: const EdgeInsets.symmetric(horizontal: 5),
                 child: Row(
                   children: [
-                    const Text(
-                      "Reviews",
+                    const LanguageText(
+                      accent: true,
+
+                      "المراجعات",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
-                        fontFamily: accentFont,
+                        fontFamily: arabicAccentFont,
                       ),
                     ),
                     const Spacer(),
                     GestureDetector(
                       child: const Row(
                         children: [
-                          Text("See all"),
+                          Text("عرض الكل", style: TextStyle(fontFamily: arabicAccentFont)),
                           SizedBox(width: 5),
                           Icon(LucideIcons.chevron_right),
                         ],
@@ -130,12 +153,14 @@ class _ManhwaDataBodyState extends ConsumerState<ManhwaDataBody> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "External & Streaming links",
+                const LanguageText(
+                  accent: true,
+
+                  "روابط خارجية وروابط العرض",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
-                    fontFamily: accentFont,
+                    fontFamily: arabicAccentFont,
                   ),
                 ),
                 const SizedBox(height: 5),
@@ -153,6 +178,7 @@ class _ManhwaDataBodyState extends ConsumerState<ManhwaDataBody> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           decoration: TextDecoration.underline,
+                          fontFamily: enPrimaryFont,
                           color: linksColor,
                         ),
                       ),
@@ -207,12 +233,15 @@ class _ManhwaDataBodyState extends ConsumerState<ManhwaDataBody> {
   Column buildStatisticsColumn({required String title, required String value}) {
     return Column(
       children: [
-        Text(title, style: const TextStyle(color: AppColors.mutedSilver)),
+        Text(
+          title,
+          style: const TextStyle(color: AppColors.mutedSilver, fontFamily: arabicAccentFont),
+        ),
         const SizedBox(height: 15),
         Text(
           value,
           style: TextStyle(
-            fontFamily: accentFont,
+            fontFamily: arabicAccentFont,
             fontSize: 20,
             fontWeight: FontWeight.bold,
             color: AppColors.whiteColor,

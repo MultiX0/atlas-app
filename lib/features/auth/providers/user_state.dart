@@ -35,14 +35,16 @@ class UserStateHelper {
   }
 }
 
-class UserState extends StateNotifier<UserStateHelper?> {
+class UserState extends StateNotifier<UserStateHelper> {
   // ignore: unused_field
   final Ref _ref;
 
   AuthDb get _db => AuthDb();
   ProfileDb get _profileDb => ProfileDb();
 
-  UserState({required Ref ref}) : _ref = ref, super(null);
+  UserState({required Ref ref})
+    : _ref = ref,
+      super(UserStateHelper(isLoading: true, hasError: false));
 
   SupabaseClient get _client => Supabase.instance.client;
 
@@ -50,11 +52,13 @@ class UserState extends StateNotifier<UserStateHelper?> {
     try {
       state = UserStateHelper(isLoading: true, hasError: false);
       if (_client.auth.currentSession == null) {
-        state = null;
+        state = state.copyWith(user: null, isLoading: false);
         return;
       }
 
-      if (state!.isInitlized) {
+      if (state.isInitlized) {
+        state = UserStateHelper(isLoading: false, hasError: false);
+
         return;
       }
 
@@ -72,18 +76,14 @@ class UserState extends StateNotifier<UserStateHelper?> {
   }
 
   void updateState(UserModel user) {
-    if (state != null) {
-      state = state!.copyWith(user: user);
-    } else {
-      state = UserStateHelper(isLoading: false, hasError: false, user: user);
-    }
+    state = UserStateHelper(isLoading: false, hasError: false, user: user);
   }
 
   void clearState() {
-    state = null;
+    state = UserStateHelper(isLoading: false, hasError: false, user: null);
   }
 }
 
-final userState = StateNotifierProvider<UserState, UserStateHelper?>((ref) {
+final userState = StateNotifierProvider<UserState, UserStateHelper>((ref) {
   return UserState(ref: ref);
 });

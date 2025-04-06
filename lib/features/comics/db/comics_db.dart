@@ -8,6 +8,7 @@ import 'package:atlas_app/features/comics/models/comic_titles_model.dart';
 import 'package:atlas_app/features/comics/models/genres_model.dart';
 import 'package:atlas_app/features/search/providers/manhwa_search_state.dart';
 import 'package:atlas_app/features/search/providers/providers.dart';
+import 'package:atlas_app/features/translate/translate_service.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
@@ -25,6 +26,7 @@ class ComicsDb {
   SupabaseQueryBuilder get _comicsTable => client.from(TableNames.comics);
   SupabaseQueryBuilder get _comicsTitlesTable => client.from(TableNames.comic_titles);
   SupabaseQueryBuilder get _comicsGenresTable => client.from(TableNames.comic_genres);
+  TranslationService get _translationService => TranslationService();
 
   SupabaseQueryBuilder get _comicsPublishedDateTable =>
       client.from(TableNames.comic_published_dates);
@@ -81,6 +83,33 @@ class ComicsDb {
     }
   }
 
+  Future<List<ComicModel>> translateComics(List<ComicModel> comics) async {
+    try {
+      // Create a list of Futures for each comic translation
+      List<Future<ComicModel>> translationFutures =
+          comics.map((comic) async {
+            // Only translate if ar_synopsis is empty
+            if (comic.ar_synopsis.isEmpty) {
+              try {
+                final ar_synopsis = await _translationService.translate('en', 'ar', comic.synopsis);
+                return comic.copyWith(ar_synopsis: ar_synopsis);
+              } catch (e) {
+                log(e.toString());
+                return comic; // Return original comic if translation fails
+              }
+            } else {
+              return comic; // Return original comic if translation already exists
+            }
+          }).toList();
+
+      // Wait for all translations to complete in parallel
+      return await Future.wait(translationFutures);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
   Future<void> insertComics(List<ComicModel> comics) async {
     try {
       List<Map<String, dynamic>> _comics = [];
@@ -121,7 +150,7 @@ class ComicsDb {
       }
 
       // Now handle related data
-      for (final comic in comics) {
+      for (final comic in newComics) {
         try {
           await Future.wait([
             insertComicTitles(comic.titles, comic.comicId),
@@ -146,8 +175,12 @@ class ComicsDb {
 
   Future<void> updateComic(ComicModel comic) async {
     try {
-      final map = comic.toMap();
+      Map<String, dynamic> map = comic.toMap();
       map.remove(KeyNames.id);
+      if (comic.ar_synopsis.isEmpty) {
+        final translated = await translateComics([comic]);
+        map[KeyNames.ar_synopsis] = translated.first.ar_synopsis;
+      }
       await _comicsTable.update(map).eq(KeyNames.ani_id, comic.aniId);
     } catch (e) {
       log(e.toString());
@@ -173,15 +206,17 @@ class ComicsDb {
         final data = await searchMalApi(searchQuery: query, limit: limit);
         final comics =
             data.map((comic) => ComicModel.fromMap(comic as Map<String, dynamic>)).toSet().toList();
-        List<ComicModel> finalComics = [];
+
+        List<ComicModel> idsComics = [];
         for (final c in comics) {
-          finalComics.add(makeIdForComic(c));
+          idsComics.add(makeIdForComic(c));
         }
+        List<ComicModel> finalComics = await translateComics(idsComics);
         _ref.read(manhwaSearchStateProvider.notifier).updateComics(finalComics);
         _ref.read(searchGlobalProvider.notifier).state = false;
         _ref.read(manhwaSearchStateProvider.notifier).handleLoading(false);
         _ref.read(manhwaSearchStateProvider.notifier).handleError(null);
-        await insertComics(finalComics);
+        await insertComics(idsComics);
         return comics;
       }
 
