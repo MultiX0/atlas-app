@@ -4,7 +4,6 @@ import 'package:atlas_app/features/comics/models/comic_model.dart';
 import 'package:atlas_app/features/comics/providers/providers.dart';
 import 'package:atlas_app/features/comics/widgets/manhwa_data_body.dart';
 import 'package:atlas_app/features/comics/widgets/manhwa_data_header.dart';
-import 'package:atlas_app/features/comics/widgets/manhwa_top_bar_info.dart';
 import 'package:atlas_app/imports.dart';
 
 class ManhwaPage extends ConsumerStatefulWidget {
@@ -41,41 +40,10 @@ class _ManhwaPageState extends ConsumerState<ManhwaPage> {
     return SafeArea(
       child: NestedScrollView(
         headerSliverBuilder: ((context, innerBoxIsScrolled) {
-          return [
-            const ManhwaDataHeader(),
-            // if (comic.englishTitle.length < 50)
-            //   SliverPersistentHeader(
-            //     delegate: _CondensedHeaderDelegate(comic: comic, visible: innerBoxIsScrolled),
-            //     pinned: true,
-            //   ),
-          ];
+          return [const ManhwaDataHeader()];
         }),
         body: const ManhwaDataBody(),
       ),
     );
-  }
-}
-
-// ignore: unused_element
-class _CondensedHeaderDelegate extends SliverPersistentHeaderDelegate {
-  final ComicModel comic;
-  final bool visible;
-
-  _CondensedHeaderDelegate({required this.comic, required this.visible});
-
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return ManhwaTopBarInfo(visible: visible);
-  }
-
-  @override
-  double get maxExtent => visible ? 50.0 : 0.0;
-
-  @override
-  double get minExtent => visible ? 50.0 : 0.0;
-
-  @override
-  bool shouldRebuild(covariant _CondensedHeaderDelegate oldDelegate) {
-    return oldDelegate.visible != visible || oldDelegate.comic != comic;
   }
 }

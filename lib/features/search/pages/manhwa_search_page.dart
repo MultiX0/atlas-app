@@ -1,3 +1,4 @@
+import 'package:atlas_app/core/common/widgets/loader.dart';
 import 'package:atlas_app/features/navs/navs.dart';
 import 'package:atlas_app/features/search/providers/manhwa_search_state.dart';
 import 'package:atlas_app/imports.dart';
@@ -12,7 +13,7 @@ class ManhwaSearchPage extends ConsumerWidget {
 
     final comics = state.comics;
     if (state.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Loader();
     }
 
     if (state.error != null) {
@@ -20,7 +21,19 @@ class ManhwaSearchPage extends ConsumerWidget {
     }
 
     if (comics.isEmpty) {
-      return const Center(child: Text("No Data"));
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset('assets/images/no_data_cry_.gif', height: 130),
+            const SizedBox(height: 15),
+            const Text(
+              "سجل البحث فارغ",
+              style: TextStyle(fontFamily: arabicAccentFont, fontSize: 18),
+            ),
+          ],
+        ),
+      );
     }
 
     return GridView.count(

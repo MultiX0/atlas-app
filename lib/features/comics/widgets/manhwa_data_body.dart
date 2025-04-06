@@ -1,10 +1,7 @@
 import 'package:atlas_app/core/common/utils/see_more_text.dart';
-import 'package:atlas_app/features/auth/providers/user_state.dart';
-import 'package:atlas_app/features/comics/models/comic_model.dart';
 import 'package:atlas_app/features/comics/providers/providers.dart';
-import 'package:atlas_app/features/navs/navs.dart';
+import 'package:atlas_app/features/comics/widgets/reviews_widget.dart';
 import 'package:atlas_app/imports.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ManhwaDataBody extends ConsumerStatefulWidget {
@@ -18,135 +15,23 @@ class _ManhwaDataBodyState extends ConsumerState<ManhwaDataBody> {
   @override
   Widget build(BuildContext context) {
     final comic = ref.watch(selectedComicProvider)!;
-    final me = ref.watch(userState);
     final seeMoreTextColor =
         comic.color == null ? AppColors.primary.withValues(alpha: .7) : HexColor(comic.color!);
-    return ListView(
-      padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 15),
-      children: [
-        buildCard(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              buildStatisticsColumn(title: "منشور", value: "21.7K"),
-              buildStatisticsColumn(title: "مشاهدة", value: "16.5K"),
-              buildStatisticsColumn(title: "مراجعة", value: "1.2K"),
-            ],
+    return RepaintBoundary(
+      child: ListView(
+        padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 15),
+        children: [
+          buildCard(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                buildStatisticsColumn(title: "منشور", value: "21.7K"),
+                buildStatisticsColumn(title: "مشاهدة", value: "16.5K"),
+                buildStatisticsColumn(title: "مراجعة", value: "1.2K"),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: 10),
-        buildCard(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const LanguageText(
-                accent: true,
-                "ملخص",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  fontFamily: arabicAccentFont,
-                ),
-              ),
-              const SizedBox(height: 5),
-              SeeMoreWidget(
-                textDirection: TextDirection.rtl,
-
-                comic.ar_synopsis.trim().isEmpty
-                    ? "لايوجد ملخص لهذا العمل, نحن نعمل على اضافته حاليا"
-                    : comic.ar_synopsis.trim(),
-                textStyle: const TextStyle(
-                  color: AppColors.mutedSilver,
-                  fontFamily: arabicPrimaryFont,
-                  fontSize: 14,
-                ),
-
-                seeMoreStyle: TextStyle(
-                  color: seeMoreTextColor,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: accentFont,
-                ),
-                seeLessStyle: TextStyle(
-                  color: seeMoreTextColor,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: accentFont,
-                ),
-
-                seeMoreText: "  عرض المزيد",
-                seeLessText: "  عرض أقل",
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 10),
-        buildCard(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 15),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 5),
-                child: Row(
-                  children: [
-                    const LanguageText(
-                      accent: true,
-
-                      "المراجعات",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        fontFamily: arabicAccentFont,
-                      ),
-                    ),
-                    const Spacer(),
-                    GestureDetector(
-                      child: const Row(
-                        children: [
-                          Text("عرض الكل", style: TextStyle(fontFamily: arabicAccentFont)),
-                          SizedBox(width: 5),
-                          Icon(LucideIcons.chevron_right),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 15),
-              Container(
-                padding: const EdgeInsets.all(16),
-
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(15),
-                  color: AppColors.scaffoldBackground,
-                  border: Border.all(color: AppColors.blackColor, width: 3),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          backgroundImage: CachedNetworkAvifImageProvider(me.user!.avatar),
-                        ),
-                        const SizedBox(width: 15),
-                        Text("@${me.user!.username}"),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      "In the beginning, I didn’t have very high expectations for any manga (much less think I would write a review for it, but look at me now lol). It never gave me the hype that anime did, especially in the case of fight scenes. In my eyes, manga was always inferior to anime, that is, until I read this…..",
-                      style: TextStyle(color: AppColors.mutedSilver),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-              buildRatingBar(comic),
-            ],
-          ),
-        ),
-        if (comic.externalLinks != null && comic.externalLinks!.isNotEmpty) ...[
           const SizedBox(height: 10),
           buildCard(
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
@@ -155,8 +40,7 @@ class _ManhwaDataBodyState extends ConsumerState<ManhwaDataBody> {
               children: [
                 const LanguageText(
                   accent: true,
-
-                  "روابط خارجية وروابط العرض",
+                  "ملخص",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
@@ -164,49 +48,81 @@ class _ManhwaDataBodyState extends ConsumerState<ManhwaDataBody> {
                   ),
                 ),
                 const SizedBox(height: 5),
-                ...comic.externalLinks!.asMap().entries.map((e) {
-                  final linksColor =
-                      comic.color != null ? HexColor(comic.color!) : AppColors.primary;
-                  final link = e.value;
-                  final i = e.key + 1;
-                  return GestureDetector(
-                    onTap: () => _launchUrl(link.url),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 5),
-                      child: Text(
-                        "$i - ${link.site}",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          decoration: TextDecoration.underline,
-                          fontFamily: enPrimaryFont,
-                          color: linksColor,
-                        ),
-                      ),
-                    ),
-                  );
-                }),
+                SeeMoreWidget(
+                  textDirection: TextDirection.rtl,
+
+                  comic.ar_synopsis.trim().isEmpty
+                      ? "لايوجد ملخص لهذا العمل, نحن نعمل على اضافته حاليا"
+                      : comic.ar_synopsis.trim(),
+                  textStyle: const TextStyle(
+                    color: AppColors.mutedSilver,
+                    fontFamily: arabicPrimaryFont,
+                    fontSize: 14,
+                  ),
+
+                  seeMoreStyle: TextStyle(
+                    color: seeMoreTextColor,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: accentFont,
+                  ),
+                  seeLessStyle: TextStyle(
+                    color: seeMoreTextColor,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: accentFont,
+                  ),
+
+                  seeMoreText: "  عرض المزيد",
+                  seeLessText: "  عرض أقل",
+                ),
               ],
             ),
           ),
+          const SizedBox(height: 10),
+          ReviewsWidget(reviews: comic.reviews ?? [], comic: comic),
+          if (comic.externalLinks != null && comic.externalLinks!.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            buildCard(
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const LanguageText(
+                    accent: true,
+
+                    "روابط خارجية وروابط العرض",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      fontFamily: arabicAccentFont,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  ...comic.externalLinks!.asMap().entries.map((e) {
+                    final linksColor =
+                        comic.color != null ? HexColor(comic.color!) : AppColors.primary;
+                    final link = e.value;
+                    final i = e.key + 1;
+                    return GestureDetector(
+                      onTap: () => _launchUrl(link.url),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        child: Text(
+                          "$i - ${link.site}",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                            fontFamily: enPrimaryFont,
+                            color: linksColor,
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ],
+              ),
+            ),
+          ],
         ],
-      ],
-    );
-  }
-
-  Widget buildRatingBar(ComicModel comic) {
-    final starColor = comic.color != null ? HexColor(comic.color!) : AppColors.primary;
-
-    return Center(
-      child: GestureDetector(
-        onTap: () => ref.read(navsProvider).goToAddComicReviewPage(),
-        child: RatingBarIndicator(
-          itemPadding: const EdgeInsets.symmetric(horizontal: 5),
-          rating: 3,
-          itemBuilder: (context, index) => Icon(Icons.star, color: starColor),
-          itemCount: 6,
-          itemSize: 40.0,
-          direction: Axis.horizontal,
-        ),
       ),
     );
   }

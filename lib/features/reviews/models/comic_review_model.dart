@@ -1,3 +1,4 @@
+import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/imports.dart';
 
 class ComicReviewModel {
@@ -12,6 +13,7 @@ class ComicReviewModel {
   final bool spoilers;
   final String review;
   final List images;
+  final UserModel? user;
   ComicReviewModel({
     required this.comicId,
     required this.images,
@@ -24,6 +26,7 @@ class ComicReviewModel {
     required this.overall,
     required this.review,
     required this.spoilers,
+    this.user,
   });
 
   ComicReviewModel copyWith({
@@ -37,6 +40,7 @@ class ComicReviewModel {
     double? overall,
     bool? spoilers,
     String? review,
+    UserModel? user,
     List? images,
   }) {
     return ComicReviewModel(
@@ -51,6 +55,7 @@ class ComicReviewModel {
       spoilers: spoilers ?? this.spoilers,
       images: images ?? this.images,
       review: review ?? this.review,
+      user: this.user,
     );
   }
 
@@ -82,6 +87,7 @@ class ComicReviewModel {
       images: List.from(map[KeyNames.images] ?? []),
       overall: map[KeyNames.overall] ?? 1.0,
       spoilers: map[KeyNames.spoilers] ?? false,
+      user: map[TableNames.users] == null ? null : UserModel.fromMap(map[TableNames.users]),
       review: map[KeyNames.review_text] ?? "",
     );
   }

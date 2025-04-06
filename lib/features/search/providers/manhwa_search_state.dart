@@ -17,7 +17,7 @@ class ManhwaSearchHelper {
     return ManhwaSearchHelper(
       comics: comics ?? this.comics,
       isLoading: isLoading ?? this.isLoading,
-      error: error ?? this.error,
+      error: error,
     );
   }
 }
@@ -45,8 +45,7 @@ class ManhwaSearchState extends StateNotifier<ManhwaSearchHelper> {
     state = state.copyWith(error: error);
   }
 
-  void search({int limit = 25}) async {
-    final more = _ref.read(searchGlobalProvider);
+  void search({int limit = 25, bool more = false}) async {
     final query = _ref.read(searchQueryProvider);
     await _ref
         .read(comicsControllerProvider.notifier)

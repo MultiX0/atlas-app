@@ -6,6 +6,7 @@ import 'package:atlas_app/features/comics/models/comic_model.dart';
 import 'package:atlas_app/features/comics/models/comic_published_model.dart';
 import 'package:atlas_app/features/comics/models/comic_titles_model.dart';
 import 'package:atlas_app/features/comics/models/genres_model.dart';
+import 'package:atlas_app/features/reviews/models/comic_review_model.dart';
 import 'package:atlas_app/features/search/providers/manhwa_search_state.dart';
 import 'package:atlas_app/features/search/providers/providers.dart';
 import 'package:atlas_app/features/translate/translate_service.dart';
@@ -26,6 +27,8 @@ class ComicsDb {
   SupabaseQueryBuilder get _comicsTable => client.from(TableNames.comics);
   SupabaseQueryBuilder get _comicsTitlesTable => client.from(TableNames.comic_titles);
   SupabaseQueryBuilder get _comicsGenresTable => client.from(TableNames.comic_genres);
+  SupabaseQueryBuilder get _comicReviewsTable => client.from(TableNames.comic_reviews);
+
   TranslationService get _translationService => TranslationService();
 
   SupabaseQueryBuilder get _comicsPublishedDateTable =>
@@ -92,6 +95,9 @@ class ComicsDb {
             if (comic.ar_synopsis.isEmpty) {
               try {
                 final ar_synopsis = await _translationService.translate('en', 'ar', comic.synopsis);
+                if (ar_synopsis.trim().toLowerCase().contains("translation failed")) {
+                  return comic.copyWith(ar_synopsis: '');
+                }
                 return comic.copyWith(ar_synopsis: ar_synopsis);
               } catch (e) {
                 log(e.toString());
@@ -112,19 +118,10 @@ class ComicsDb {
 
   Future<void> insertComics(List<ComicModel> comics) async {
     try {
+      if (comics.isEmpty) return;
       List<Map<String, dynamic>> _comics = [];
-      final _unFoundIds =
-          await client.rpc(
-                FunctionNames.check_unavailable_comics,
-                params: {'p_ani_ids': comics.map((c) => c.aniId).toList()},
-              )
-              as List;
-
-      List<int> unavailableIds =
-          _unFoundIds.map((comic) => comic["unavailable_ani_id"] as int).toList();
 
       List<ComicModel> newComics = List.from(comics);
-      newComics.retainWhere((comic) => unavailableIds.contains(comic.aniId));
 
       for (final comic in newComics) {
         // Log the mal_id to see what's happening
@@ -168,6 +165,9 @@ class ComicsDb {
   }
 
   ComicModel makeIdForComic(ComicModel comic) {
+    if (comic.comicId.trim().isNotEmpty) {
+      return comic;
+    }
     const uuid = Uuid();
     final id = uuid.v4();
     return comic.copyWith(comicId: id);
@@ -188,63 +188,192 @@ class ComicsDb {
     }
   }
 
-  Future<List<ComicModel>> searchComics(String query, {int limit = 20, more = false}) async {
+  // Main search function that orchestrates the search process
+  Future<List<ComicModel>> searchComics(String query, {int limit = 20, bool more = false}) async {
     if (query.isEmpty) return [];
     query = query.trim().toLowerCase();
-
     try {
-      _ref.read(manhwaSearchStateProvider.notifier).reset();
-      _ref.read(manhwaSearchStateProvider.notifier).handleLoading(true);
-      final comicIds = await _comicsTitlesTable
-          .select(KeyNames.comic_id)
-          .ilike(KeyNames.title, "%$query%")
-          .order(KeyNames.title, ascending: true)
-          .limit(limit);
+      _resetSearchState();
 
-      if (comicIds.isEmpty || more) {
-        log("our database have 0 results, switch to mal");
-        final data = await searchMalApi(searchQuery: query, limit: limit);
-        final comics =
-            data.map((comic) => ComicModel.fromMap(comic as Map<String, dynamic>)).toSet().toList();
+      // Set the search mode at the beginning
+      // If more=true, we're doing an API search
+      // If more=false, we're doing a local DB search
+      _ref.read(searchGlobalProvider.notifier).state = !more;
 
-        List<ComicModel> idsComics = [];
-        for (final c in comics) {
-          idsComics.add(makeIdForComic(c));
+      // Try to search in local database first (if not explicitly requesting API)
+      if (!more) {
+        final comicIds = await _searchComicsInLocalDb(query, limit);
+
+        // If we found results in local DB, return them
+        if (comicIds.isNotEmpty) {
+          return await _fetchComicDetailsFromLocalDb(comicIds);
         }
-        List<ComicModel> finalComics = await translateComics(idsComics);
-        _ref.read(manhwaSearchStateProvider.notifier).updateComics(finalComics);
-        _ref.read(searchGlobalProvider.notifier).state = false;
-        _ref.read(manhwaSearchStateProvider.notifier).handleLoading(false);
-        _ref.read(manhwaSearchStateProvider.notifier).handleError(null);
-        await insertComics(idsComics);
-        return comics;
       }
 
-      _ref.read(searchGlobalProvider.notifier).state = true;
-      final ids = (comicIds as List).map((row) => row[KeyNames.comic_id] ?? "").toList();
-      if (ids.isEmpty) return [];
-      final data = await _comicsTable
-          .select('''
-            *,
-            ${TableNames.comic_titles} (*),
-            ${TableNames.comic_published_dates} (*),
-            ${TableNames.comic_genres} (
-              ${TableNames.genres} (*)
-            )
-          ''')
-          .inFilter('id', ids);
-
-      log("found on our db");
-
-      final _data = data.map((comic) => ComicModel.fromMap(comic)).toList();
-      _ref.read(manhwaSearchStateProvider.notifier).updateComics(_data);
-      _ref.read(manhwaSearchStateProvider.notifier).handleLoading(false);
-      return _data;
+      // If nothing found locally or more results requested, search using API
+      return await _fetchComicsFromExternalApi(query, limit);
     } catch (e) {
-      _ref.read(manhwaSearchStateProvider.notifier).handleLoading(false);
-      _ref.read(manhwaSearchStateProvider.notifier).handleError(e.toString());
-      log(e.toString());
+      _handleSearchError(e.toString());
       return [];
+    }
+  }
+
+  // Reset search state before starting a new search
+  void _resetSearchState() {
+    _ref.read(manhwaSearchStateProvider.notifier).reset();
+    _ref.read(manhwaSearchStateProvider.notifier).handleLoading(true);
+  }
+
+  // Search for comic IDs in the local database
+  Future<List> _searchComicsInLocalDb(String query, int limit) async {
+    final comicIds = await _comicsTitlesTable
+        .select(KeyNames.comic_id)
+        .textSearch(KeyNames.title, query, type: TextSearchType.plain)
+        .order(KeyNames.title, ascending: true)
+        .limit(limit);
+
+    if (comicIds.isEmpty) return [];
+    return (comicIds as List).map((row) => row[KeyNames.comic_id] ?? "").toList();
+  }
+
+  // Fetch comics from external API, process and save them
+  Future<List<ComicModel>> _fetchComicsFromExternalApi(String query, int limit) async {
+    log("our database have 0 results, switch to mal");
+
+    // Fetch from external API
+    final data = await searchMalApi(searchQuery: query, limit: limit);
+    final comics =
+        data.map((comic) => ComicModel.fromMap(comic as Map<String, dynamic>)).toSet().toList();
+
+    final alreadyAvailableIds = await _getIdsOfAvailableData(comics);
+    final availableComics = await fetchComicsFromDbByAniId(alreadyAvailableIds);
+
+    // Process comics
+    List<ComicModel> idsComics = [];
+    for (final c in comics) {
+      idsComics.add(makeIdForComic(c));
+    }
+
+    // Translate and save comics
+    List<ComicModel> finalComics = await translateComics(idsComics);
+    for (final c in availableComics) {
+      finalComics.removeWhere((com) => com.aniId == c.aniId);
+      idsComics.removeWhere((com) => com.aniId == c.aniId);
+    }
+
+    finalComics.addAll(availableComics);
+    _updateStateAfterApiSearch(finalComics);
+
+    await insertComics(idsComics);
+
+    // Update state
+
+    return comics;
+  }
+
+  Future<List<int>> _getIdsOfAvailableData(List<ComicModel> comics) async {
+    final _unFoundIds =
+        await client.rpc(
+              FunctionNames.check_unavailable_comics,
+              params: {'p_ani_ids': comics.map((c) => c.aniId).toList()},
+            )
+            as List;
+
+    List<int> unavailableIds =
+        _unFoundIds.map((comic) => comic["unavailable_ani_id"] as int).toList();
+
+    List<ComicModel> newComics = List.from(comics);
+    newComics.retainWhere((comic) => !(unavailableIds.contains(comic.aniId)));
+    return newComics.map((c) => c.aniId).toList();
+  }
+
+  // Update app state after API search
+  void _updateStateAfterApiSearch(List<ComicModel> comics) {
+    _ref.read(manhwaSearchStateProvider.notifier).updateComics(comics);
+    _ref.read(searchGlobalProvider.notifier).state = false; // This should be false for API results
+    _ref.read(manhwaSearchStateProvider.notifier).handleLoading(false);
+    _ref.read(manhwaSearchStateProvider.notifier).handleError(null);
+  }
+
+  // Fetch detailed comic data from local database using IDs
+  Future<List<ComicModel>> _fetchComicDetailsFromLocalDb(List ids) async {
+    if (ids.isEmpty) return [];
+
+    final data = await _comicsTable
+        .select('''
+      *,
+      ${TableNames.comic_titles} (*),
+      ${TableNames.comic_published_dates} (*),
+      ${TableNames.comic_genres} (
+        ${TableNames.genres} (*)
+      ),
+      ${TableNames.comic_reviews} (
+        *,
+        ${TableNames.users} (*)
+      )
+      ''')
+        .inFilter('id', ids);
+
+    log("found on our db");
+
+    // IMPORTANT: For local database results, we should set searchGlobalProvider to true
+    // This allows the "ألا ترى ما تبحث عنه؟" text to appear
+    _ref.read(searchGlobalProvider.notifier).state = true;
+
+    final comics = data.map((comic) => ComicModel.fromMap(comic)).toList();
+
+    // Update state
+    _ref.read(manhwaSearchStateProvider.notifier).updateComics(comics);
+    _ref.read(manhwaSearchStateProvider.notifier).handleLoading(false);
+
+    return comics;
+  }
+
+  // Handle search errors
+  void _handleSearchError(String errorMessage) {
+    _ref.read(manhwaSearchStateProvider.notifier).handleLoading(false);
+    _ref.read(manhwaSearchStateProvider.notifier).handleError(errorMessage);
+    log(errorMessage);
+  }
+
+  Future<List<ComicModel>> fetchComicsFromDbByAniId(List ids) async {
+    if (ids.isEmpty) return [];
+
+    final data = await _comicsTable
+        .select('''
+      *,
+      ${TableNames.comic_titles} (*),
+      ${TableNames.comic_published_dates} (*),
+      ${TableNames.comic_genres} (
+        ${TableNames.genres} (*)
+      ),
+      ${TableNames.comic_reviews} (
+        *,
+        ${TableNames.users} (*)
+      )
+      ''')
+        .inFilter(KeyNames.ani_id, ids);
+
+    final comics = data.map((comic) => ComicModel.fromMap(comic)).toList();
+    return comics;
+  }
+
+  Future<ComicReviewModel?> getComicReview({
+    required String userId,
+    required String comicId,
+  }) async {
+    try {
+      final data =
+          await _comicReviewsTable
+              .select("*,${TableNames.users}")
+              .eq(KeyNames.userId, userId)
+              .eq(KeyNames.comic_id, comicId)
+              .maybeSingle();
+      if (data == null) return null;
+      return ComicReviewModel.fromMap(data);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
     }
   }
 
@@ -257,14 +386,16 @@ class ComicsDb {
         return;
       }
 
-      final comicModel = await getComicById(comic.aniId);
-      log("updating { ${comicModel.aniId} } ...");
-      _ref
-          .read(manhwaSearchStateProvider.notifier)
-          .updateSpecificComic(comicModel.copyWith(lastUpdateAt: DateTime.now().toUtc()));
-      await updateComic(
-        comicModel.copyWith(lastUpdateAt: DateTime.now().toUtc(), comicId: comic.comicId),
+      ComicModel comicModel = await getComicById(comic.aniId);
+      comicModel = comicModel.copyWith(
+        lastUpdateAt: DateTime.now().toUtc(),
+        comicId: comic.comicId,
+        ar_synopsis: comic.ar_synopsis,
+        reviews: comic.reviews,
       );
+      log("updating { ${comicModel.aniId} } ...");
+      _ref.read(manhwaSearchStateProvider.notifier).updateSpecificComic(comicModel);
+      await updateComic(comicModel);
     } catch (e) {
       log(e.toString());
       rethrow;

@@ -40,17 +40,44 @@ class _SearchPageState extends ConsumerState<SearchPage> with SingleTickerProvid
     });
   }
 
-  void onTap() {
+  // Perform search with specified source
+  void performSearch({bool useApi = false}) {
     if (_tabController.index == 0) {
-      ref.read(searchQueryProvider.notifier).state = _searchController.text.trim();
-      ref.read(manhwaSearchStateProvider.notifier).search(limit: 35);
+      final searchText = _searchController.text.trim();
+      if (searchText.isNotEmpty) {
+        ref.read(searchQueryProvider.notifier).state = searchText;
+        if (useApi) {
+          ref.read(searchGlobalProvider.notifier).state = false;
+        } else {
+          // Reset to local DB search
+          ref.read(searchGlobalProvider.notifier).state = true;
+        }
+
+        ref.read(manhwaSearchStateProvider.notifier).search(limit: 15, more: useApi);
+      }
     }
     _focusNode.unfocus();
   }
 
+  // Normal search button action - always starts with local DB
+  void onTap() {
+    performSearch(useApi: false);
+  }
+
+  // Action for "ألا ترى ما تبحث عنه؟" - specifically uses API
+  void onSearchMoreTap() {
+    performSearch(useApi: true);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final more = ref.watch(searchGlobalProvider);
+    final manhwaState = ref.watch(manhwaSearchStateProvider);
+    final hasLocalResults = manhwaState.comics.isNotEmpty;
+    final isApiSearch = !ref.watch(searchGlobalProvider);
+
+    // Only show "search more" when we have local results and haven't already used API
+    final showSearchMoreOption = hasLocalResults && !isApiSearch;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("البحث"),
@@ -71,7 +98,6 @@ class _SearchPageState extends ConsumerState<SearchPage> with SingleTickerProvid
             child: Row(
               children: [
                 buildSearchField(),
-
                 const SizedBox(width: 8),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -86,19 +112,17 @@ class _SearchPageState extends ConsumerState<SearchPage> with SingleTickerProvid
               ],
             ),
           ),
-          if (more && index == 0) ...[
+
+          // Only show "ألا ترى ما تبحث عنه؟" when we have local results and haven't already used API
+          if (showSearchMoreOption && index == 0) ...[
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 15),
               child: InkWell(
-                onTap: () {
-                  ref.read(searchGlobalProvider.notifier).state = true;
-                  onTap();
-                },
+                onTap: onSearchMoreTap,
                 child: const Align(
                   alignment: Alignment.centerLeft,
                   child: LanguageText(
                     textAlign: TextAlign.start,
-
                     "ألا ترى ما تبحث عنه؟",
                     style: TextStyle(
                       fontFamily: accentFont,
@@ -130,8 +154,8 @@ class _SearchPageState extends ConsumerState<SearchPage> with SingleTickerProvid
         raduis: 12,
         focusNode: _focusNode,
         controller: _searchController,
-
         hintText: "عن ماذا تبحث",
+        onFieldSubmitted: (_) => onTap(), // Allow searching on Enter/Submit
         onChanged: (val) {},
       ),
     );

@@ -3,6 +3,7 @@
 import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/features/comics/models/comic_published_model.dart';
 import 'package:atlas_app/features/comics/models/external_links_model.dart';
+import 'package:atlas_app/features/reviews/models/comic_review_model.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:flutter/foundation.dart';
 
@@ -29,6 +30,7 @@ class ComicModel {
   final String ar_synopsis;
   final String? color;
   final String image;
+  final List<ComicReviewModel>? reviews;
   ComicModel({
     required this.aniId,
     required this.englishTitle,
@@ -49,6 +51,7 @@ class ComicModel {
     required this.image,
     required this.ar_synopsis,
     this.externalLinks,
+    this.reviews,
   });
 
   ComicModel copyWith({
@@ -73,6 +76,7 @@ class ComicModel {
     String? color,
     String? ar_synopsis,
     List<ExternalLinksModel>? externalLinks,
+    List<ComicReviewModel>? reviews,
   }) {
     return ComicModel(
       aniId: aniId ?? this.aniId,
@@ -94,6 +98,7 @@ class ComicModel {
       externalLinks: externalLinks ?? this.externalLinks,
       color: color ?? this.color,
       ar_synopsis: ar_synopsis ?? this.ar_synopsis,
+      reviews: reviews ?? this.reviews,
     );
   }
 
@@ -147,6 +152,12 @@ class ComicModel {
       volumes: map[KeyNames.volumes],
       status: map[KeyNames.status] ?? "",
       score: map[KeyNames.score] ?? 0.0,
+      reviews:
+          map[TableNames.comic_reviews] == null
+              ? null
+              : List<Map<String, dynamic>>.from(
+                map[TableNames.comic_reviews],
+              ).map((review) => ComicReviewModel.fromMap(review)).toList(),
       color: map[KeyNames.theme_color],
       ar_synopsis: map[KeyNames.ar_synopsis] ?? "",
       externalLinks:
