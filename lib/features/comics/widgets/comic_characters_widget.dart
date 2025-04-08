@@ -1,5 +1,5 @@
-import 'package:atlas_app/features/characters/character_model.dart';
-import 'package:atlas_app/features/characters/pages/comic_characters.dart';
+import 'package:atlas_app/features/characters/models/character_model.dart';
+import 'package:atlas_app/features/characters/models/comic_characters_model.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 

@@ -1,7 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 
 import 'package:atlas_app/core/common/constants/table_names.dart';
-import 'package:atlas_app/features/characters/pages/comic_characters.dart';
+import 'package:atlas_app/features/characters/models/comic_characters_model.dart';
 import 'package:atlas_app/features/comics/models/comic_published_model.dart';
 import 'package:atlas_app/features/comics/models/external_links_model.dart';
 import 'package:atlas_app/features/reviews/models/comic_review_model.dart';

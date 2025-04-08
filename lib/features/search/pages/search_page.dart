@@ -123,7 +123,7 @@ class _SearchPageState extends ConsumerState<SearchPage> with SingleTickerProvid
                   alignment: Alignment.centerLeft,
                   child: LanguageText(
                     textAlign: TextAlign.start,
-                    "ألا ترى ما تبحث عنه؟",
+                    "ألا ترى ما تبحث عنه؟ (اضغط هنا)",
                     style: TextStyle(
                       fontFamily: accentFont,
                       fontSize: 16,

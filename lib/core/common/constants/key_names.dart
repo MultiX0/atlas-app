@@ -36,7 +36,7 @@ class KeyNames {
   static const name = 'name';
   static const novel_id = 'novel_id';
   static const story = 'story';
-  // static const user_id = 'user_id';
+  static const ar_description = 'ar_description';
   static const poster = 'poster';
   static const post_id = 'post_id';
   static const content = 'content';
@@ -71,4 +71,5 @@ class KeyNames {
   static const birth_day = 'birth_day';
   static const character_id = 'character_id';
   static const role = 'role';
+  static const character = 'character';
 }
