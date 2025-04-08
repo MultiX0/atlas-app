@@ -23,7 +23,7 @@ class LanguageText extends StatelessWidget {
       alignment: languageCode == 'ar' ? Alignment.centerRight : Alignment.centerLeft,
       child: Text(
         text,
-        style: style?.copyWith(fontFamily: accent ? arabicAccentFont : arabicAccentFont),
+        style: style?.copyWith(fontFamily: accent ? arabicAccentFont : arabicPrimaryFont),
 
         textDirection: languageCode == 'ar' ? ui.TextDirection.rtl : ui.TextDirection.ltr,
         textAlign: textAlign,

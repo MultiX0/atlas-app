@@ -1,6 +1,9 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/image_to_avif_convert.dart';
 import 'package:atlas_app/core/common/utils/upload_storage.dart';
 import 'package:atlas_app/features/reviews/db/reviews_db.dart';
@@ -52,12 +55,12 @@ class ReviewsController extends StateNotifier<bool> {
       );
 
       await db.insertComicReview(review);
-      // ignore: use_build_context_synchronously
       context.loaderOverlay.hide();
+      CustomToast.success("تم نشر مراجعتك بنجاح");
+      context.pop();
       state = false;
     } catch (e) {
       state = false;
-      // ignore: use_build_context_synchronously
       context.loaderOverlay.hide();
 
       log(e.toString());

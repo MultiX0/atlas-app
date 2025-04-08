@@ -1,5 +1,6 @@
 import 'package:atlas_app/core/common/utils/app_date_format.dart';
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
+import 'package:atlas_app/core/common/utils/manhwa_status_arabic.dart';
 import 'package:atlas_app/features/comics/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -37,21 +38,19 @@ class _ManhwaDataHeaderState extends ConsumerState<ManhwaDataHeader> {
                   height: size.width * 0.55,
                 ),
               ],
-              Positioned.fill(
-                child: Container(
-                  height: size.width * 0.6,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        comic.banner != null
-                            ? AppColors.scaffoldBackground.withValues(alpha: .5)
-                            : AppColors.primaryAccent,
-                        AppColors.scaffoldBackground,
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      stops: [0.1, comic.banner != null ? 0.8 : 0.6],
-                    ),
+              Container(
+                height: size.width * 0.6,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      comic.banner != null
+                          ? AppColors.scaffoldBackground.withValues(alpha: .5)
+                          : AppColors.primaryAccent,
+                      AppColors.scaffoldBackground,
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    stops: [0.1, comic.banner != null ? 0.8 : 0.6],
                   ),
                 ),
               ),
@@ -115,22 +114,38 @@ class _ManhwaDataHeaderState extends ConsumerState<ManhwaDataHeader> {
                                     ),
                                   ),
                                 ),
-                                Text(
-                                  "Published: ${comic.publishedDate.from == null ? "N/A" : appDateFormat(comic.publishedDate.from!)}",
+                                Text.rich(
+                                  textDirection: TextDirection.rtl,
+                                  TextSpan(
+                                    text: "تم تنشرها في: ",
+                                    style: const TextStyle(fontFamily: arabicAccentFont),
+                                    children: [
+                                      TextSpan(
+                                        style: const TextStyle(fontFamily: enAccentFont),
+                                        text:
+                                            comic.publishedDate.from == null
+                                                ? "N/A"
+                                                : appDateFormat(comic.publishedDate.from!),
+                                      ),
+                                    ],
+                                  ),
                                   style: const TextStyle(fontFamily: enPrimaryFont),
                                 ),
                                 Text(
-                                  "Status: ${comic.status.toLowerCase()}",
+                                  "الحالة: ${arabicStatus(comic.status)}",
 
-                                  style: const TextStyle(fontFamily: enPrimaryFont),
+                                  style: const TextStyle(fontFamily: arabicAccentFont),
                                 ),
                                 const SizedBox(height: 10),
                                 Container(
                                   padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
                                   decoration: const BoxDecoration(color: AppColors.primaryAccent),
                                   child: Text(
-                                    "Chapters: ${comic.chapters ?? "uknown"}",
-                                    style: const TextStyle(fontSize: 13, fontFamily: enPrimaryFont),
+                                    "عدد الفصول: ${comic.chapters ?? "غير معروف"}",
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontFamily: arabicPrimaryFont,
+                                    ),
                                   ),
                                 ),
                               ],

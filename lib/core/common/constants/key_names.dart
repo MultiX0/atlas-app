@@ -61,4 +61,14 @@ class KeyNames {
   static const spoilers = 'spoilers';
   static const images = 'images';
   static const ar_synopsis = 'ar_synopsis';
+  static const alternative_names = 'alternative_names';
+  static const gender = 'gender';
+  static const age = 'age';
+  static const blood_type = 'blood_type';
+  static const description = 'description';
+  static const birth_year = 'birth_year';
+  static const birth_month = 'birth_month';
+  static const birth_day = 'birth_day';
+  static const character_id = 'character_id';
+  static const role = 'role';
 }

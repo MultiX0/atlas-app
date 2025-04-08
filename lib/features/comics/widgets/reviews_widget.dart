@@ -109,7 +109,10 @@ class _ReviewsWidgetState extends ConsumerState<ReviewsWidget> {
         color: AppColors.scaffoldBackground,
         border: Border.all(color: AppColors.blackColor, width: 3),
       ),
-      child: const LanguageText("لاتوجد أي تقييمات حاليا لهذا العمل, كن أول من يقيمه!"),
+      child: const LanguageText(
+        "لاتوجد أي تقييمات حاليا لهذا العمل, كن أول من يقيمه!",
+        style: TextStyle(color: AppColors.mutedSilver),
+      ),
     );
   }
 

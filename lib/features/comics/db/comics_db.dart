@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'package:atlas_app/core/common/constants/function_names.dart';
 import 'package:atlas_app/core/common/constants/genres_json.dart';
 import 'package:atlas_app/core/common/constants/table_names.dart';
+import 'package:atlas_app/features/characters/db/characters_db.dart';
 import 'package:atlas_app/features/comics/models/comic_model.dart';
 import 'package:atlas_app/features/comics/models/comic_published_model.dart';
 import 'package:atlas_app/features/comics/models/comic_titles_model.dart';
@@ -88,10 +89,8 @@ class ComicsDb {
 
   Future<List<ComicModel>> translateComics(List<ComicModel> comics) async {
     try {
-      // Create a list of Futures for each comic translation
       List<Future<ComicModel>> translationFutures =
           comics.map((comic) async {
-            // Only translate if ar_synopsis is empty
             if (comic.ar_synopsis.isEmpty) {
               try {
                 final ar_synopsis = await _translationService.translate('en', 'ar', comic.synopsis);
@@ -101,14 +100,13 @@ class ComicsDb {
                 return comic.copyWith(ar_synopsis: ar_synopsis);
               } catch (e) {
                 log(e.toString());
-                return comic; // Return original comic if translation fails
+                return comic;
               }
             } else {
-              return comic; // Return original comic if translation already exists
+              return comic;
             }
           }).toList();
 
-      // Wait for all translations to complete in parallel
       return await Future.wait(translationFutures);
     } catch (e) {
       log(e.toString());
@@ -116,7 +114,7 @@ class ComicsDb {
     }
   }
 
-  Future<void> insertComics(List<ComicModel> comics) async {
+  Future<void> insertComics(List<ComicModel> comics, List<Map<String, dynamic>> characters) async {
     try {
       if (comics.isEmpty) return;
       List<Map<String, dynamic>> _comics = [];
@@ -153,6 +151,7 @@ class ComicsDb {
             insertComicTitles(comic.titles, comic.comicId),
             insertComicsGenres(comic.genres, comic.comicId),
             insertComicsPublishDate(comic.publishedDate, comic.comicId),
+            _ref.read(characterDbProvider).handleInsertCharacters(comic, characters),
           ]);
         } catch (e) {
           continue;
@@ -173,7 +172,7 @@ class ComicsDb {
     return comic.copyWith(comicId: id);
   }
 
-  Future<void> updateComic(ComicModel comic) async {
+  Future<void> updateComic(ComicModel comic, List<Map<String, dynamic>> characters) async {
     try {
       Map<String, dynamic> map = comic.toMap();
       map.remove(KeyNames.id);
@@ -181,7 +180,11 @@ class ComicsDb {
         final translated = await translateComics([comic]);
         map[KeyNames.ar_synopsis] = translated.first.ar_synopsis;
       }
-      await _comicsTable.update(map).eq(KeyNames.ani_id, comic.aniId);
+
+      Future.wait([
+        _comicsTable.update(map).eq(KeyNames.ani_id, comic.aniId),
+        _ref.read(characterDbProvider).handleInsertCharacters(comic, characters),
+      ]);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -242,8 +245,10 @@ class ComicsDb {
 
     // Fetch from external API
     final data = await searchMalApi(searchQuery: query, limit: limit);
-    final comics =
-        data.map((comic) => ComicModel.fromMap(comic as Map<String, dynamic>)).toSet().toList();
+
+    final characters = extractCharactersFromProcessedComics(data as List<Map<String, dynamic>>);
+
+    final comics = data.map((comic) => ComicModel.fromMap(comic)).toSet().toList();
 
     final alreadyAvailableIds = await _getIdsOfAvailableData(comics);
     final availableComics = await fetchComicsFromDbByAniId(alreadyAvailableIds);
@@ -264,7 +269,7 @@ class ComicsDb {
     finalComics.addAll(availableComics);
     _updateStateAfterApiSearch(finalComics);
 
-    await insertComics(idsComics);
+    await insertComics(idsComics, characters);
 
     // Update state
 
@@ -310,6 +315,9 @@ class ComicsDb {
       ${TableNames.comic_reviews} (
         *,
         ${TableNames.users} (*)
+      ),
+      ${TableNames.comic_characters} (
+       *,${TableNames.characters}(*)
       )
       ''')
         .inFilter('id', ids);
@@ -350,6 +358,9 @@ class ComicsDb {
       ${TableNames.comic_reviews} (
         *,
         ${TableNames.users} (*)
+      ),
+      ${TableNames.comic_characters} (
+        *, ${TableNames.characters}(*)
       )
       ''')
         .inFilter(KeyNames.ani_id, ids);
@@ -386,16 +397,19 @@ class ComicsDb {
         return;
       }
 
-      ComicModel comicModel = await getComicById(comic.aniId);
+      final comicData = await getComicById(comic.aniId);
+      ComicModel comicModel = ComicModel.fromMap(comicData);
+      final characters = extractCharactersFromProcessedComics([comicData]);
       comicModel = comicModel.copyWith(
         lastUpdateAt: DateTime.now().toUtc(),
         comicId: comic.comicId,
         ar_synopsis: comic.ar_synopsis,
         reviews: comic.reviews,
+        characters: comic.characters,
       );
       log("updating { ${comicModel.aniId} } ...");
       _ref.read(manhwaSearchStateProvider.notifier).updateSpecificComic(comicModel);
-      await updateComic(comicModel);
+      await updateComic(comicModel, characters);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -459,6 +473,33 @@ class ComicsDb {
           color
         }
         bannerImage
+characters {
+  edges {
+    role
+    node {
+      id
+      name {
+        full
+        native
+        alternative
+      }
+      image {
+        large
+        medium
+      }
+      gender
+      dateOfBirth {
+        year
+        month
+        day
+      }
+      age
+      bloodType
+      description(asHtml: true)
+      siteUrl
+    }
+  }
+}
       }
     }
   }
@@ -480,7 +521,7 @@ class ComicsDb {
     }
   }
 
-  Future<ComicModel> getComicById(int id) async {
+  Future<Map<String, dynamic>> getComicById(int id) async {
     const String query = '''
     query GetMangaById(\$id: Int) {
       Media(id: \$id, type: MANGA) {
@@ -536,6 +577,34 @@ class ComicsDb {
           color
         }
         bannerImage
+characters {
+  edges {
+    role
+    node {
+      id
+      name {
+        full
+        native
+        alternative
+      }
+      image {
+        large
+        medium
+      }
+      gender
+      dateOfBirth {
+        year
+        month
+        day
+      }
+      age
+      bloodType
+      description(asHtml: true)
+      siteUrl
+    }
+  }
+}
+
       }
     }
   ''';
@@ -549,7 +618,7 @@ class ComicsDb {
         final media = res.data["data"]["Media"];
         final comicMap = Map<String, dynamic>.from(media);
         final comicMapFixed = filterComics([comicMap]);
-        return ComicModel.fromMap(comicMapFixed.first);
+        return comicMapFixed.first;
       }
 
       throw DioException(requestOptions: res.requestOptions);
@@ -572,6 +641,27 @@ class ComicsDb {
         final genreMap = {
           for (var genre in genres) genre["name"].toString().toLowerCase(): genre["id"],
         };
+
+        final characters =
+            List<Map<String, dynamic>>.from(comic["characters"]["edges"]).map((c) {
+              final node = c["node"];
+              return {
+                "role": c["role"],
+                "character": {
+                  "id": node["id"],
+                  "full_name": node["name"]["full"],
+                  "alternative_names": List<String>.from(node["name"]["alternative"] ?? []),
+                  "gender": node["gender"],
+                  "age": node["age"],
+                  "blood_type": node["bloodType"],
+                  "description": _stripHtmlTags(node["description"]),
+                  "image": node["image"]?["large"] ?? node["image"]?["medium"],
+                  "birth_year": node["dateOfBirth"]["year"],
+                  "birth_month": node["dateOfBirth"]["month"],
+                  "birth_day": node["dateOfBirth"]["day"],
+                },
+              };
+            }).toList();
 
         final enrichedGenres =
             (comic["genres"] as List<dynamic>)
@@ -644,6 +734,7 @@ class ComicsDb {
           "explicit_genres": [],
           "themes": _extractThemes(comic["tags"]),
           "demographics": [],
+          "characters": characters,
         };
 
         unique.add(convertedComic);
@@ -651,6 +742,35 @@ class ComicsDb {
     }
 
     return unique;
+  }
+
+  List<Map<String, dynamic>> extractCharactersFromProcessedComics(
+    List<Map<String, dynamic>> processedComics,
+  ) {
+    List<Map<String, dynamic>> _data = [];
+    for (final comic in processedComics) {
+      final List<Map<String, dynamic>> characters = comic["characters"];
+      _data.add({"comic_ani_id": comic["ani_id"], "characters": characters});
+    }
+    return _data;
+  }
+
+  List<Map<String, dynamic>> extractCharactersFromDBComics(List<ComicModel> comics) {
+    List<Map<String, dynamic>> _data = [];
+    List<Map<String, dynamic>> _characters = [];
+    for (final comic in comics) {
+      _characters.clear();
+      final comicCharacters = comic.characters ?? [];
+      if (comicCharacters.isEmpty) continue;
+      for (final comicCharacter in comicCharacters) {
+        // log("${comicCharacter.character?.fullName}");
+
+        _characters.add(comicCharacter.character!.toJson());
+      }
+      _data.add({"comic_ani_id": comic.aniId, "characters": _characters});
+    }
+
+    return _data;
   }
 
   String? _formatDate(Map<String, dynamic>? date) {

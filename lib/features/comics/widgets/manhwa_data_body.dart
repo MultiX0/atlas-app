@@ -1,5 +1,6 @@
 import 'package:atlas_app/core/common/utils/see_more_text.dart';
 import 'package:atlas_app/features/comics/providers/providers.dart';
+import 'package:atlas_app/features/comics/widgets/comic_characters_widget.dart';
 import 'package:atlas_app/features/comics/widgets/reviews_widget.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -77,6 +78,12 @@ class _ManhwaDataBodyState extends ConsumerState<ManhwaDataBody> {
               ],
             ),
           ),
+
+          if (comic.characters != null && comic.characters!.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            ComicCharactersWidget(characters: comic.characters ?? []),
+          ],
+
           const SizedBox(height: 10),
           ReviewsWidget(reviews: comic.reviews ?? [], comic: comic),
           if (comic.externalLinks != null && comic.externalLinks!.isNotEmpty) ...[

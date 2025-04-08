@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 
 import 'package:atlas_app/core/common/constants/table_names.dart';
+import 'package:atlas_app/features/characters/pages/comic_characters.dart';
 import 'package:atlas_app/features/comics/models/comic_published_model.dart';
 import 'package:atlas_app/features/comics/models/external_links_model.dart';
 import 'package:atlas_app/features/reviews/models/comic_review_model.dart';
@@ -31,6 +32,7 @@ class ComicModel {
   final String? color;
   final String image;
   final List<ComicReviewModel>? reviews;
+  final List<ComicCharacterModel>? characters;
   ComicModel({
     required this.aniId,
     required this.englishTitle,
@@ -52,6 +54,7 @@ class ComicModel {
     required this.ar_synopsis,
     this.externalLinks,
     this.reviews,
+    this.characters,
   });
 
   ComicModel copyWith({
@@ -77,6 +80,7 @@ class ComicModel {
     String? ar_synopsis,
     List<ExternalLinksModel>? externalLinks,
     List<ComicReviewModel>? reviews,
+    List<ComicCharacterModel>? characters,
   }) {
     return ComicModel(
       aniId: aniId ?? this.aniId,
@@ -99,6 +103,7 @@ class ComicModel {
       color: color ?? this.color,
       ar_synopsis: ar_synopsis ?? this.ar_synopsis,
       reviews: reviews ?? this.reviews,
+      characters: characters ?? this.characters,
     );
   }
 
@@ -152,6 +157,12 @@ class ComicModel {
       volumes: map[KeyNames.volumes],
       status: map[KeyNames.status] ?? "",
       score: map[KeyNames.score] ?? 0.0,
+      characters:
+          map[TableNames.comic_characters] == null
+              ? []
+              : List<Map<String, dynamic>>.from(
+                map[TableNames.comic_characters],
+              ).map((char) => ComicCharacterModel.fromDB(char)).toList(),
       reviews:
           map[TableNames.comic_reviews] == null
               ? null

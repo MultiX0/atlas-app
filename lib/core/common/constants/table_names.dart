@@ -16,4 +16,6 @@ class TableNames {
   static const user_comic_interactions = 'user_comic_interactions';
   static const user_novel_interactions = 'user_novel_interactions';
   static const comic_reviews = 'comic_reviews';
+  static const characters = 'characters';
+  static const comic_characters = 'comic_characters';
 }
