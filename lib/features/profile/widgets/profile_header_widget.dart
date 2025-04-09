@@ -115,7 +115,7 @@ class ProfileHeader extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(Spacing.normalRaduis + 10),
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(Spacing.normalRaduis + 10),
+                borderRadius: BorderRadius.circular(Spacing.normalRaduis + 6),
                 child: FancyShimmerImage(imageUrl: user.avatar, boxFit: BoxFit.cover),
               ),
             ),
