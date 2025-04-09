@@ -19,6 +19,7 @@ class KeyNames {
   static const genre_id = 'genre_id';
   static const from = 'from';
   static const name_arabic = 'name_arabic';
+  static const bio = 'bio';
   static const title_english = 'title_english';
   static const to = 'to';
   static const string = 'string';

@@ -6,4 +6,5 @@ class FunctionNames {
   static const check_unavailable_comics = 'check_unavailable_comics';
   static const check_unavailable_characters = 'check_unavailable_characters';
   static const get_comic_review_count = 'get_comic_review_count';
+  static const check_if_review_before = 'check_if_review_before';
 }

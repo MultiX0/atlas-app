@@ -53,6 +53,18 @@ class ReviewsDb {
     }
   }
 
+  Future<bool> checkIhaveReview({required String userId, required String comicId}) async {
+    try {
+      return await _client.rpc(
+        FunctionNames.check_if_review_before,
+        params: {'p_comic_id': comicId, 'p_user_id': userId},
+      );
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
   Future<int> getManhwaReviewsCount(String comicId) async {
     try {
       final _count = await _client.rpc(

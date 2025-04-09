@@ -20,12 +20,13 @@ class ProfileTabs extends ConsumerWidget {
         duration: const Duration(milliseconds: 600),
         child: TabBar(
           controller: controller,
-          dividerHeight: 0.5,
+          labelStyle: const TextStyle(fontFamily: arabicAccentFont),
+          dividerHeight: 0.3,
           labelColor: AppColors.primary,
           dividerColor: AppColors.mutedSilver.withValues(alpha: .45),
           indicatorColor: AppColors.primary,
 
-          tabs: const [Tab(text: 'Posts'), Tab(text: 'Favorite'), Tab(text: 'original works')],
+          tabs: const [Tab(text: 'المنشورات'), Tab(text: 'المفضلة'), Tab(text: 'أعمال أصلية')],
         ),
       ),
     );

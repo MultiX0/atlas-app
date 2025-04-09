@@ -11,6 +11,7 @@ class UserModel {
   final String avatar;
   final String banner;
   final FollowsCountModel? followsCount;
+  final String? bio;
   final UserMetadata? metadata;
   UserModel({
     required this.fullName,
@@ -19,6 +20,7 @@ class UserModel {
     required this.avatar,
     required this.banner,
     this.metadata,
+    this.bio,
     this.followsCount,
   });
 
@@ -30,6 +32,7 @@ class UserModel {
     UserMetadata? metadata,
     FollowsCountModel? followsCount,
     String? banner,
+    String? bio,
   }) {
     return UserModel(
       fullName: fullName ?? this.fullName,
@@ -39,6 +42,7 @@ class UserModel {
       metadata: metadata ?? this.metadata,
       banner: banner ?? this.banner,
       followsCount: followsCount ?? this.followsCount,
+      bio: bio ?? this.bio,
     );
   }
 
@@ -49,6 +53,7 @@ class UserModel {
       KeyNames.id: userId,
       KeyNames.avatar: avatar,
       KeyNames.banner: banner,
+      KeyNames.bio: bio,
     };
   }
 
@@ -59,6 +64,7 @@ class UserModel {
       userId: map[KeyNames.id] ?? "",
       avatar: map[KeyNames.avatar] ?? "",
       banner: map[KeyNames.banner] ?? "",
+      bio: map[KeyNames.bio],
       // metadata: UserMetadata.fromMap(map['metadata'] as Map<String, dynamic>),
     );
   }
