@@ -4,6 +4,8 @@ import 'package:atlas_app/imports.dart';
 class ComicReviewModel {
   final String comicId;
   final String userId;
+  final DateTime createdAt;
+  final DateTime updatedAt;
   final double writingQuality;
   final double storyDevelopment;
   final double characterDesign;
@@ -19,6 +21,8 @@ class ComicReviewModel {
     required this.images,
     required this.userId,
     required this.writingQuality,
+    required this.createdAt,
+    required this.updatedAt,
     required this.storyDevelopment,
     required this.characterDesign,
     required this.updateStability,
@@ -38,6 +42,8 @@ class ComicReviewModel {
     double? updateStability,
     double? worldBackground,
     double? overall,
+    DateTime? updatedAt,
+    DateTime? createdAt,
     bool? spoilers,
     String? review,
     UserModel? user,
@@ -56,6 +62,8 @@ class ComicReviewModel {
       images: images ?? this.images,
       review: review ?? this.review,
       user: this.user,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
@@ -72,6 +80,8 @@ class ComicReviewModel {
       KeyNames.spoilers: spoilers,
       KeyNames.images: images,
       KeyNames.review_text: review,
+      KeyNames.created_at: createdAt.toIso8601String(),
+      KeyNames.updated_at: updatedAt.toIso8601String(),
     };
   }
 
@@ -89,6 +99,8 @@ class ComicReviewModel {
       spoilers: map[KeyNames.spoilers] ?? false,
       user: map[TableNames.users] == null ? null : UserModel.fromMap(map[TableNames.users]),
       review: map[KeyNames.review_text] ?? "",
+      createdAt: DateTime.parse(map[KeyNames.created_at]),
+      updatedAt: DateTime.parse(map[KeyNames.updated_at]),
     );
   }
 

@@ -43,59 +43,50 @@ class _ReviewsWidgetState extends ConsumerState<ReviewsWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return buildCard(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 15),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 5),
-            child: Row(
-              children: [
-                const LanguageText(
-                  accent: true,
-
-                  "المراجعات",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    fontFamily: arabicAccentFont,
-                  ),
+    return GestureDetector(
+      onTap: () {
+        if (reviews.isEmpty) {
+          ref.read(navsProvider).goToAddComicReviewPage();
+        }
+      },
+      child: buildCard(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 15),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 5),
+              child: LanguageText(
+                accent: true,
+                "المراجعات",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  fontFamily: arabicAccentFont,
                 ),
-                const Spacer(),
-                if (reviews.isNotEmpty)
-                  GestureDetector(
-                    child: const Row(
-                      children: [
-                        Text("عرض الكل", style: TextStyle(fontFamily: arabicAccentFont)),
-                        SizedBox(width: 5),
-                        Icon(LucideIcons.chevron_right),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 15),
-          if (reviews.isNotEmpty) ...[
-            FlutterCarousel.builder(
-              itemCount: reviews.length,
-              itemBuilder: (context, i, i2) {
-                return buildReviewCard(reviews[i]);
-              },
-              options: FlutterCarouselOptions(
-                viewportFraction: 1,
-                enlargeCenterPage: true,
-                aspectRatio: 16 / 9,
               ),
             ),
-          ] else ...[
-            buildEmptyRatings(),
-          ],
+            const SizedBox(height: 15),
+            if (reviews.isNotEmpty) ...[
+              FlutterCarousel.builder(
+                itemCount: reviews.length,
+                itemBuilder: (context, i, i2) {
+                  return buildReviewCard(reviews[i]);
+                },
+                options: FlutterCarouselOptions(
+                  viewportFraction: 1,
+                  enlargeCenterPage: true,
+                  aspectRatio: 16 / 9,
+                ),
+              ),
+            ] else ...[
+              buildEmptyRatings(),
+            ],
 
-          const SizedBox(height: 10),
-          buildRatingBar(widget.comic),
-        ],
+            const SizedBox(height: 10),
+            buildRatingBar(widget.comic),
+          ],
+        ),
       ),
     );
   }
@@ -120,16 +111,13 @@ class _ReviewsWidgetState extends ConsumerState<ReviewsWidget> {
     final starColor = comic.color != null ? HexColor(comic.color!) : AppColors.primary;
 
     return Center(
-      child: GestureDetector(
-        onTap: () => ref.read(navsProvider).goToAddComicReviewPage(),
-        child: RatingBarIndicator(
-          itemPadding: const EdgeInsets.symmetric(horizontal: 8),
-          rating: avgScore,
-          itemBuilder: (context, index) => Icon(Icons.star, color: starColor),
-          itemCount: 5,
-          itemSize: 40.0,
-          direction: Axis.horizontal,
-        ),
+      child: RatingBarIndicator(
+        itemPadding: const EdgeInsets.symmetric(horizontal: 8),
+        rating: avgScore,
+        itemBuilder: (context, index) => Icon(Icons.star, color: starColor),
+        itemCount: 5,
+        itemSize: 40.0,
+        direction: Axis.horizontal,
       ),
     );
   }

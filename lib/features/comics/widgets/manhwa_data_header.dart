@@ -4,7 +4,6 @@ import 'package:atlas_app/core/common/utils/manhwa_status_arabic.dart';
 import 'package:atlas_app/features/comics/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 
 class ManhwaDataHeader extends ConsumerStatefulWidget {
   const ManhwaDataHeader({super.key});
@@ -31,9 +30,9 @@ class _ManhwaDataHeaderState extends ConsumerState<ManhwaDataHeader> {
           child: Stack(
             children: [
               if (comic.banner != null) ...[
-                FancyShimmerImage(
+                CachedNetworkImage(
                   imageUrl: comic.banner!,
-                  boxFit: BoxFit.cover,
+                  fit: BoxFit.cover,
                   width: double.infinity,
                   height: size.width * 0.55,
                 ),
@@ -55,7 +54,7 @@ class _ManhwaDataHeaderState extends ConsumerState<ManhwaDataHeader> {
                 ),
               ),
               Positioned(
-                bottom: -15,
+                bottom: 0,
                 left: 15,
                 right: 15,
                 child: Column(

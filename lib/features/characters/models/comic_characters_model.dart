@@ -33,7 +33,7 @@ class ComicCharacterModel {
       id: json[KeyNames.id],
       comicId: json[KeyNames.comic_id],
       characterId: json[KeyNames.character_id],
-      role: json[KeyNames.role],
+      role: json[KeyNames.role] ?? "",
       character: CharacterModel.fromJson(json[TableNames.characters]),
     );
   }

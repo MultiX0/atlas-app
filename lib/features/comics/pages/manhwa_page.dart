@@ -2,8 +2,11 @@ import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/features/comics/controller/comics_controller.dart';
 import 'package:atlas_app/features/comics/models/comic_model.dart';
 import 'package:atlas_app/features/comics/providers/providers.dart';
+import 'package:atlas_app/features/comics/widgets/manhwa_characters_widget.dart';
 import 'package:atlas_app/features/comics/widgets/manhwa_data_body.dart';
 import 'package:atlas_app/features/comics/widgets/manhwa_data_header.dart';
+import 'package:atlas_app/features/comics/widgets/manhwa_tabs.dart';
+import 'package:atlas_app/features/comics/widgets/reviews_page.dart';
 import 'package:atlas_app/imports.dart';
 
 class ManhwaPage extends ConsumerStatefulWidget {
@@ -13,11 +16,22 @@ class ManhwaPage extends ConsumerStatefulWidget {
   ConsumerState<ConsumerStatefulWidget> createState() => _ManhwaPageState();
 }
 
-class _ManhwaPageState extends ConsumerState<ManhwaPage> {
+class _ManhwaPageState extends ConsumerState<ManhwaPage> with SingleTickerProviderStateMixin {
+  late TabController _controller;
+  bool reviewsFetched = false;
+
   @override
   void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((_) => handleManhwaUpdate());
+    _controller = TabController(length: 3, vsync: this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      initTabController();
+      handleManhwaUpdate();
+    });
     super.initState();
+  }
+
+  void initTabController() {
+    ref.read(manhwaTabControllerProvider.notifier).state = _controller;
   }
 
   void handleManhwaUpdate() {
@@ -40,10 +54,48 @@ class _ManhwaPageState extends ConsumerState<ManhwaPage> {
     return SafeArea(
       child: NestedScrollView(
         headerSliverBuilder: ((context, innerBoxIsScrolled) {
-          return [const ManhwaDataHeader()];
+          return [
+            const ManhwaDataHeader(),
+            SliverOverlapAbsorber(
+              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+              sliver: SliverPersistentHeader(
+                delegate: _SliverAppBarDelegate(const ManhwaTabs()),
+                pinned: true,
+              ),
+            ),
+          ];
         }),
-        body: const ManhwaDataBody(),
+        body: TabBarView(
+          controller: _controller,
+          children: [
+            const ManhwaDataBody(),
+            ComicReviewsPage(comic: comic),
+            ManhwaCharactersWidget(comic: comic),
+          ],
+        ),
       ),
     );
+  }
+}
+
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+
+  _SliverAppBarDelegate(this.child);
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(color: AppColors.scaffoldBackground, child: child);
+  }
+
+  @override
+  double get maxExtent => 48.0;
+
+  @override
+  double get minExtent => 48.0;
+
+  @override
+  bool shouldRebuild(SliverPersistentHeaderDelegate oldDelegate) {
+    return false;
   }
 }

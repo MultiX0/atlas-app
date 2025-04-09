@@ -4,9 +4,9 @@ import 'package:atlas_app/imports.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class ComicCharactersWidget extends ConsumerWidget {
-  const ComicCharactersWidget({super.key, required this.characters});
-
+  const ComicCharactersWidget({super.key, required this.characters, this.mainCharacters = true});
   final List<ComicCharacterModel> characters;
+  final bool mainCharacters;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -15,9 +15,9 @@ class ComicCharactersWidget extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "الشخصيات",
-            style: TextStyle(
+          Text(
+            mainCharacters ? "الرئيسية" : "المساعدة",
+            style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 18,
               fontFamily: arabicAccentFont,
@@ -28,13 +28,23 @@ class ComicCharactersWidget extends ConsumerWidget {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                ...characters.asMap().entries.map((entry) {
-                  // final character = entry.value;
-                  final characterData = entry.value.character!;
+                ...characters
+                    .where(
+                      (c) =>
+                          mainCharacters
+                              ? c.role.toLowerCase() == 'main'
+                              : c.role.toLowerCase() != 'main',
+                    )
+                    .toList()
+                    .asMap()
+                    .entries
+                    .map((entry) {
+                      // final character = entry.value;
+                      final characterData = entry.value.character!;
 
-                  final index = entry.key;
-                  return buildCharacterPoster(index, characterData);
-                }),
+                      final index = entry.key;
+                      return buildCharacterPoster(index, characterData);
+                    }),
               ],
             ),
           ),

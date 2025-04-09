@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/image_to_avif_convert.dart';
 import 'package:atlas_app/core/common/utils/upload_storage.dart';
+import 'package:atlas_app/features/comics/providers/manhwa_reviews_state.dart';
 import 'package:atlas_app/features/reviews/db/reviews_db.dart';
 import 'package:atlas_app/features/reviews/models/comic_review_model.dart';
 import 'package:atlas_app/imports.dart';
@@ -39,10 +40,12 @@ class ReviewsController extends StateNotifier<bool> {
       state = true;
       context.loaderOverlay.show();
       final _images = await uploadImages(images, comicId: comicId, userId: userId);
-
+      final now = DateTime.now();
       final review = ComicReviewModel(
         review: reviewText,
         comicId: comicId,
+        createdAt: now,
+        updatedAt: now,
         images: _images,
         userId: userId,
         writingQuality: writingQuality,
@@ -55,6 +58,7 @@ class ReviewsController extends StateNotifier<bool> {
       );
 
       await db.insertComicReview(review);
+      _ref.read(manhwaReviewsStateProvider(comicId).notifier).addReview(review);
       context.loaderOverlay.hide();
       CustomToast.success("تم نشر مراجعتك بنجاح");
       context.pop();
@@ -63,6 +67,19 @@ class ReviewsController extends StateNotifier<bool> {
       state = false;
       context.loaderOverlay.hide();
 
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<int> getManhwaReviewsCount(String comicId) async {
+    try {
+      state = true;
+      final count = await db.getManhwaReviewsCount(comicId);
+      state = false;
+      return count;
+    } catch (e) {
+      state = false;
       log(e.toString());
       rethrow;
     }

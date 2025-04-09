@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:atlas_app/core/common/constants/function_names.dart';
 import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/features/reviews/models/comic_review_model.dart';
 import 'package:atlas_app/imports.dart';
@@ -19,6 +20,47 @@ class ReviewsDb {
   Future<void> insertComicReview(ComicReviewModel review) async {
     try {
       await _comicReviewsTable.insert(review.toMap());
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<List<ComicReviewModel>> getComicReviews({
+    required String comicId,
+    required int startIndex,
+    required int pageSize,
+  }) async {
+    try {
+      final data = await _comicReviewsTable
+          .select("*,${TableNames.users}(*)")
+          .eq(KeyNames.comic_id, comicId)
+          .order(KeyNames.created_at, ascending: false)
+          .range(startIndex, startIndex + pageSize - 1);
+
+      final reviews =
+          data
+              .map(
+                (review) => ComicReviewModel.fromMap(
+                  review,
+                ).copyWith(user: UserModel.fromMap(review[TableNames.users])),
+              )
+              .toList();
+      return reviews;
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<int> getManhwaReviewsCount(String comicId) async {
+    try {
+      final _count = await _client.rpc(
+        FunctionNames.get_comic_review_count,
+        params: {"p_comic_id": comicId},
+      );
+
+      return _count;
     } catch (e) {
       log(e.toString());
       rethrow;

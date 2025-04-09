@@ -1,7 +1,5 @@
 import 'package:atlas_app/core/common/utils/see_more_text.dart';
 import 'package:atlas_app/features/comics/providers/providers.dart';
-import 'package:atlas_app/features/comics/widgets/comic_characters_widget.dart';
-import 'package:atlas_app/features/comics/widgets/reviews_widget.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -19,116 +17,119 @@ class _ManhwaDataBodyState extends ConsumerState<ManhwaDataBody> {
     final seeMoreTextColor =
         comic.color == null ? AppColors.primary.withValues(alpha: .7) : HexColor(comic.color!);
     return RepaintBoundary(
-      child: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 15),
-        children: [
-          buildCard(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                buildStatisticsColumn(title: "منشور", value: "21.7K"),
-                buildStatisticsColumn(title: "مشاهدة", value: "16.5K"),
-                buildStatisticsColumn(title: "مراجعة", value: "1.2K"),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-          buildCard(
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const LanguageText(
-                  accent: true,
-                  "ملخص",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    fontFamily: arabicAccentFont,
+      child: CustomScrollView(
+        slivers: [
+          SliverOverlapInjector(handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)),
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                buildCard(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      buildStatisticsColumn(title: "منشور", value: comic.posts_count.toString()),
+                      buildStatisticsColumn(title: "مشاهدة", value: comic.views.toString()),
+                      buildStatisticsColumn(
+                        title: "المفضلة",
+                        value: comic.favorite_count.toString(),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 5),
-                SeeMoreWidget(
-                  textDirection: TextDirection.rtl,
-
-                  comic.ar_synopsis.trim().isEmpty
-                      ? "لايوجد ملخص لهذا العمل, نحن نعمل على اضافته حاليا"
-                      : comic.ar_synopsis.trim(),
-                  textStyle: const TextStyle(
-                    color: AppColors.mutedSilver,
-                    fontFamily: arabicPrimaryFont,
-                    fontSize: 14,
-                  ),
-
-                  seeMoreStyle: TextStyle(
-                    color: seeMoreTextColor,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: accentFont,
-                  ),
-                  seeLessStyle: TextStyle(
-                    color: seeMoreTextColor,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: accentFont,
-                  ),
-
-                  seeMoreText: "  عرض المزيد",
-                  seeLessText: "  عرض أقل",
-                ),
-              ],
-            ),
-          ),
-
-          if (comic.characters != null && comic.characters!.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            ComicCharactersWidget(characters: comic.characters ?? []),
-          ],
-
-          const SizedBox(height: 10),
-          ReviewsWidget(reviews: comic.reviews ?? [], comic: comic),
-          if (comic.externalLinks != null && comic.externalLinks!.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            buildCard(
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const LanguageText(
-                    accent: true,
-
-                    "روابط خارجية وروابط العرض",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                      fontFamily: arabicAccentFont,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  ...comic.externalLinks!.asMap().entries.map((e) {
-                    final linksColor =
-                        comic.color != null ? HexColor(comic.color!) : AppColors.primary;
-                    final link = e.value;
-                    final i = e.key + 1;
-                    return GestureDetector(
-                      onTap: () => _launchUrl(link.url),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 5),
-                        child: Text(
-                          "$i - ${link.site}",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline,
-                            fontFamily: enPrimaryFont,
-                            color: linksColor,
-                          ),
+                const SizedBox(height: 10),
+                buildCard(
+                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const LanguageText(
+                        accent: true,
+                        "ملخص",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          fontFamily: arabicAccentFont,
                         ),
                       ),
-                    );
-                  }),
+                      const SizedBox(height: 5),
+                      SeeMoreWidget(
+                        textDirection: TextDirection.rtl,
+
+                        comic.ar_synopsis.trim().isEmpty
+                            ? "لايوجد ملخص لهذا العمل, نحن نعمل على اضافته حاليا"
+                            : comic.ar_synopsis.trim(),
+                        textStyle: const TextStyle(
+                          color: AppColors.mutedSilver,
+                          fontFamily: arabicPrimaryFont,
+                          fontSize: 14,
+                        ),
+
+                        seeMoreStyle: TextStyle(
+                          color: seeMoreTextColor,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: accentFont,
+                        ),
+                        seeLessStyle: TextStyle(
+                          color: seeMoreTextColor,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: accentFont,
+                        ),
+
+                        seeMoreText: "  عرض المزيد",
+                        seeLessText: "  عرض أقل",
+                      ),
+                    ],
+                  ),
+                ),
+
+                if (comic.externalLinks != null && comic.externalLinks!.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  buildCard(
+                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const LanguageText(
+                          accent: true,
+
+                          "روابط خارجية وروابط العرض",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            fontFamily: arabicAccentFont,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        ...comic.externalLinks!.asMap().entries.map((e) {
+                          final linksColor =
+                              comic.color != null ? HexColor(comic.color!) : AppColors.primary;
+                          final link = e.value;
+                          final i = e.key + 1;
+                          return GestureDetector(
+                            onTap: () => _launchUrl(link.url),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 5),
+                              child: Text(
+                                "$i - ${link.site}",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  decoration: TextDecoration.underline,
+                                  fontFamily: enPrimaryFont,
+                                  color: linksColor,
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
                 ],
-              ),
+              ]),
             ),
-          ],
+          ),
         ],
       ),
     );

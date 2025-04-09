@@ -4,7 +4,6 @@ import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/features/characters/models/comic_characters_model.dart';
 import 'package:atlas_app/features/comics/models/comic_published_model.dart';
 import 'package:atlas_app/features/comics/models/external_links_model.dart';
-import 'package:atlas_app/features/reviews/models/comic_review_model.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:flutter/foundation.dart';
 
@@ -31,8 +30,11 @@ class ComicModel {
   final String ar_synopsis;
   final String? color;
   final String image;
-  final List<ComicReviewModel>? reviews;
+  final int favorite_count;
+  final int posts_count;
+
   final List<ComicCharacterModel>? characters;
+  final int views;
   ComicModel({
     required this.aniId,
     required this.englishTitle,
@@ -42,6 +44,7 @@ class ComicModel {
     this.volumes,
     this.banner,
     required this.status,
+    required this.views,
     required this.score,
     required this.synopsis,
     required this.title_synonyms,
@@ -53,8 +56,9 @@ class ComicModel {
     required this.image,
     required this.ar_synopsis,
     this.externalLinks,
-    this.reviews,
     this.characters,
+    required this.favorite_count,
+    required this.posts_count,
   });
 
   ComicModel copyWith({
@@ -79,8 +83,10 @@ class ComicModel {
     String? color,
     String? ar_synopsis,
     List<ExternalLinksModel>? externalLinks,
-    List<ComicReviewModel>? reviews,
     List<ComicCharacterModel>? characters,
+    int? views,
+    int? favorite_count,
+    int? posts_count,
   }) {
     return ComicModel(
       aniId: aniId ?? this.aniId,
@@ -102,8 +108,10 @@ class ComicModel {
       externalLinks: externalLinks ?? this.externalLinks,
       color: color ?? this.color,
       ar_synopsis: ar_synopsis ?? this.ar_synopsis,
-      reviews: reviews ?? this.reviews,
       characters: characters ?? this.characters,
+      views: views ?? this.views,
+      favorite_count: favorite_count ?? this.favorite_count,
+      posts_count: posts_count ?? this.posts_count,
     );
   }
 
@@ -145,17 +153,20 @@ class ComicModel {
     }
 
     return ComicModel(
-      comicId: map[KeyNames.id] ?? "",
+      comicId: map[KeyNames.comic_id] ?? "",
       aniId: map[KeyNames.ani_id] ?? -1,
       lastUpdateAt:
           map[KeyNames.last_update_at] == null
               ? null
               : DateTime.parse(map[KeyNames.last_update_at]),
       type: map[KeyNames.type] ?? "",
+      favorite_count: map[KeyNames.favorite_count] ?? 0,
       englishTitle: map[KeyNames.title_english],
       chapters: map[KeyNames.chapters],
       volumes: map[KeyNames.volumes],
       status: map[KeyNames.status] ?? "",
+      views: map[KeyNames.view_count] ?? 0,
+      posts_count: map[KeyNames.mentioned_posts] ?? 0,
       score: map[KeyNames.score] ?? 0.0,
       characters:
           map[TableNames.comic_characters] == null
@@ -163,12 +174,7 @@ class ComicModel {
               : List<Map<String, dynamic>>.from(
                 map[TableNames.comic_characters],
               ).map((char) => ComicCharacterModel.fromDB(char)).toList(),
-      reviews:
-          map[TableNames.comic_reviews] == null
-              ? null
-              : List<Map<String, dynamic>>.from(
-                map[TableNames.comic_reviews],
-              ).map((review) => ComicReviewModel.fromMap(review)).toList(),
+
       color: map[KeyNames.theme_color],
       ar_synopsis: map[KeyNames.ar_synopsis] ?? "",
       externalLinks:
@@ -179,7 +185,7 @@ class ComicModel {
               : null,
       banner: map[KeyNames.banner],
       publishedDate: ComicPublishedModel.fromMap(
-        map['published'] ?? map[TableNames.comic_published_dates][0],
+        map['published'] ?? map[TableNames.comic_published_dates],
       ),
       synopsis: map[KeyNames.synopsis] ?? "",
       title_synonyms: List<dynamic>.from((map[KeyNames.title_synonyms])),

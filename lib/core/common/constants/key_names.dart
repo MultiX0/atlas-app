@@ -10,6 +10,8 @@ class KeyNames {
   static const id = 'id';
   static const external_links = 'external_links';
   static const comic_id = 'comic_id';
+  static const favorite_count = 'favorite_count';
+  static const mentioned_posts = 'mentioned_posts';
   static const banner = 'banner';
   static const genre_id = 'genre_id';
   static const from = 'from';
@@ -58,6 +60,7 @@ class KeyNames {
   static const overall = 'overall';
   static const review_text = 'review_text';
   static const updated_at = 'updated_at';
+  static const view_count = 'view_count';
   static const spoilers = 'spoilers';
   static const images = 'images';
   static const ar_synopsis = 'ar_synopsis';

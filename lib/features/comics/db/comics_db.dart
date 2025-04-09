@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'package:atlas_app/core/common/constants/function_names.dart';
 import 'package:atlas_app/core/common/constants/genres_json.dart';
 import 'package:atlas_app/core/common/constants/table_names.dart';
+import 'package:atlas_app/core/common/constants/view_names.dart';
 import 'package:atlas_app/features/characters/db/characters_db.dart';
 import 'package:atlas_app/features/comics/models/comic_model.dart';
 import 'package:atlas_app/features/comics/models/comic_published_model.dart';
@@ -29,6 +30,7 @@ class ComicsDb {
   SupabaseQueryBuilder get _comicsTitlesTable => client.from(TableNames.comic_titles);
   SupabaseQueryBuilder get _comicsGenresTable => client.from(TableNames.comic_genres);
   SupabaseQueryBuilder get _comicReviewsTable => client.from(TableNames.comic_reviews);
+  SupabaseQueryBuilder get _comicsView => client.from(ViewNames.comic_details_with_views);
 
   TranslationService get _translationService => TranslationService();
 
@@ -304,23 +306,7 @@ class ComicsDb {
   Future<List<ComicModel>> _fetchComicDetailsFromLocalDb(List ids) async {
     if (ids.isEmpty) return [];
 
-    final data = await _comicsTable
-        .select('''
-      *,
-      ${TableNames.comic_titles} (*),
-      ${TableNames.comic_published_dates} (*),
-      ${TableNames.comic_genres} (
-        ${TableNames.genres} (*)
-      ),
-      ${TableNames.comic_reviews} (
-        *,
-        ${TableNames.users} (*)
-      ),
-      ${TableNames.comic_characters} (
-       *,${TableNames.characters}(*)
-      )
-      ''')
-        .inFilter('id', ids);
+    final data = await _comicsView.select('*').inFilter('comic_id', ids);
 
     log("found on our db");
 
@@ -347,23 +333,7 @@ class ComicsDb {
   Future<List<ComicModel>> fetchComicsFromDbByAniId(List ids) async {
     if (ids.isEmpty) return [];
 
-    final data = await _comicsTable
-        .select('''
-      *,
-      ${TableNames.comic_titles} (*),
-      ${TableNames.comic_published_dates} (*),
-      ${TableNames.comic_genres} (
-        ${TableNames.genres} (*)
-      ),
-      ${TableNames.comic_reviews} (
-        *,
-        ${TableNames.users} (*)
-      ),
-      ${TableNames.comic_characters} (
-        *, ${TableNames.characters}(*)
-      )
-      ''')
-        .inFilter(KeyNames.ani_id, ids);
+    final data = await _comicsView.select('*').inFilter(KeyNames.ani_id, ids);
 
     final comics = data.map((comic) => ComicModel.fromMap(comic)).toList();
     return comics;
@@ -404,7 +374,6 @@ class ComicsDb {
         lastUpdateAt: DateTime.now().toUtc(),
         comicId: comic.comicId,
         ar_synopsis: comic.ar_synopsis,
-        reviews: comic.reviews,
         characters: comic.characters,
       );
       log("updating { ${comicModel.aniId} } ...");

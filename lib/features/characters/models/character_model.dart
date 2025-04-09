@@ -33,6 +33,23 @@ class CharacterModel {
 
   factory CharacterModel.fromJson(Map<String, dynamic> json) {
     return CharacterModel(
+      id: json[KeyNames.character_id] ?? -1,
+      fullName: json[KeyNames.fullName] ?? "",
+      alternativeNames: List<String>.from(json[KeyNames.alternative_names] ?? []),
+      gender: json[KeyNames.gender] ?? "",
+      age: json[KeyNames.age] ?? "",
+      bloodType: json[KeyNames.blood_type] ?? "",
+      ar_description: json[KeyNames.ar_description] ?? "",
+      description: json[KeyNames.description] ?? "",
+      image: json[KeyNames.image] ?? "",
+      birth_year: json[KeyNames.birth_year],
+      birth_day: json[KeyNames.birth_day],
+      birth_month: json[KeyNames.birth_month],
+    );
+  }
+
+  factory CharacterModel.fromDB(Map<String, dynamic> json) {
+    return CharacterModel(
       id: json[KeyNames.id] ?? -1,
       fullName: json[KeyNames.fullName] ?? "",
       alternativeNames: List<String>.from(json[KeyNames.alternative_names] ?? []),

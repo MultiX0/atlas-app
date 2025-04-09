@@ -66,15 +66,17 @@ class CharactersDb {
       for (int i = 0; i < _translatedChars.length; i++) {
         final char = _translatedChars[i];
 
-        _comicCharacters.add(
-          ComicCharacterModel(
-            id: uuid.v4(),
-            comicId: comic.comicId,
-            characterId: char.id,
-            role: charactersComicData["characters"][i]["role"],
-            character: char,
-          ),
-        );
+        if (_comicCharacters.indexWhere((c) => c.character?.id == char.id) == -1) {
+          _comicCharacters.add(
+            ComicCharacterModel(
+              id: uuid.v4(),
+              comicId: comic.comicId,
+              characterId: char.id,
+              role: charactersComicData["characters"][i]["role"],
+              character: char,
+            ),
+          );
+        }
       }
 
       await insertCharacters(_translatedChars);
