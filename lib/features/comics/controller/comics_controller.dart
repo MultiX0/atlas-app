@@ -32,6 +32,15 @@ class ComicsController extends StateNotifier<bool> {
     }
   }
 
+  Future<void> viewComic({required String userId, required String comicId}) async {
+    try {
+      await db.viewComic(userId: userId, comicId: comicId);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
   Future<void> handleComicUpdate(ComicModel comic) async {
     try {
       await db.handleUpdateComic(comic);

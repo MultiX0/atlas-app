@@ -1,4 +1,7 @@
+import 'dart:developer';
+
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
+import 'package:atlas_app/features/auth/providers/user_state.dart';
 import 'package:atlas_app/features/comics/controller/comics_controller.dart';
 import 'package:atlas_app/features/comics/models/comic_model.dart';
 import 'package:atlas_app/features/comics/providers/providers.dart';
@@ -26,8 +29,21 @@ class _ManhwaPageState extends ConsumerState<ManhwaPage> with SingleTickerProvid
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initTabController();
       handleManhwaUpdate();
+      handleView();
     });
     super.initState();
+  }
+
+  void handleView() {
+    final comic = ref.read(selectedComicProvider)!;
+    if (!comic.is_viewed) {
+      final me = ref.read(userState).user!;
+      ref
+          .read(comicsControllerProvider.notifier)
+          .viewComic(userId: me.userId, comicId: comic.comicId);
+    } else {
+      log("i already view this manhwa");
+    }
   }
 
   void initTabController() {

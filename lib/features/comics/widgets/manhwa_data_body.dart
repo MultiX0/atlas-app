@@ -1,4 +1,6 @@
+import 'package:atlas_app/core/common/utils/foreground_color.dart';
 import 'package:atlas_app/core/common/utils/see_more_text.dart';
+import 'package:atlas_app/features/comics/models/comic_model.dart';
 import 'package:atlas_app/features/comics/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -84,6 +86,9 @@ class _ManhwaDataBodyState extends ConsumerState<ManhwaDataBody> {
                   ),
                 ),
 
+                const SizedBox(height: 10),
+                buildGenres(comic),
+
                 if (comic.externalLinks != null && comic.externalLinks!.isNotEmpty) ...[
                   const SizedBox(height: 10),
                   buildCard(
@@ -128,6 +133,57 @@ class _ManhwaDataBodyState extends ConsumerState<ManhwaDataBody> {
                   ),
                 ],
               ]),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Container buildGenres(ComicModel comic) {
+    final color = comic.color != null ? HexColor(comic.color!) : AppColors.blackColor;
+    final textColor = getFontColorForBackground(color);
+
+    return buildCard(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          LanguageText(
+            'التصنيفات',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+              fontFamily: arabicAccentFont,
+            ),
+          ),
+          const SizedBox(height: 15),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Wrap(
+              spacing: 10,
+              runSpacing: 5,
+              children:
+                  comic.genres.map((genres) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 15),
+                      decoration: BoxDecoration(
+                        color: color,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        textAlign: TextAlign.end,
+                        textDirection: TextDirection.rtl,
+                        genres.ar_name,
+                        style: TextStyle(
+                          fontFamily: arabicPrimaryFont,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: textColor,
+                        ),
+                      ),
+                    );
+                  }).toList(),
             ),
           ),
         ],

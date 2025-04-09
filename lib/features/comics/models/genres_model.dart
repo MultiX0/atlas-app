@@ -7,10 +7,16 @@ class GenresModel {
   final int id;
   final String type;
   final String name;
-  GenresModel({required this.id, required this.type, required this.name});
+  final String ar_name;
+  GenresModel({required this.id, required this.type, required this.name, required this.ar_name});
 
-  GenresModel copyWith({int? id, String? type, String? name}) {
-    return GenresModel(id: id ?? this.id, type: type ?? this.type, name: name ?? this.name);
+  GenresModel copyWith({int? id, String? type, String? name, String? ar_name}) {
+    return GenresModel(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      name: name ?? this.name,
+      ar_name: ar_name ?? this.ar_name,
+    );
   }
 
   Map<String, dynamic> toMap() {
@@ -22,6 +28,7 @@ class GenresModel {
       id: map[KeyNames.id] ?? -1,
       type: map[KeyNames.type] ?? "",
       name: map[KeyNames.name] ?? "",
+      ar_name: map[KeyNames.name_arabic] ?? "",
     );
   }
 

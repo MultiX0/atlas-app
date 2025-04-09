@@ -49,7 +49,7 @@ class CharactersDb {
 
       final characters = List<CharacterModel>.from(
         (charactersComicData['characters'] as List<Map<String, dynamic>>)
-            .map((char) => CharacterModel.fromJson(char["character"]))
+            .map((char) => CharacterModel.fromDB(char["character"]))
             .toList(),
       );
 
@@ -69,7 +69,7 @@ class CharactersDb {
         if (_comicCharacters.indexWhere((c) => c.character?.id == char.id) == -1) {
           _comicCharacters.add(
             ComicCharacterModel(
-              id: uuid.v4(),
+              id: '${comic.comicId}-${char.id}',
               comicId: comic.comicId,
               characterId: char.id,
               role: charactersComicData["characters"][i]["role"],
@@ -89,7 +89,10 @@ class CharactersDb {
 
   Future<void> insertComicsCharacters(List<ComicCharacterModel> _comicCharacters) async {
     try {
-      await _comicCharactersTable.upsert(_comicCharacters.map((char) => char.toDB()).toList());
+      await _comicCharactersTable.upsert(
+        _comicCharacters.map((char) => char.toDB()).toList(),
+        onConflict: 'id',
+      );
     } catch (e) {
       log(e.toString());
       rethrow;

@@ -32,7 +32,9 @@ class ComicModel {
   final String image;
   final int favorite_count;
   final int posts_count;
-
+  final List<String> tags;
+  final bool user_favorite;
+  final bool is_viewed;
   final List<ComicCharacterModel>? characters;
   final int views;
   ComicModel({
@@ -59,6 +61,9 @@ class ComicModel {
     this.characters,
     required this.favorite_count,
     required this.posts_count,
+    required this.tags,
+    required this.is_viewed,
+    required this.user_favorite,
   });
 
   ComicModel copyWith({
@@ -87,6 +92,9 @@ class ComicModel {
     int? views,
     int? favorite_count,
     int? posts_count,
+    List<String>? tags,
+    bool? is_viewed,
+    bool? user_favorite,
   }) {
     return ComicModel(
       aniId: aniId ?? this.aniId,
@@ -112,6 +120,9 @@ class ComicModel {
       views: views ?? this.views,
       favorite_count: favorite_count ?? this.favorite_count,
       posts_count: posts_count ?? this.posts_count,
+      tags: tags ?? this.tags,
+      is_viewed: is_viewed ?? this.is_viewed,
+      user_favorite: user_favorite ?? this.user_favorite,
     );
   }
 
@@ -130,6 +141,7 @@ class ComicModel {
       KeyNames.theme_color: color,
       KeyNames.banner: banner,
       KeyNames.ar_synopsis: ar_synopsis,
+      KeyNames.tags: tags,
       KeyNames.last_update_at: lastUpdateAt?.toIso8601String(),
       KeyNames.external_links: externalLinks?.map((external) => external.toMap()).toList(),
       // 'titles': titles.map((x) => x.toMap()).toList(),
@@ -160,6 +172,7 @@ class ComicModel {
               ? null
               : DateTime.parse(map[KeyNames.last_update_at]),
       type: map[KeyNames.type] ?? "",
+      tags: List.from(map[KeyNames.tags] is List ? map[KeyNames.tags] : []),
       favorite_count: map[KeyNames.favorite_count] ?? 0,
       englishTitle: map[KeyNames.title_english],
       chapters: map[KeyNames.chapters],
@@ -195,6 +208,8 @@ class ComicModel {
             : map['titles'].map<ComicTitlesModel>((x) => ComicTitlesModel.fromMap(x)),
       ),
       genres: genres,
+      is_viewed: map[KeyNames.is_viewed] ?? false,
+      user_favorite: map[KeyNames.user_favorite] ?? false,
       image:
           map['images']?['jpg']?['image_url'] ??
           map[KeyNames.image] ??

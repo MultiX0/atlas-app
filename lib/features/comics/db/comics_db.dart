@@ -31,6 +31,7 @@ class ComicsDb {
   SupabaseQueryBuilder get _comicsGenresTable => client.from(TableNames.comic_genres);
   SupabaseQueryBuilder get _comicReviewsTable => client.from(TableNames.comic_reviews);
   SupabaseQueryBuilder get _comicsView => client.from(ViewNames.comic_details_with_views);
+  SupabaseQueryBuilder get _comicsViewsTable => client.from(TableNames.comic_views);
 
   TranslationService get _translationService => TranslationService();
 
@@ -38,6 +39,15 @@ class ComicsDb {
       client.from(TableNames.comic_published_dates);
 
   static final dio = Dio();
+
+  Future<void> viewComic({required String userId, required String comicId}) async {
+    try {
+      await _comicsViewsTable.upsert({KeyNames.userId: userId, KeyNames.comic_id: comicId});
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
 
   Future<void> insertComicsPublishDate(ComicPublishedModel date, String comicId) async {
     try {
@@ -421,7 +431,6 @@ class ComicsDb {
         popularity
         tags {
           name
-          description
         }
         studios {
           edges {
@@ -525,7 +534,6 @@ characters {
         popularity
         tags {
           name
-          description
         }
         studios {
           edges {
@@ -606,49 +614,9 @@ characters {
       final aniId = comic["id"];
       if (!seenIds.contains(aniId)) {
         seenIds.add(aniId);
-
-        final genreMap = {
-          for (var genre in genres) genre["name"].toString().toLowerCase(): genre["id"],
-        };
-
-        final characters =
-            List<Map<String, dynamic>>.from(comic["characters"]["edges"]).map((c) {
-              final node = c["node"];
-              return {
-                "role": c["role"],
-                "character": {
-                  "id": node["id"],
-                  "full_name": node["name"]["full"],
-                  "alternative_names": List<String>.from(node["name"]["alternative"] ?? []),
-                  "gender": node["gender"],
-                  "age": node["age"],
-                  "blood_type": node["bloodType"],
-                  "description": _stripHtmlTags(node["description"]),
-                  "image": node["image"]?["large"] ?? node["image"]?["medium"],
-                  "birth_year": node["dateOfBirth"]["year"],
-                  "birth_month": node["dateOfBirth"]["month"],
-                  "birth_day": node["dateOfBirth"]["day"],
-                },
-              };
-            }).toList();
-
-        final enrichedGenres =
-            (comic["genres"] as List<dynamic>)
-                .map((g) {
-                  final genreName = g.toString().toLowerCase();
-                  final genreId = genreMap[genreName];
-
-                  if (genreId == null) return null;
-
-                  return {
-                    "id": genreId,
-                    "type": "manga",
-                    "name": g,
-                    "url": "https://myanimelist.net/manga/genre/0/$g",
-                  };
-                })
-                .nonNulls
-                .toList();
+        final characters = extractCharactersFromApi(comic);
+        final tags = extractTagsFromApi(comic);
+        final genres = extractGenresFromApi(comic);
 
         final convertedComic = {
           KeyNames.ani_id: aniId,
@@ -692,13 +660,14 @@ characters {
           "scored_by": null,
           "rank": null,
           "popularity": comic["popularity"],
+          "tags": tags,
           "members": null,
           "favorites": null,
           "synopsis": _stripHtmlTags(comic["description"]),
           "background": "",
           "authors": [],
           "serializations": [],
-          "genres": enrichedGenres,
+          "genres": genres,
           KeyNames.theme_color: comic["coverImage"]["color"],
           "explicit_genres": [],
           "themes": _extractThemes(comic["tags"]),
@@ -711,6 +680,60 @@ characters {
     }
 
     return unique;
+  }
+
+  List<Map<String, dynamic>> extractGenresFromApi(Map<dynamic, dynamic> comic) {
+    final genreMap = {
+      for (var genre in genres) genre["name"].toString().toLowerCase(): genre["id"],
+    };
+
+    final enrichedGenres =
+        (comic["genres"] as List<dynamic>)
+            .map((g) {
+              final genreName = g.toString().toLowerCase();
+              final genreId = genreMap[genreName];
+
+              if (genreId == null) return null;
+
+              return {
+                "id": genreId,
+                "type": "manga",
+                "name": g,
+                "url": "https://myanimelist.net/manga/genre/0/$g",
+              };
+            })
+            .nonNulls
+            .toList();
+    return enrichedGenres;
+  }
+
+  List<String> extractTagsFromApi(Map<dynamic, dynamic> comic) {
+    final List<Map<String, dynamic>> tags = List.from(comic['tags']);
+    return tags.map((tag) => tag["name"].toString().trim().toLowerCase()).toList();
+  }
+
+  List<Map<String, dynamic>> extractCharactersFromApi(Map<dynamic, dynamic> comic) {
+    final characters =
+        List<Map<String, dynamic>>.from(comic["characters"]["edges"]).map((c) {
+          final node = c["node"];
+          return {
+            "role": c["role"],
+            "character": {
+              "id": node["id"],
+              "full_name": node["name"]["full"],
+              "alternative_names": List<String>.from(node["name"]["alternative"] ?? []),
+              "gender": node["gender"],
+              "age": node["age"],
+              "blood_type": node["bloodType"],
+              "description": _stripHtmlTags(node["description"]),
+              "image": node["image"]?["large"] ?? node["image"]?["medium"],
+              "birth_year": node["dateOfBirth"]["year"],
+              "birth_month": node["dateOfBirth"]["month"],
+              "birth_day": node["dateOfBirth"]["day"],
+            },
+          };
+        }).toList();
+    return characters;
   }
 
   List<Map<String, dynamic>> extractCharactersFromProcessedComics(

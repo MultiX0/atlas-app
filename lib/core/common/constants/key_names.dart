@@ -12,9 +12,13 @@ class KeyNames {
   static const comic_id = 'comic_id';
   static const favorite_count = 'favorite_count';
   static const mentioned_posts = 'mentioned_posts';
+  static const tags = 'tags';
+  static const user_favorite = 'user_favorite';
+  static const is_viewed = 'is_viewed';
   static const banner = 'banner';
   static const genre_id = 'genre_id';
   static const from = 'from';
+  static const name_arabic = 'name_arabic';
   static const title_english = 'title_english';
   static const to = 'to';
   static const string = 'string';
