@@ -1,3 +1,4 @@
+import 'package:atlas_app/core/common/enum/post_type.dart';
 import 'package:atlas_app/features/comics/models/comic_model.dart';
 import 'package:atlas_app/features/comics/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
@@ -17,5 +18,9 @@ class Navs {
 
   void goToAddComicReviewPage() {
     router.push(Routes.addComicReview);
+  }
+
+  void goToMakePostPage(PostType postType) {
+    router.push("${Routes.makePostPage}/${postType.name.trim()}");
   }
 }

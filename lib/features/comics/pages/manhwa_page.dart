@@ -61,6 +61,12 @@ class _ManhwaPageState extends ConsumerState<ManhwaPage> with SingleTickerProvid
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final comic = ref.watch(selectedComicProvider)!;
     return Scaffold(body: buildBody(comic));
@@ -85,7 +91,7 @@ class _ManhwaPageState extends ConsumerState<ManhwaPage> with SingleTickerProvid
           controller: _controller,
           children: [
             const ManhwaDataBody(),
-            ComicReviewsPage(comic: comic),
+            ComicReviewsPage(comic: comic, tabController: _controller, tabIndex: 1),
             ManhwaCharactersWidget(comic: comic),
           ],
         ),

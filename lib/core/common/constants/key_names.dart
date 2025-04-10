@@ -80,4 +80,10 @@ class KeyNames {
   static const character_id = 'character_id';
   static const role = 'role';
   static const character = 'character';
+  static const writing_quality_avg = 'writing_quality_avg';
+  static const story_development_avg = 'story_development_avg';
+  static const character_design_avg = 'character_design_avg';
+  static const update_stability_avg = 'update_stability_avg';
+  static const world_background_avg = 'world_background_avg';
+  static const overall_avg = 'overall_avg';
 }

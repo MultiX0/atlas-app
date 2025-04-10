@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:atlas_app/core/common/constants/function_names.dart';
 import 'package:atlas_app/core/common/constants/table_names.dart';
+import 'package:atlas_app/features/reviews/models/avg_reviews_model.dart';
 import 'package:atlas_app/features/reviews/models/comic_review_model.dart';
 import 'package:atlas_app/imports.dart';
 
@@ -71,8 +72,32 @@ class ReviewsDb {
         FunctionNames.get_comic_review_count,
         params: {"p_comic_id": comicId},
       );
-
       return _count;
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<AvgReviewsModel> getAvgComicReviews(String comicId) async {
+    try {
+      final data = await _client.rpc(
+        FunctionNames.get_comic_avg_ratings,
+        params: {'p_comic_id': comicId},
+      );
+
+      final response = data[0];
+
+      final parsedData = {
+        KeyNames.writing_quality_avg: response[KeyNames.writing_quality_avg],
+        KeyNames.story_development_avg: response[KeyNames.story_development_avg],
+        KeyNames.character_design_avg: response[KeyNames.character_design_avg],
+        KeyNames.update_stability_avg: response[KeyNames.update_stability_avg],
+        KeyNames.world_background_avg: response[KeyNames.world_background_avg],
+        KeyNames.overall_avg: response[KeyNames.overall_avg],
+      };
+
+      return AvgReviewsModel.fromMap(Map.from(parsedData));
     } catch (e) {
       log(e.toString());
       rethrow;

@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:atlas_app/core/common/widgets/app_refresh.dart';
 import 'package:atlas_app/core/common/widgets/loader.dart';
 import 'package:atlas_app/features/comics/models/comic_model.dart';
 import 'package:atlas_app/features/comics/providers/manhwa_reviews_state.dart';
@@ -7,9 +10,16 @@ import 'package:atlas_app/features/reviews/controller/reviews_controller.dart';
 import 'package:atlas_app/imports.dart';
 
 class ComicReviewsPage extends ConsumerStatefulWidget {
-  const ComicReviewsPage({super.key, required this.comic});
+  const ComicReviewsPage({
+    super.key,
+    required this.comic,
+    required this.tabController,
+    required this.tabIndex,
+  });
 
   final ComicModel comic;
+  final TabController tabController;
+  final int tabIndex;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _ReviewsPageState();
@@ -17,8 +27,10 @@ class ComicReviewsPage extends ConsumerStatefulWidget {
 
 class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
   final ScrollController _scrollController = ScrollController();
+
   bool fetched = false;
   int? reviewsCount;
+  bool hideFloating = false;
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -79,8 +91,10 @@ class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isCurrentTab = widget.tabController.index == widget.tabIndex;
     final reviewsState = ref.watch(manhwaReviewsStateProvider(widget.comic.comicId));
     final reviews = reviewsState.reviews;
+    final iAlreadyReviwedOnce = reviewsState.user_have_review_before;
     final color = widget.comic.color != null ? HexColor(widget.comic.color!) : AppColors.primary;
 
     if (reviewsState.isLoading) {
@@ -93,28 +107,50 @@ class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => ref.read(navsProvider).goToAddComicReviewPage(),
-        backgroundColor: color,
-        tooltip: "اضافة مراجعة",
-        child: Icon(TablerIcons.edit, color: getFontColorForBackground()),
-      ),
-      body: RefreshIndicator(
-        onRefresh: () async => refresh(),
-        child: CustomScrollView(
-          controller: _scrollController,
-          slivers: [
-            SliverOverlapInjector(handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)),
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  const SizedBox(height: 10),
-                  ReviewsWidget(reviews: reviews, comic: widget.comic),
-                ]),
+      floatingActionButton:
+          hideFloating
+              ? null
+              : FloatingActionButton(
+                onPressed: () => ref.read(navsProvider).goToAddComicReviewPage(),
+                backgroundColor: color,
+                tooltip: "اضافة مراجعة",
+                child: Icon(TablerIcons.edit, color: getFontColorForBackground()),
               ),
-            ),
-          ],
+      body: NotificationListener<ScrollNotification>(
+        onNotification: (scrollNotification) {
+          if (scrollNotification is ScrollStartNotification) {
+            setState(() {
+              hideFloating = true;
+            });
+          } else if (scrollNotification is ScrollEndNotification) {
+            setState(() {
+              hideFloating = false;
+            });
+            log("Scrolling has stopped");
+          }
+          return true;
+        },
+
+        child: AppRefresh(
+          onRefresh: () async => refresh(),
+          child: CustomScrollView(
+            primary: isCurrentTab,
+            controller: isCurrentTab ? null : _scrollController,
+            slivers: [
+              SliverOverlapInjector(
+                handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+                sliver: ReviewsWidget(
+                  iAlreadyReviewdOnce: iAlreadyReviwedOnce,
+                  scrollController: _scrollController,
+                  reviews: reviews,
+                  comic: widget.comic,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

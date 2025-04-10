@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:atlas_app/features/auth/providers/user_state.dart';
 import 'package:atlas_app/features/reviews/db/reviews_db.dart';
+import 'package:atlas_app/features/reviews/models/avg_reviews_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:atlas_app/features/reviews/models/comic_review_model.dart';
@@ -15,6 +16,7 @@ class ManhwaReviewsHelper {
   final bool moreLoading;
   final int reviewsCount;
   final bool user_have_review_before;
+  final AvgReviewsModel avgReviews;
   ManhwaReviewsHelper({
     required this.reviews,
     this.error,
@@ -23,6 +25,7 @@ class ManhwaReviewsHelper {
     required this.reviewsCount,
     required this.moreLoading,
     required this.user_have_review_before,
+    required this.avgReviews,
   });
 
   ManhwaReviewsHelper copyWith({
@@ -33,6 +36,7 @@ class ManhwaReviewsHelper {
     bool? hasReachedEnd,
     bool? moreLoading,
     bool? user_have_review_before,
+    AvgReviewsModel? avgReviews,
   }) {
     return ManhwaReviewsHelper(
       reviews: reviews ?? this.reviews,
@@ -42,6 +46,7 @@ class ManhwaReviewsHelper {
       moreLoading: moreLoading ?? this.moreLoading,
       user_have_review_before: user_have_review_before ?? this.user_have_review_before,
       reviewsCount: reviewsCount ?? this.reviewsCount,
+      avgReviews: avgReviews ?? this.avgReviews,
     );
   }
 }
@@ -49,6 +54,14 @@ class ManhwaReviewsHelper {
 class ManhwaReviewsState extends StateNotifier<ManhwaReviewsHelper> {
   final Ref _ref;
   final String _comicId;
+  static AvgReviewsModel get _emptyAvgReviewsModel => AvgReviewsModel(
+    writing_quality_avg: 0.0,
+    story_development_avg: 0.0,
+    character_design_avg: 0.0,
+    update_stability_avg: 0.0,
+    world_background_avg: 0.0,
+    overall_avg: 0.0,
+  );
   ManhwaReviewsState({required Ref ref, required String comicId})
     : _ref = ref,
       _comicId = comicId,
@@ -60,6 +73,7 @@ class ManhwaReviewsState extends StateNotifier<ManhwaReviewsHelper> {
           reviews: [],
           error: null,
           hasReachedEnd: false,
+          avgReviews: _emptyAvgReviewsModel,
           reviewsCount: 0,
         ),
       );
@@ -74,6 +88,7 @@ class ManhwaReviewsState extends StateNotifier<ManhwaReviewsHelper> {
     bool? hasReachEnd,
     bool? user_have_review_before,
     int? reviewsCount,
+    AvgReviewsModel? avgReviews,
   }) {
     state = state.copyWith(
       isLoading: isLoading ?? state.isLoading,
@@ -83,6 +98,7 @@ class ManhwaReviewsState extends StateNotifier<ManhwaReviewsHelper> {
       reviews: reviews ?? state.reviews,
       hasReachedEnd: hasReachEnd ?? state.hasReachedEnd,
       reviewsCount: reviewsCount ?? state.reviewsCount,
+      avgReviews: avgReviews ?? state.avgReviews,
     );
   }
 
@@ -90,6 +106,7 @@ class ManhwaReviewsState extends StateNotifier<ManhwaReviewsHelper> {
     log("clearing reviews state...");
     state = ManhwaReviewsHelper(
       reviewsCount: 0,
+      avgReviews: _emptyAvgReviewsModel,
       isLoading: false,
       user_have_review_before: false,
       moreLoading: false,
@@ -116,8 +133,13 @@ class ManhwaReviewsState extends StateNotifier<ManhwaReviewsHelper> {
       }
 
       if (state.reviewsCount == 0 || refresh) {
-        final count = await _db.getManhwaReviewsCount(_comicId);
-        updateState(reviewsCount: count);
+        final data = await Future.wait<dynamic>([
+          _db.getManhwaReviewsCount(_comicId),
+          _db.getAvgComicReviews(_comicId),
+        ]);
+        final [count, avg] = data;
+
+        updateState(reviewsCount: count, avgReviews: avg);
       }
 
       if (!state.user_have_review_before) {
