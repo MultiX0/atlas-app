@@ -133,20 +133,16 @@ class ManhwaReviewsState extends StateNotifier<ManhwaReviewsHelper> {
       }
 
       if (state.reviewsCount == 0 || refresh) {
-        final data = await Future.wait<dynamic>([
-          _db.getManhwaReviewsCount(_comicId),
-          _db.getAvgComicReviews(_comicId),
-        ]);
-        final [count, avg] = data;
-
-        updateState(reviewsCount: count, avgReviews: avg);
+        await _updateCountAndAvg();
       }
 
       if (!state.user_have_review_before) {
         final me = _ref.read(userState).user!;
-        final reviewd = await _db.checkIhaveReview(userId: me.userId, comicId: _comicId);
+        final reviewd = await _db.checkIhaveComicReview(userId: me.userId, comicId: _comicId);
         updateState(user_have_review_before: reviewd);
       }
+
+      updateState(moreLoading: true);
 
       log("fetching reviews.......");
       const _pageSize = 20;
@@ -166,10 +162,20 @@ class ManhwaReviewsState extends StateNotifier<ManhwaReviewsHelper> {
         reviews: reviews,
       );
     } catch (e) {
-      updateState(isLoading: false, error: e.toString());
+      updateState(isLoading: false, error: e.toString(), moreLoading: false);
       log(e.toString());
       rethrow;
     }
+  }
+
+  Future<void> _updateCountAndAvg() async {
+    final data = await Future.wait<dynamic>([
+      _db.getManhwaReviewsCount(_comicId),
+      _db.getAvgComicReviews(_comicId),
+    ]);
+    final [count, avg] = data;
+
+    updateState(reviewsCount: count, avgReviews: avg);
   }
 
   void refresh(String comicId) {
@@ -181,6 +187,28 @@ class ManhwaReviewsState extends StateNotifier<ManhwaReviewsHelper> {
     newReivews.add(review);
     newReivews.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     updateState(reviews: newReivews, reviewsCount: state.reviewsCount + 1);
+  }
+
+  void updateReviewByUserId(ComicReviewModel review) {
+    final indexOf = state.reviews.indexWhere((rev) => rev.userId == review.userId);
+    List<ComicReviewModel> newReivews = List.from(
+      state.reviews.where((rev) => rev.userId != review.userId).toList(),
+    );
+    newReivews.insert(indexOf, review);
+    updateState(reviews: newReivews);
+    _updateCountAndAvg();
+  }
+
+  void deleteReview(ComicReviewModel review) {
+    if (state.reviews.length == 1) {
+      clearState();
+    } else {
+      List<ComicReviewModel> newReivews = List.from(
+        state.reviews.where((rev) => rev.userId != review.userId).toList(),
+      );
+      updateState(reviews: newReivews);
+      _updateCountAndAvg();
+    }
   }
 }
 

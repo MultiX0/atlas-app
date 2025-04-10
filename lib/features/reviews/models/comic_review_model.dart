@@ -67,6 +67,25 @@ class ComicReviewModel {
     );
   }
 
+  factory ComicReviewModel.from({required ComicReviewModel reviewModel}) {
+    return ComicReviewModel(
+      comicId: reviewModel.comicId,
+      userId: reviewModel.userId,
+      writingQuality: reviewModel.writingQuality,
+      storyDevelopment: reviewModel.storyDevelopment,
+      characterDesign: reviewModel.characterDesign,
+      updateStability: reviewModel.updateStability,
+      worldBackground: reviewModel.worldBackground,
+      overall: reviewModel.overall,
+      spoilers: reviewModel.spoilers,
+      images: reviewModel.images,
+      review: reviewModel.review,
+      user: reviewModel.user,
+      createdAt: reviewModel.createdAt,
+      updatedAt: reviewModel.updatedAt,
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       KeyNames.comic_id: comicId,

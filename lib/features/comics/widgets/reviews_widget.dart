@@ -1,6 +1,5 @@
-import 'dart:developer';
-
 import 'package:atlas_app/core/common/enum/post_type.dart';
+import 'package:atlas_app/core/common/utils/sheet.dart';
 import 'package:atlas_app/core/common/widgets/loader.dart';
 import 'package:atlas_app/features/auth/providers/user_state.dart';
 import 'package:atlas_app/features/comics/models/comic_model.dart';
@@ -8,6 +7,7 @@ import 'package:atlas_app/features/comics/providers/manhwa_reviews_state.dart';
 import 'package:atlas_app/features/navs/navs.dart';
 import 'package:atlas_app/features/reviews/models/avg_reviews_model.dart';
 import 'package:atlas_app/features/reviews/models/comic_review_model.dart';
+import 'package:atlas_app/features/reviews/widgets/comic_review_sheet.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:intl/intl.dart';
@@ -54,7 +54,6 @@ class _ReviewsWidgetState extends ConsumerState<ReviewsWidget> {
     final me = ref.watch(userState).user!;
     bool isMe = review.userId == me.userId;
     final reviewArabic = Bidi.hasAnyRtl(review.review);
-    log(reviewArabic.toString());
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
       child: buildCard(
@@ -77,13 +76,16 @@ class _ReviewsWidgetState extends ConsumerState<ReviewsWidget> {
                     buildRatingBar(rating: review.overall, comic: widget.comic, itemSize: 12),
                   ],
                 ),
-                if (isMe) ...[
-                  const Spacer(),
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(TablerIcons.dots_vertical, size: 20),
-                  ),
-                ],
+
+                const Spacer(),
+                IconButton(
+                  onPressed:
+                      () => openSheet(
+                        context: context,
+                        child: ComicReviewSheet(isCreator: isMe, review: review),
+                      ),
+                  icon: const Icon(TablerIcons.dots_vertical, size: 20),
+                ),
               ],
             ),
 
@@ -102,7 +104,7 @@ class _ReviewsWidgetState extends ConsumerState<ReviewsWidget> {
 
   void onTap() {
     if (widget.reviews.isEmpty || !widget.iAlreadyReviewdOnce) {
-      ref.read(navsProvider).goToAddComicReviewPage();
+      ref.read(navsProvider).goToAddComicReviewPage('f');
     } else {
       ref.read(navsProvider).goToMakePostPage(PostType.comic);
     }

@@ -54,7 +54,7 @@ class ReviewsDb {
     }
   }
 
-  Future<bool> checkIhaveReview({required String userId, required String comicId}) async {
+  Future<bool> checkIhaveComicReview({required String userId, required String comicId}) async {
     try {
       return await _client.rpc(
         FunctionNames.check_if_review_before,
@@ -98,6 +98,30 @@ class ReviewsDb {
       };
 
       return AvgReviewsModel.fromMap(Map.from(parsedData));
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> updateComicReview(ComicReviewModel review) async {
+    try {
+      await _comicReviewsTable
+          .update(review.toMap())
+          .eq(KeyNames.comic_id, review.comicId)
+          .eq(KeyNames.userId, review.userId);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> deleteComicReview(ComicReviewModel review) async {
+    try {
+      await _comicReviewsTable
+          .delete()
+          .eq(KeyNames.comic_id, review.comicId)
+          .eq(KeyNames.userId, review.userId);
     } catch (e) {
       log(e.toString());
       rethrow;

@@ -4,12 +4,15 @@ import 'package:atlas_app/core/common/utils/image_picker.dart';
 import 'package:atlas_app/features/auth/providers/user_state.dart';
 import 'package:atlas_app/features/comics/providers/providers.dart';
 import 'package:atlas_app/features/reviews/controller/reviews_controller.dart';
+import 'package:atlas_app/features/reviews/models/comic_review_model.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:msh_checkbox/msh_checkbox.dart';
 
 class AddComicReview extends ConsumerStatefulWidget {
-  const AddComicReview({super.key});
+  const AddComicReview({super.key, required this.update});
+
+  final bool update;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _AddComicReviewState();
@@ -30,6 +33,7 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
   @override
   void initState() {
     _controller = TextEditingController();
+    handleState();
     super.initState();
   }
 
@@ -37,6 +41,24 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  void handleState() {
+    if (widget.update) {
+      final review = ref.read(selectedReview);
+      if (review != null) {
+        setState(() {
+          writingQuality = review.writingQuality;
+          storyDevelopment = review.storyDevelopment;
+          characterDesign = review.characterDesign;
+          updateStability = review.updateStability;
+          worldBackground = review.worldBackground;
+          overall = review.overall;
+          _controller.text = review.review;
+          spoilers = review.spoilers;
+        });
+      }
+    }
   }
 
   void _calculateOverall() {
@@ -52,6 +74,7 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
   }
 
   void handleImages() async {
+    if (widget.update) return;
     final _images = await imagePicker(false);
     setState(() {
       images = _images;
@@ -62,6 +85,8 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
     if (formKey.currentState!.validate()) {
       final me = ref.read(userState);
       final comic = ref.read(selectedComicProvider)!;
+
+      if (widget.update) return handleUpdate();
 
       ref
           .read(reviewsControllerProvider.notifier)
@@ -82,6 +107,34 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
     }
   }
 
+  void handleUpdate() {
+    final review = ref.read(selectedReview)!;
+    if (_controller.text.trim() == review.review &&
+        review.characterDesign == characterDesign &&
+        review.storyDevelopment == storyDevelopment &&
+        review.updateStability == updateStability &&
+        review.worldBackground == worldBackground &&
+        review.writingQuality == writingQuality) {
+      context.pop();
+      return;
+    }
+
+    ComicReviewModel _review = ComicReviewModel.from(reviewModel: review);
+    _review = _review.copyWith(
+      characterDesign: characterDesign,
+      overall: overall,
+      spoilers: spoilers,
+      review: _controller.text.trim(),
+      storyDevelopment: storyDevelopment,
+      updateStability: updateStability,
+      worldBackground: worldBackground,
+      writingQuality: writingQuality,
+      updatedAt: DateTime.now(),
+    );
+
+    ref.read(reviewsControllerProvider.notifier).updateComicReview(_review, context);
+  }
+
   @override
   Widget build(BuildContext context) {
     final comic = ref.watch(selectedComicProvider)!;
@@ -91,7 +144,7 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
     final me = ref.watch(userState);
     return Scaffold(
       appBar: AppBar(
-        title: const Text("اضافة مراجعة"),
+        title: Text(widget.update ? "تحديث المراجعة" : "اضافة مراجعة"),
         centerTitle: true,
         actions: [
           Padding(
@@ -227,25 +280,22 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
             const SizedBox(height: 10),
             Row(
               children: [
-                // IconButton(
-                // onPressed: () => CustomToast.soon(),
-                // icon: Icon(TablerIcons.photo, color: overAllColor),
-                // ),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    backgroundColor: overAllColor.withValues(alpha: .25),
-                    foregroundColor: overAllColor,
-                  ),
-                  onPressed: handleImages,
-                  label: const LanguageText(
-                    accent: true,
+                if (!widget.update)
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      backgroundColor: overAllColor.withValues(alpha: .25),
+                      foregroundColor: overAllColor,
+                    ),
+                    onPressed: handleImages,
+                    label: const LanguageText(
+                      accent: true,
 
-                    "اضافة صور",
-                    style: TextStyle(fontFamily: arabicAccentFont),
+                      "اضافة صور",
+                      style: TextStyle(fontFamily: arabicAccentFont),
+                    ),
+                    icon: Icon(TablerIcons.photo, color: overAllColor),
                   ),
-                  icon: Icon(TablerIcons.photo, color: overAllColor),
-                ),
                 const Spacer(),
                 LanguageText(
                   accent: true,

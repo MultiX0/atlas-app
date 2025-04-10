@@ -1,5 +1,4 @@
-import 'dart:developer';
-
+import 'package:atlas_app/core/common/enum/post_type.dart';
 import 'package:atlas_app/core/common/widgets/app_refresh.dart';
 import 'package:atlas_app/core/common/widgets/loader.dart';
 import 'package:atlas_app/features/comics/models/comic_model.dart';
@@ -7,6 +6,7 @@ import 'package:atlas_app/features/comics/providers/manhwa_reviews_state.dart';
 import 'package:atlas_app/features/comics/widgets/reviews_widget.dart';
 import 'package:atlas_app/features/navs/navs.dart';
 import 'package:atlas_app/features/reviews/controller/reviews_controller.dart';
+import 'package:atlas_app/features/reviews/models/comic_review_model.dart';
 import 'package:atlas_app/imports.dart';
 
 class ComicReviewsPage extends ConsumerStatefulWidget {
@@ -89,6 +89,14 @@ class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
     super.dispose();
   }
 
+  void addReview(List<ComicReviewModel> reviews, bool iAlreadyReviewdOnce) {
+    if (reviews.isEmpty || !iAlreadyReviewdOnce) {
+      ref.read(navsProvider).goToAddComicReviewPage('f');
+    } else {
+      ref.read(navsProvider).goToMakePostPage(PostType.comic);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isCurrentTab = widget.tabController.index == widget.tabIndex;
@@ -111,7 +119,7 @@ class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
           hideFloating
               ? null
               : FloatingActionButton(
-                onPressed: () => ref.read(navsProvider).goToAddComicReviewPage(),
+                onPressed: () => addReview(reviews, iAlreadyReviwedOnce),
                 backgroundColor: color,
                 tooltip: "اضافة مراجعة",
                 child: Icon(TablerIcons.edit, color: getFontColorForBackground()),
@@ -126,7 +134,6 @@ class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
             setState(() {
               hideFloating = false;
             });
-            log("Scrolling has stopped");
           }
           return true;
         },

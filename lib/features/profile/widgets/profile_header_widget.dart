@@ -48,7 +48,7 @@ class ProfileHeader extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppColors.primaryAccent,
+              color: AppColors.blackColor,
               borderRadius: BorderRadius.circular(15),
             ),
             child: IntrinsicHeight(
@@ -123,7 +123,7 @@ class ProfileHeader extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryAccent,
+                    color: AppColors.scaffoldForeground,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Center(child: Icon(Icons.more_vert, size: 20)),

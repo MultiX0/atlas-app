@@ -16,8 +16,8 @@ class Navs {
     router.push(Routes.manhwaPage);
   }
 
-  void goToAddComicReviewPage() {
-    router.push(Routes.addComicReview);
+  void goToAddComicReviewPage(String update) {
+    router.push("${Routes.addComicReview}/$update");
   }
 
   void goToMakePostPage(PostType postType) {

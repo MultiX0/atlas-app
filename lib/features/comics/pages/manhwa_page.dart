@@ -81,7 +81,7 @@ class _ManhwaPageState extends ConsumerState<ManhwaPage> with SingleTickerProvid
             SliverOverlapAbsorber(
               handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
               sliver: SliverPersistentHeader(
-                delegate: _SliverAppBarDelegate(const ManhwaTabs()),
+                delegate: _SliverAppBarDelegate(ManhwaTabs(controller: _controller)),
                 pinned: true,
               ),
             ),

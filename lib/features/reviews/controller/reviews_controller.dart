@@ -72,6 +72,42 @@ class ReviewsController extends StateNotifier<bool> {
     }
   }
 
+  Future<void> updateComicReview(ComicReviewModel review, BuildContext context) async {
+    try {
+      state = true;
+      context.loaderOverlay.show();
+      await db.updateComicReview(review);
+      _ref.read(manhwaReviewsStateProvider(review.comicId).notifier).updateReviewByUserId(review);
+      state = false;
+      context.loaderOverlay.hide();
+      CustomToast.success("تم تحديث المراجعة بنجاح");
+      context.pop();
+    } catch (e) {
+      context.loaderOverlay.hide();
+      state = false;
+      CustomToast.error("حدث خطأ الرجاء المحاولة مرة أخرى لاحقا");
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> deleteComicReview(ComicReviewModel review, BuildContext context) async {
+    state = true;
+    context.loaderOverlay.show();
+    try {
+      await db.deleteComicReview(review);
+      _ref.read(manhwaReviewsStateProvider(review.comicId).notifier).deleteReview(review);
+      context.pop(); // close sheet
+
+      CustomToast.success("تم حذف المراجعة بنجاح");
+    } catch (e) {
+      CustomToast.error("حدث خطأ الرجاء المحاولة مرة أخرى لاحقا");
+      log(e.toString());
+    }
+    context.loaderOverlay.hide();
+    state = false;
+  }
+
   Future<int> getManhwaReviewsCount(String comicId) async {
     try {
       state = true;

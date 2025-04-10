@@ -101,7 +101,19 @@ final routerProvider = Provider<GoRouter>((ref) {
       buildRoute(path: Routes.forgotPasswordEmailPage, child: const EmailFieldPage(), fade: true),
       buildRoute(path: Routes.search, child: const SearchPage(), fade: true),
       buildRoute(path: Routes.manhwaPage, child: const ManhwaPage(), fade: true),
-      buildRoute(path: Routes.addComicReview, child: const AddComicReview(), fade: true),
+      GoRoute(
+        path: "${Routes.addComicReview}/:update",
+        pageBuilder: (context, state) {
+          final update = state.pathParameters["update"] ?? "f";
+
+          return CustomTransitionPage(
+            child: AddComicReview(update: update == 't'),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+          );
+        },
+      ),
 
       GoRoute(
         path: "${Routes.updatePasswordPage}/:local",

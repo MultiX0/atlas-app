@@ -1,4 +1,6 @@
 import 'package:atlas_app/imports.dart';
+import 'package:intl/intl.dart';
+import 'dart:ui' as ui;
 
 class CustomToast {
   static void get({
@@ -35,6 +37,7 @@ class CustomToast {
   }
 
   static void success(String message) {
+    final hasArabic = Bidi.hasAnyRtl(message);
     Toastification().show(
       borderSide: BorderSide(color: AppColors.greenColor, width: .75),
       backgroundColor: AppColors.primaryAccent,
@@ -43,8 +46,12 @@ class CustomToast {
       closeButtonShowType: CloseButtonShowType.none,
       autoCloseDuration: const Duration(seconds: 2),
       title: Text(
+        textDirection: hasArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
         message,
-        style: const TextStyle(fontFamily: accentFont, color: AppColors.mutedSilver),
+        style: TextStyle(
+          fontFamily: hasArabic ? arabicAccentFont : accentFont,
+          color: AppColors.mutedSilver,
+        ),
       ),
       icon: Icon(TablerIcons.check, color: AppColors.greenColor),
     );

@@ -13,6 +13,6 @@ class MakePostPage extends ConsumerStatefulWidget {
 class _MakePostPageState extends ConsumerState<MakePostPage> {
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Scaffold(appBar: AppBar());
   }
 }
