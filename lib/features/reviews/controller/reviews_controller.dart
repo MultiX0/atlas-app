@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/image_to_avif_convert.dart';
 import 'package:atlas_app/core/common/utils/upload_storage.dart';
+import 'package:atlas_app/features/auth/providers/user_state.dart';
 import 'package:atlas_app/features/comics/providers/manhwa_reviews_state.dart';
 import 'package:atlas_app/features/reviews/db/reviews_db.dart';
 import 'package:atlas_app/features/reviews/models/comic_review_model.dart';
@@ -37,6 +38,7 @@ class ReviewsController extends StateNotifier<bool> {
     required BuildContext context,
   }) async {
     try {
+      final me = _ref.read(userState);
       state = true;
       context.loaderOverlay.show();
       final _images = await uploadImages(images, comicId: comicId, userId: userId);
@@ -47,6 +49,7 @@ class ReviewsController extends StateNotifier<bool> {
         createdAt: now,
         updatedAt: now,
         images: _images,
+        user: me.user,
         userId: userId,
         writingQuality: writingQuality,
         storyDevelopment: storyDevelopment,

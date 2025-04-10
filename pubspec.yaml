@@ -85,6 +85,9 @@ dependencies:
   firebase_core: ^3.13.0
   loader_overlay: ^5.0.0
   flutter_carousel_widget: ^3.1.0
+  gallery_image_viewer: ^1.2.0
+  gal: ^2.3.1
+  mime: ^2.0.0
 
 dev_dependencies:
   flutter_test:

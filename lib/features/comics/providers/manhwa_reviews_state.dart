@@ -206,7 +206,7 @@ class ManhwaReviewsState extends StateNotifier<ManhwaReviewsHelper> {
       List<ComicReviewModel> newReivews = List.from(
         state.reviews.where((rev) => rev.userId != review.userId).toList(),
       );
-      updateState(reviews: newReivews);
+      updateState(reviews: newReivews, user_have_review_before: false);
       _updateCountAndAvg();
     }
   }

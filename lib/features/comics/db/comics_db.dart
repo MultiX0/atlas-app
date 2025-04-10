@@ -8,6 +8,7 @@ import 'package:atlas_app/features/comics/models/comic_model.dart';
 import 'package:atlas_app/features/comics/models/comic_published_model.dart';
 import 'package:atlas_app/features/comics/models/comic_titles_model.dart';
 import 'package:atlas_app/features/comics/models/genres_model.dart';
+import 'package:atlas_app/features/comics/providers/providers.dart';
 import 'package:atlas_app/features/reviews/models/comic_review_model.dart';
 import 'package:atlas_app/features/search/providers/manhwa_search_state.dart';
 import 'package:atlas_app/features/search/providers/providers.dart';
@@ -42,7 +43,12 @@ class ComicsDb {
 
   Future<void> viewComic({required String userId, required String comicId}) async {
     try {
+      final currentComic = _ref.read(selectedComicProvider)!;
       await _comicsViewsTable.upsert({KeyNames.userId: userId, KeyNames.comic_id: comicId});
+      _ref.read(selectedComicProvider.notifier).state = currentComic.copyWith(
+        views: currentComic.views + 1,
+        is_viewed: true,
+      );
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -193,7 +199,7 @@ class ComicsDb {
         map[KeyNames.ar_synopsis] = translated.first.ar_synopsis;
       }
 
-      Future.wait([
+      await Future.wait([
         _comicsTable.update(map).eq(KeyNames.ani_id, comic.aniId),
         _ref.read(characterDbProvider).handleInsertCharacters(comic, characters),
       ]);
@@ -378,6 +384,7 @@ class ComicsDb {
       }
 
       final comicData = await getComicById(comic.aniId);
+      log(comicData.toString());
       ComicModel comicModel = ComicModel.fromMap(comicData);
       final characters = extractCharactersFromProcessedComics([comicData]);
       comicModel = comicModel.copyWith(
@@ -385,6 +392,12 @@ class ComicsDb {
         comicId: comic.comicId,
         ar_synopsis: comic.ar_synopsis,
         characters: comic.characters,
+        genres: comic.genres,
+        views: comic.views,
+        is_viewed: comic.is_viewed,
+        favorite_count: comic.favorite_count,
+        posts_count: comic.posts_count,
+        user_favorite: comic.user_favorite,
       );
       log("updating { ${comicModel.aniId} } ...");
       _ref.read(manhwaSearchStateProvider.notifier).updateSpecificComic(comicModel);

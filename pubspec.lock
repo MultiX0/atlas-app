@@ -629,6 +629,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.1"
+  gal:
+    dependency: "direct main"
+    description:
+      name: gal
+      sha256: "2771519c8b29f784d5e27f4efc2667667eef51c6c47cccaa0435a8fe8aa208e4"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.3.1"
+  gallery_image_viewer:
+    dependency: "direct main"
+    description:
+      name: gallery_image_viewer
+      sha256: bf247bfdd0b86c4863efe14a060ffd4fdaad8b9e8a1bef719d2613834eee2c70
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.0"
   go_router:
     dependency: "direct main"
     description:
@@ -902,7 +918,7 @@ packages:
     source: hosted
     version: "1.16.0"
   mime:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: mime
       sha256: "41a20518f0cb1256669420fdba0cd90d21561e560ac240f26ef8322e45bb7ed6"

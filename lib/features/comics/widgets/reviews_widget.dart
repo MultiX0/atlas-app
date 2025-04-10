@@ -1,6 +1,8 @@
 import 'package:atlas_app/core/common/enum/post_type.dart';
+import 'package:atlas_app/core/common/utils/gallery_image_view.dart';
 import 'package:atlas_app/core/common/utils/sheet.dart';
 import 'package:atlas_app/core/common/widgets/loader.dart';
+import 'package:atlas_app/core/services/gal_service.dart';
 import 'package:atlas_app/features/auth/providers/user_state.dart';
 import 'package:atlas_app/features/comics/models/comic_model.dart';
 import 'package:atlas_app/features/comics/providers/manhwa_reviews_state.dart';
@@ -96,6 +98,7 @@ class _ReviewsWidgetState extends ConsumerState<ReviewsWidget> {
               textAlign: reviewArabic ? TextAlign.right : TextAlign.left,
               style: TextStyle(fontFamily: reviewArabic ? arabicPrimaryFont : primaryFont),
             ),
+            if (review.images.isNotEmpty) ...[const SizedBox(height: 15), buildImage(review)],
           ],
         ),
       ),
@@ -108,6 +111,21 @@ class _ReviewsWidgetState extends ConsumerState<ReviewsWidget> {
     } else {
       ref.read(navsProvider).goToMakePostPage(PostType.comic);
     }
+  }
+
+  Widget buildImage(ComicReviewModel review) {
+    final List<ImageProvider> _imageProviders =
+        review.images.map((image) => CachedNetworkAvifImageProvider(image)).toList();
+    return GalleryImageView(
+      listImage: _imageProviders,
+      width: double.infinity,
+      height: 200,
+      boxFit: BoxFit.cover,
+      imageDecoration: BoxDecoration(
+        border: Border.all(color: AppColors.secondBlackColor),
+        borderRadius: BorderRadius.circular(15),
+      ),
+    );
   }
 
   Widget buildAvgCard(AvgReviewsModel avg) {

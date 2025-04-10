@@ -77,7 +77,7 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
     if (widget.update) return;
     final _images = await imagePicker(false);
     setState(() {
-      images = _images;
+      images = [...images, ..._images];
     });
   }
 
@@ -114,7 +114,8 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
         review.storyDevelopment == storyDevelopment &&
         review.updateStability == updateStability &&
         review.worldBackground == worldBackground &&
-        review.writingQuality == writingQuality) {
+        review.writingQuality == writingQuality &&
+        review.spoilers == spoilers) {
       context.pop();
       return;
     }
@@ -326,6 +327,7 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
               ],
             ),
             const SizedBox(height: 10),
+            if (images.isNotEmpty) ...[buildImages(), const SizedBox(height: 10)],
             const Padding(
               padding: EdgeInsets.all(8.0),
               child: LanguageText(
@@ -336,6 +338,35 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget buildImages() {
+    return SizedBox(
+      height: 100,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: images.length,
+        itemBuilder: (context, i) {
+          return Container(
+            margin: EdgeInsets.only(left: i == 0 ? 0 : 10),
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              border: Border.all(color: AppColors.primaryAccent, width: 2.5),
+              image: DecorationImage(image: FileImage(images[i]), fit: BoxFit.cover),
+            ),
+            child: IconButton(
+              onPressed: () {
+                setState(() {
+                  images.removeAt(i);
+                });
+              },
+              icon: Icon(LucideIcons.circle_minus, color: AppColors.errorColor),
+            ),
+          );
+        },
       ),
     );
   }

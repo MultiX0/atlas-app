@@ -10,10 +10,11 @@ class CustomToast {
     required ToastificationStyle style,
   }) {
     toastification.show(
-      title: Text(text),
+      title: Text(text, style: TextStyle(color: AppColors.whiteColor)),
       style: style,
       autoCloseDuration: const Duration(seconds: 3),
       type: type,
+      backgroundColor: AppColors.primaryAccent,
       icon: Icon(icon),
       alignment: Alignment.topCenter,
       borderSide: const BorderSide(),
