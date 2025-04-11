@@ -24,3 +24,4 @@ export 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 export 'package:loading_animation_widget/loading_animation_widget.dart';
 export 'package:toastification/toastification.dart';
 export 'package:atlas_app/core/common/widgets/lang_text.dart';
+export 'package:flutter_portal/flutter_portal.dart';

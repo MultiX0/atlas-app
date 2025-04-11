@@ -191,6 +191,7 @@ class ManhwaReviewsState extends StateNotifier<ManhwaReviewsHelper> {
       return bDate.compareTo(aDate);
     });
     updateState(reviews: newReivews, reviewsCount: state.reviewsCount + 1);
+    _updateCountAndAvg();
   }
 
   void updateReviewByUserId(ComicReviewModel review) {

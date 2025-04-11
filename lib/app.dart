@@ -28,20 +28,22 @@ class _AppState extends ConsumerState<App> {
   @override
   Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
-    return GlobalLoaderOverlay(
-      overlayColor: AppColors.blackColor.withValues(alpha: .85),
-      overlayWidgetBuilder: (_) {
-        return Center(
-          child: LoadingAnimationWidget.fourRotatingDots(color: AppColors.whiteColor, size: 35),
-        );
-      },
-      child: ToastificationWrapper(
-        child: MaterialApp.router(
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.darkModeAppTheme,
-          routeInformationParser: router.routeInformationParser,
-          routeInformationProvider: router.routeInformationProvider,
-          routerDelegate: router.routerDelegate,
+    return Portal(
+      child: GlobalLoaderOverlay(
+        overlayColor: AppColors.blackColor.withValues(alpha: .85),
+        overlayWidgetBuilder: (_) {
+          return Center(
+            child: LoadingAnimationWidget.fourRotatingDots(color: AppColors.whiteColor, size: 35),
+          );
+        },
+        child: ToastificationWrapper(
+          child: MaterialApp.router(
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.darkModeAppTheme,
+            routeInformationParser: router.routeInformationParser,
+            routeInformationProvider: router.routeInformationProvider,
+            routerDelegate: router.routerDelegate,
+          ),
         ),
       ),
     );

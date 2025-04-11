@@ -8,6 +8,7 @@ import 'package:atlas_app/features/navs/navs.dart';
 import 'package:atlas_app/features/reviews/controller/reviews_controller.dart';
 import 'package:atlas_app/features/reviews/models/comic_review_model.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:flutter/scheduler.dart';
 
 class ComicReviewsPage extends ConsumerStatefulWidget {
   const ComicReviewsPage({
@@ -52,8 +53,8 @@ class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
     if (!_scrollController.hasClients) return false;
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.offset;
-    // Load more when we're 200 pixels from the bottom
-    return currentScroll >= (maxScroll - 200);
+    // Load more when we're 100 pixels from the bottom
+    return currentScroll >= (maxScroll - 100);
   }
 
   void fetchData() async {
@@ -127,12 +128,16 @@ class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
       body: NotificationListener<ScrollNotification>(
         onNotification: (scrollNotification) {
           if (scrollNotification is ScrollStartNotification) {
-            setState(() {
-              hideFloating = true;
+            SchedulerBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                setState(() => hideFloating = true);
+              }
             });
           } else if (scrollNotification is ScrollEndNotification) {
-            setState(() {
-              hideFloating = false;
+            SchedulerBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                setState(() => hideFloating = false);
+              }
             });
           }
           return true;
@@ -141,6 +146,7 @@ class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
         child: AppRefresh(
           onRefresh: () async => refresh(),
           child: CustomScrollView(
+            cacheExtent: 1000, // preload offscreen content
             primary: isCurrentTab,
             controller: isCurrentTab ? null : _scrollController,
             slivers: [
