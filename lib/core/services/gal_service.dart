@@ -5,15 +5,15 @@ import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:dio/dio.dart';
 import 'package:gal/gal.dart';
-import 'package:mime/mime.dart';
 import 'package:uuid/uuid.dart';
 
 Future<void> downloadImage(String url) async {
   try {
     await _checkAccess();
+    const uuid = Uuid();
 
     // Download to a temporary file first
-    final tempPath = '${Directory.systemTemp.path}/temp_download';
+    final tempPath = '${Directory.systemTemp.path}/${uuid.v4()}';
 
     CustomToast.get(
       text: "جاري التحميل",
@@ -25,37 +25,16 @@ Future<void> downloadImage(String url) async {
     // Download the file
     await Dio().download(url, tempPath);
 
-    // Read the first few bytes to determine MIME type
-    final bytes = await File(tempPath).readAsBytes();
-    final mimeType = lookupMimeType(tempPath, headerBytes: bytes);
-
     // Determine appropriate extension from MIME type
     String extension = 'jpg'; // Default
-    if (mimeType != null) {
-      switch (mimeType) {
-        case 'image/jpeg':
-          extension = 'jpg';
-          break;
-        case 'image/png':
-          extension = 'png';
-          break;
-        case 'image/gif':
-          extension = 'gif';
-          break;
-        case 'image/webp':
-          extension = 'webp';
-          break;
-        case 'image/heic':
-          extension = 'heic';
-          break;
-        case 'image/avif':
-          extension = 'avif';
-          break;
-      }
+    final ex = url.substring(0, url.indexOf('?alt'));
+    final ex_type = ex.split('.').last.toLowerCase().trim();
+    log(ex_type);
+    if (!(ex_type.isEmpty || (ex_type.length < 3 || ex_type.length > 4))) {
+      extension = ex_type;
     }
 
     // Create the final path with the correct extension
-    const uuid = Uuid();
     final finalPath = '${Directory.systemTemp.path}/${uuid.v4()}.$extension';
 
     await File(tempPath).copy(finalPath);

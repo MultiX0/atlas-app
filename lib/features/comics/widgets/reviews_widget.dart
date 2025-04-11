@@ -1,12 +1,14 @@
 import 'package:atlas_app/core/common/enum/post_type.dart';
+import 'package:atlas_app/core/common/utils/app_date_format.dart';
 import 'package:atlas_app/core/common/utils/gallery_image_view.dart';
 import 'package:atlas_app/core/common/utils/sheet.dart';
+import 'package:atlas_app/core/common/widgets/like_button.dart';
 import 'package:atlas_app/core/common/widgets/loader.dart';
-import 'package:atlas_app/core/services/gal_service.dart';
 import 'package:atlas_app/features/auth/providers/user_state.dart';
 import 'package:atlas_app/features/comics/models/comic_model.dart';
 import 'package:atlas_app/features/comics/providers/manhwa_reviews_state.dart';
 import 'package:atlas_app/features/navs/navs.dart';
+import 'package:atlas_app/features/reviews/controller/reviews_controller.dart';
 import 'package:atlas_app/features/reviews/models/avg_reviews_model.dart';
 import 'package:atlas_app/features/reviews/models/comic_review_model.dart';
 import 'package:atlas_app/features/reviews/widgets/comic_review_sheet.dart';
@@ -47,12 +49,12 @@ class _ReviewsWidgetState extends ConsumerState<ReviewsWidget> {
           return const Center(child: Padding(padding: EdgeInsets.all(8.0), child: Loader()));
         }
         final review = widget.reviews.elementAt(i - 1);
-        return buildUserReviewCard(review);
+        return buildUserReviewCard(review, i - 1);
       },
     );
   }
 
-  Widget buildUserReviewCard(ComicReviewModel review) {
+  Widget buildUserReviewCard(ComicReviewModel review, int index) {
     final me = ref.watch(userState).user!;
     bool isMe = review.userId == me.userId;
     final reviewArabic = Bidi.hasAnyRtl(review.review);
@@ -70,15 +72,16 @@ class _ReviewsWidgetState extends ConsumerState<ReviewsWidget> {
                   backgroundImage: CachedNetworkAvifImageProvider(review.user!.avatar),
                 ),
                 const SizedBox(width: 10),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("@${review.user?.username}"),
-                    const SizedBox(height: 5),
-                    buildRatingBar(rating: review.overall, comic: widget.comic, itemSize: 12),
-                  ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("@${review.user?.username}"),
+                      const SizedBox(height: 5),
+                      buildRatingBar(rating: review.overall, comic: widget.comic, itemSize: 12),
+                    ],
+                  ),
                 ),
-
                 const Spacer(),
                 IconButton(
                   onPressed:
@@ -90,6 +93,14 @@ class _ReviewsWidgetState extends ConsumerState<ReviewsWidget> {
                 ),
               ],
             ),
+            const SizedBox(height: 8),
+
+            Text(
+              review.updatedAt == null
+                  ? appDateTimeFormat(review.createdAt)
+                  : "${appDateTimeFormat(review.createdAt)} (محدث)",
+              style: const TextStyle(fontSize: 12),
+            ),
 
             const SizedBox(height: 15),
             Text(
@@ -98,11 +109,39 @@ class _ReviewsWidgetState extends ConsumerState<ReviewsWidget> {
               textAlign: reviewArabic ? TextAlign.right : TextAlign.left,
               style: TextStyle(fontFamily: reviewArabic ? arabicPrimaryFont : primaryFont),
             ),
-            if (review.images.isNotEmpty) ...[const SizedBox(height: 15), buildImage(review)],
+            if (review.images.isNotEmpty) ...[
+              const SizedBox(height: 15),
+              GestureDetector(
+                onDoubleTap: () => handleLike(index: index, review: review, userId: me.userId),
+                child: buildImage(review),
+              ),
+              const SizedBox(height: 15),
+            ],
+            Row(
+              children: [
+                CustomLikeButton(
+                  likeCount: review.likes_count,
+                  onTap: (_) => handleLike(index: index, review: review, userId: me.userId),
+                  isLiked: review.i_liked,
+                  size: 24,
+                ),
+              ],
+            ),
           ],
         ),
       ),
     );
+  }
+
+  Future<bool?> handleLike({
+    required int index,
+    required ComicReviewModel review,
+    required String userId,
+  }) async {
+    ref
+        .read(reviewsControllerProvider.notifier)
+        .handleComicReviewLike(review.copyWith(i_liked: !review.i_liked), userId, index);
+    return true;
   }
 
   void onTap() {

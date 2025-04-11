@@ -2,10 +2,13 @@ import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/imports.dart';
 
 class ComicReviewModel {
+  final String id;
+  final int likes_count;
+  final bool i_liked;
   final String comicId;
   final String userId;
   final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
   final double writingQuality;
   final double storyDevelopment;
   final double characterDesign;
@@ -17,12 +20,15 @@ class ComicReviewModel {
   final List images;
   final UserModel? user;
   ComicReviewModel({
+    required this.id,
+    required this.likes_count,
+    required this.i_liked,
     required this.comicId,
     required this.images,
     required this.userId,
     required this.writingQuality,
     required this.createdAt,
-    required this.updatedAt,
+    this.updatedAt,
     required this.storyDevelopment,
     required this.characterDesign,
     required this.updateStability,
@@ -48,6 +54,9 @@ class ComicReviewModel {
     String? review,
     UserModel? user,
     List? images,
+    String? id,
+    int? likes_count,
+    bool? i_liked,
   }) {
     return ComicReviewModel(
       comicId: comicId ?? this.comicId,
@@ -64,6 +73,9 @@ class ComicReviewModel {
       user: this.user,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      i_liked: i_liked ?? this.i_liked,
+      id: id ?? this.id,
+      likes_count: likes_count ?? this.likes_count,
     );
   }
 
@@ -83,6 +95,9 @@ class ComicReviewModel {
       user: reviewModel.user,
       createdAt: reviewModel.createdAt,
       updatedAt: reviewModel.updatedAt,
+      i_liked: reviewModel.i_liked,
+      id: reviewModel.id,
+      likes_count: reviewModel.likes_count,
     );
   }
 
@@ -90,6 +105,7 @@ class ComicReviewModel {
     return <String, dynamic>{
       KeyNames.comic_id: comicId,
       KeyNames.userId: userId,
+      KeyNames.id: id,
       KeyNames.writing_quality: writingQuality,
       KeyNames.story_development: storyDevelopment,
       KeyNames.character_design: characterDesign,
@@ -100,12 +116,15 @@ class ComicReviewModel {
       KeyNames.images: images,
       KeyNames.review_text: review,
       KeyNames.created_at: createdAt.toIso8601String(),
-      KeyNames.updated_at: updatedAt.toIso8601String(),
+      KeyNames.updated_at: updatedAt?.toIso8601String(),
     };
   }
 
   factory ComicReviewModel.fromMap(Map<String, dynamic> map) {
     return ComicReviewModel(
+      id: map[KeyNames.id] ?? "",
+      likes_count: map[KeyNames.like_count] ?? 0,
+      i_liked: map[KeyNames.user_liked] ?? false,
       comicId: map[KeyNames.comic_id] ?? "",
       userId: map[KeyNames.userId] ?? "",
       writingQuality: map[KeyNames.writing_quality] ?? 1.0,

@@ -19,4 +19,5 @@ class TableNames {
   static const characters = 'characters';
   static const comic_characters = 'comic_characters';
   static const comic_views = 'comic_views';
+  static const comic_review_likes = 'comic_review_likes';
 }

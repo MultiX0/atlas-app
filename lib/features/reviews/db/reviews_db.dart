@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:atlas_app/core/common/constants/function_names.dart';
 import 'package:atlas_app/core/common/constants/table_names.dart';
+import 'package:atlas_app/core/common/constants/view_names.dart';
 import 'package:atlas_app/features/reviews/models/avg_reviews_model.dart';
 import 'package:atlas_app/features/reviews/models/comic_review_model.dart';
 import 'package:atlas_app/imports.dart';
@@ -17,6 +18,8 @@ class ReviewsDb {
 
   SupabaseClient get _client => Supabase.instance.client;
   SupabaseQueryBuilder get _comicReviewsTable => _client.from(TableNames.comic_reviews);
+  SupabaseQueryBuilder get _comicReviewLikesTable => _client.from(TableNames.comic_review_likes);
+  SupabaseQueryBuilder get _comicReviewsView => _client.from(ViewNames.comic_reviews_with_likes);
 
   Future<void> insertComicReview(ComicReviewModel review) async {
     try {
@@ -33,8 +36,8 @@ class ReviewsDb {
     required int pageSize,
   }) async {
     try {
-      final data = await _comicReviewsTable
-          .select("*,${TableNames.users}(*)")
+      final data = await _comicReviewsView
+          .select("*")
           .eq(KeyNames.comic_id, comicId)
           .order(KeyNames.created_at, ascending: false)
           .range(startIndex, startIndex + pageSize - 1);
@@ -122,6 +125,25 @@ class ReviewsDb {
           .delete()
           .eq(KeyNames.comic_id, review.comicId)
           .eq(KeyNames.userId, review.userId);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> handleComicReviewLike(ComicReviewModel review, String userId) async {
+    try {
+      if (review.i_liked) {
+        await _comicReviewLikesTable.insert({
+          KeyNames.review_id: review.id,
+          KeyNames.userId: userId,
+        });
+      } else {
+        await _comicReviewLikesTable
+            .delete()
+            .eq(KeyNames.userId, userId)
+            .eq(KeyNames.review_id, review.id);
+      }
     } catch (e) {
       log(e.toString());
       rethrow;

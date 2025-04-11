@@ -22,6 +22,7 @@ class ReviewsController extends StateNotifier<bool> {
   final Ref _ref;
   ReviewsController({required Ref ref}) : _ref = ref, super(false);
   ReviewsDb get db => _ref.watch(reviewsDBProvider);
+  final uuid = const Uuid();
 
   Future<void> insertComicReview({
     required String comicId,
@@ -44,6 +45,9 @@ class ReviewsController extends StateNotifier<bool> {
       final _images = await uploadImages(images, comicId: comicId, userId: userId);
       final now = DateTime.now();
       final review = ComicReviewModel(
+        id: uuid.v4(),
+        likes_count: 0,
+        i_liked: false,
         review: reviewText,
         comicId: comicId,
         createdAt: now,
@@ -75,6 +79,23 @@ class ReviewsController extends StateNotifier<bool> {
     }
   }
 
+  Future<void> handleComicReviewLike(ComicReviewModel review, String userId, int index) async {
+    try {
+      _ref
+          .read(manhwaReviewsStateProvider(review.comicId).notifier)
+          .handleLocalLike(review.copyWith(i_liked: !review.i_liked), index);
+
+      await db.handleComicReviewLike(review, userId);
+    } catch (e) {
+      _ref
+          .read(manhwaReviewsStateProvider(review.comicId).notifier)
+          .handleLocalLike(review.copyWith(i_liked: !review.i_liked), index);
+      CustomToast.error(errorMsg);
+      log(e.toString());
+      rethrow;
+    }
+  }
+
   Future<void> updateComicReview(ComicReviewModel review, BuildContext context) async {
     try {
       state = true;
@@ -88,7 +109,7 @@ class ReviewsController extends StateNotifier<bool> {
     } catch (e) {
       context.loaderOverlay.hide();
       state = false;
-      CustomToast.error("حدث خطأ الرجاء المحاولة مرة أخرى لاحقا");
+      CustomToast.error(errorMsg);
       log(e.toString());
       rethrow;
     }
@@ -104,7 +125,7 @@ class ReviewsController extends StateNotifier<bool> {
 
       CustomToast.success("تم حذف المراجعة بنجاح");
     } catch (e) {
-      CustomToast.error("حدث خطأ الرجاء المحاولة مرة أخرى لاحقا");
+      CustomToast.error(errorMsg);
       log(e.toString());
     }
     context.loaderOverlay.hide();
@@ -131,26 +152,29 @@ class ReviewsController extends StateNotifier<bool> {
   }) async {
     try {
       const uuid = Uuid();
+      String extension = '';
       List<String> _links = [];
       for (final image in images) {
         // Convert image to AVIF first
-        final avifImage = await AvifConverter.convertToAvif(image);
+        final avifImage = await AvifConverter.convertToAvif(image, quality: 80);
         log("avifImage: ${avifImage?.absolute.path}");
 
         // Check if conversion was successful before proceeding
         if (avifImage != null) {
+          extension = avifImage.absolute.path.split('.').last.trim().toString();
           final link = await UploadStorage.uploadImages(
             image: avifImage,
-            path: 'comics/$comicId/reviews/$userId-${uuid.v4()}',
+            path: 'comics/$comicId/reviews/$userId-${uuid.v4()}.$extension',
           );
           log("avif image uploaded: $link");
           _links.add(link);
         } else {
           // If AVIF conversion fails, use the original image as fallback
           log('AVIF conversion failed for image. Using original format.');
+          extension = image.absolute.path.split('.').last.trim().toString();
           final link = await UploadStorage.uploadImages(
             image: image,
-            path: 'comics/$comicId/reviews/$userId-${uuid.v4()}',
+            path: 'comics/$comicId/reviews/$userId-${uuid.v4()}.$extension',
           );
           _links.add(link);
         }

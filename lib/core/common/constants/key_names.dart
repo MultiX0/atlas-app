@@ -86,4 +86,7 @@ class KeyNames {
   static const update_stability_avg = 'update_stability_avg';
   static const world_background_avg = 'world_background_avg';
   static const overall_avg = 'overall_avg';
+  static const like_count = 'like_count';
+  static const user_liked = 'user_liked';
+  static const review_id = 'review_id';
 }

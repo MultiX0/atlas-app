@@ -185,7 +185,11 @@ class ManhwaReviewsState extends StateNotifier<ManhwaReviewsHelper> {
   void addReview(ComicReviewModel review) {
     List<ComicReviewModel> newReivews = List.from(state.reviews);
     newReivews.add(review);
-    newReivews.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    newReivews.sort((a, b) {
+      final aDate = a.updatedAt ?? a.createdAt;
+      final bDate = b.updatedAt ?? b.createdAt;
+      return bDate.compareTo(aDate);
+    });
     updateState(reviews: newReivews, reviewsCount: state.reviewsCount + 1);
   }
 
@@ -209,6 +213,19 @@ class ManhwaReviewsState extends StateNotifier<ManhwaReviewsHelper> {
       updateState(reviews: newReivews, user_have_review_before: false);
       _updateCountAndAvg();
     }
+  }
+
+  void handleLocalLike(ComicReviewModel review, int index) {
+    if (index < 0 || index >= state.reviews.length) return;
+
+    final updated = List<ComicReviewModel>.from(state.reviews);
+    final updatedReview = review.copyWith(
+      i_liked: !review.i_liked,
+      likes_count: review.i_liked ? review.likes_count - 1 : review.likes_count + 1,
+    );
+    updated[index] = updatedReview;
+
+    updateState(reviews: updated);
   }
 }
 

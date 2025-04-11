@@ -1,14 +1,9 @@
-import 'dart:developer';
-
 import 'package:atlas_app/core/services/gal_service.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart';
-import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:gallery_image_viewer/gallery_image_viewer.dart';
-import 'package:go_router/go_router.dart';
 
 // Defined here so we don't repeat ourselves
 const _defaultBackgroundColor = Colors.black;

@@ -88,6 +88,8 @@ dependencies:
   gallery_image_viewer: ^1.2.0
   gal: ^2.3.1
   mime: ^2.0.0
+  like_button: ^2.0.5
+  mime_type: ^1.0.1
 
 dev_dependencies:
   flutter_test:
