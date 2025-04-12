@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/features/auth/db/auth_db.dart';
-import 'package:atlas_app/features/auth/providers/user_state.dart';
 import 'package:atlas_app/imports.dart';
 
 final authControllerProvider = StateNotifierProvider<AuthController, bool>((ref) {

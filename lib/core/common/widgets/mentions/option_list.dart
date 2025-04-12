@@ -1,7 +1,8 @@
 import 'package:atlas_app/imports.dart';
 
 class OptionList extends StatelessWidget {
-  OptionList({
+  const OptionList({
+    super.key,
     required this.data,
     required this.onTap,
     required this.suggestionListHeight,
@@ -23,7 +24,7 @@ class OptionList extends StatelessWidget {
   Widget build(BuildContext context) {
     return data.isNotEmpty
         ? Container(
-          decoration: suggestionListDecoration ?? BoxDecoration(color: Colors.white),
+          decoration: suggestionListDecoration ?? const BoxDecoration(color: Colors.white),
           constraints: BoxConstraints(maxHeight: suggestionListHeight, minHeight: 0),
           child: ListView.builder(
             itemCount: data.length,
@@ -38,8 +39,8 @@ class OptionList extends StatelessWidget {
                         ? suggestionBuilder!(data[index])
                         : Container(
                           color: Colors.blue,
-                          padding: EdgeInsets.all(20.0),
-                          child: Text(data[index]['display'], style: TextStyle(fontSize: 12)),
+                          padding: const EdgeInsets.all(20.0),
+                          child: Text(data[index]['display'], style: const TextStyle(fontSize: 12)),
                         ),
               );
             },

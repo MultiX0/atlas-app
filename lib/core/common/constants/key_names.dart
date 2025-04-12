@@ -89,4 +89,18 @@ class KeyNames {
   static const like_count = 'like_count';
   static const user_liked = 'user_liked';
   static const review_id = 'review_id';
+  static const can_reposted = 'can_reposted';
+  static const hashtag = 'hashtag';
+  static const lpc_at = 'lpc_at';
+  static const parent = 'parent';
+  static const user = 'user';
+  static const character_name = 'character_name';
+  static const parent_post = 'parent_post';
+  static const comments_count = 'comments_count';
+  static const reposts_count = 'reposts_count';
+  static const manhwa_mentions = 'manhwa_mentions';
+  static const character_mentions = 'character_mentions';
+  static const novel_mentions = 'novel_mentions';
+  static const review_mentioned = 'review_mentioned';
+  static const hashtags = 'hashtags';
 }

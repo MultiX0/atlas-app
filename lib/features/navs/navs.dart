@@ -1,6 +1,5 @@
-import 'package:atlas_app/core/common/enum/post_type.dart';
 import 'package:atlas_app/features/comics/models/comic_model.dart';
-import 'package:atlas_app/features/comics/providers/providers.dart';
+import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:atlas_app/router.dart';
 
@@ -21,6 +20,7 @@ class Navs {
   }
 
   void goToMakePostPage(PostType postType) {
+    _ref.read(postTypeProvider.notifier).state = postType;
     router.push("${Routes.makePostPage}/${postType.name.trim()}");
   }
 }

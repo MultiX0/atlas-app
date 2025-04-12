@@ -1,9 +1,7 @@
-import 'package:atlas_app/core/common/enum/post_type.dart';
 import 'package:atlas_app/core/common/widgets/app_refresh.dart';
 import 'package:atlas_app/core/common/widgets/loader.dart';
 import 'package:atlas_app/features/comics/models/comic_model.dart';
 import 'package:atlas_app/features/comics/providers/manhwa_reviews_state.dart';
-import 'package:atlas_app/features/comics/widgets/reviews_widget.dart';
 import 'package:atlas_app/features/navs/navs.dart';
 import 'package:atlas_app/features/reviews/controller/reviews_controller.dart';
 import 'package:atlas_app/features/reviews/models/comic_review_model.dart';
@@ -94,7 +92,7 @@ class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
     if (reviews.isEmpty || !iAlreadyReviewdOnce) {
       ref.read(navsProvider).goToAddComicReviewPage('f');
     } else {
-      ref.read(navsProvider).goToMakePostPage(PostType.comic);
+      ref.read(navsProvider).goToMakePostPage(PostType.comic_review);
     }
   }
 

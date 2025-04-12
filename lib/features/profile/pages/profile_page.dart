@@ -1,6 +1,5 @@
 import 'dart:developer';
 
-import 'package:atlas_app/features/auth/providers/user_state.dart';
 import 'package:atlas_app/features/profile/controller/profile_controller.dart';
 import 'package:atlas_app/features/profile/provider/providers.dart';
 import 'package:atlas_app/features/profile/widgets/profile_body.dart';
@@ -63,7 +62,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             ),
           ];
         }),
-        body: const ProfileBody(),
+        body: ProfileBody(user: user),
       ),
     );
   }

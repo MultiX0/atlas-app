@@ -1,4 +1,3 @@
-import 'package:atlas_app/features/auth/providers/user_state.dart';
 import 'package:atlas_app/features/profile/provider/providers.dart';
 import 'package:flutter/cupertino.dart';
 import 'imports.dart';

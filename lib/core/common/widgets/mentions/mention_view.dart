@@ -1,13 +1,12 @@
 import 'package:atlas_app/core/common/widgets/mentions/annotation_editing_controller.dart';
-import 'package:atlas_app/core/common/widgets/mentions/models.dart';
 import 'package:atlas_app/core/common/widgets/mentions/option_list.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:flutter/services.dart';
 
 class FlutterMentions extends StatefulWidget {
-  FlutterMentions({
+  const FlutterMentions({
     required this.mentions,
-    Key? key,
+    super.key,
     this.defaultText,
     this.suggestionPosition = SuggestionPosition.Bottom,
     this.suggestionListHeight = 300.0,
@@ -54,7 +53,7 @@ class FlutterMentions extends StatefulWidget {
     this.appendSpaceOnAdd = true,
     this.hideSuggestionList = false,
     this.onSuggestionVisibleChanged,
-  }) : super(key: key);
+  });
 
   final bool hideSuggestionList;
 
@@ -260,7 +259,7 @@ class FlutterMentionsState extends State<FlutterMentions> {
     final data = <String, Annotation>{};
 
     // Loop over all the mention items and generate a suggestions matching list
-    widget.mentions.forEach((element) {
+    for (var element in widget.mentions) {
       // if matchAll is set to true add a general regex patteren to match with
       if (element.matchAll) {
         data['${element.trigger}([A-Za-z0-9])*'] = Annotation(
@@ -273,8 +272,8 @@ class FlutterMentionsState extends State<FlutterMentions> {
         );
       }
 
-      element.data.forEach(
-        (e) => data["${element.trigger}${e['display']}"] = e['style'] != null
+      for (var e in element.data) {
+        data["${element.trigger}${e['display']}"] = e['style'] != null
             ? Annotation(
                 style: e['style'],
                 id: e['id'],
@@ -290,9 +289,9 @@ class FlutterMentionsState extends State<FlutterMentions> {
                 trigger: element.trigger,
                 disableMarkup: element.disableMarkup,
                 markupBuilder: element.markupBuilder,
-              ),
-      );
-    });
+              );
+      }
+    }
 
     return data;
   }
@@ -402,8 +401,8 @@ class FlutterMentionsState extends State<FlutterMentions> {
   }
 
   @override
-  void didUpdateWidget(widget) {
-    super.didUpdateWidget(widget);
+  void didUpdateWidget(oldWidget) {
+    super.didUpdateWidget(oldWidget);
 
     controller!.mapping = mapToAnotation();
   }
@@ -416,81 +415,79 @@ class FlutterMentionsState extends State<FlutterMentions> {
             (element) => _selectedMention!.str.contains(element.trigger))
         : widget.mentions[0];
 
-    return Container(
-      child: PortalEntry(
-        portalAnchor: widget.suggestionPosition == SuggestionPosition.Bottom
-            ? Alignment.topCenter
-            : Alignment.bottomCenter,
-        childAnchor: widget.suggestionPosition == SuggestionPosition.Bottom
-            ? Alignment.bottomCenter
-            : Alignment.topCenter,
-        portal: ValueListenableBuilder(
-          valueListenable: showSuggestions,
-          builder: (BuildContext context, bool show, Widget? child) {
-            return show && !widget.hideSuggestionList
-                ? OptionList(
-                    suggestionListHeight: widget.suggestionListHeight,
-                    suggestionBuilder: list.suggestionBuilder,
-                    suggestionListDecoration: widget.suggestionListDecoration,
-                    data: list.data.where((element) {
-                      final ele = element['display'].toLowerCase();
-                      final str = _selectedMention!.str
-                          .toLowerCase()
-                          .replaceAll(RegExp(_pattern), '');
-
-                      return ele == str ? false : ele.contains(str);
-                    }).toList(),
-                    onTap: (value) {
-                      addMention(value, list);
-                      showSuggestions.value = false;
-                    },
-                  )
-                : Container();
-          },
-        ),
-        child: Row(
-          children: [
-            ...widget.leading,
-            Expanded(
-              child: TextField(
-                maxLines: widget.maxLines,
-                minLines: widget.minLines,
-                maxLength: widget.maxLength,
-                focusNode: widget.focusNode,
-                keyboardType: widget.keyboardType,
-                keyboardAppearance: widget.keyboardAppearance,
-                textInputAction: widget.textInputAction,
-                textCapitalization: widget.textCapitalization,
-                style: widget.style,
-                textAlign: widget.textAlign,
-                textDirection: widget.textDirection,
-                readOnly: widget.readOnly,
-                showCursor: widget.showCursor,
-                autofocus: widget.autofocus,
-                autocorrect: widget.autocorrect,
-                maxLengthEnforcement: widget.maxLengthEnforcement,
-                cursorColor: widget.cursorColor,
-                cursorRadius: widget.cursorRadius,
-                cursorWidth: widget.cursorWidth,
-                buildCounter: widget.buildCounter,
-                autofillHints: widget.autofillHints,
-                decoration: widget.decoration,
-                expands: widget.expands,
-                onEditingComplete: widget.onEditingComplete,
-                onTap: widget.onTap,
-                onSubmitted: widget.onSubmitted,
-                enabled: widget.enabled,
-                enableInteractiveSelection: widget.enableInteractiveSelection,
-                enableSuggestions: widget.enableSuggestions,
-                scrollController: widget.scrollController,
-                scrollPadding: widget.scrollPadding,
-                scrollPhysics: widget.scrollPhysics,
-                controller: controller,
-              ),
+    return PortalEntry(
+      portalAnchor: widget.suggestionPosition == SuggestionPosition.Bottom
+          ? Alignment.topCenter
+          : Alignment.bottomCenter,
+      childAnchor: widget.suggestionPosition == SuggestionPosition.Bottom
+          ? Alignment.bottomCenter
+          : Alignment.topCenter,
+      portal: ValueListenableBuilder(
+        valueListenable: showSuggestions,
+        builder: (BuildContext context, bool show, Widget? child) {
+          return show && !widget.hideSuggestionList
+              ? OptionList(
+                  suggestionListHeight: widget.suggestionListHeight,
+                  suggestionBuilder: list.suggestionBuilder,
+                  suggestionListDecoration: widget.suggestionListDecoration,
+                  data: list.data.where((element) {
+                    final ele = element['display'].toLowerCase();
+                    final str = _selectedMention!.str
+                        .toLowerCase()
+                        .replaceAll(RegExp(_pattern), '');
+    
+                    return ele == str ? false : ele.contains(str);
+                  }).toList(),
+                  onTap: (value) {
+                    addMention(value, list);
+                    showSuggestions.value = false;
+                  },
+                )
+              : Container();
+        },
+      ),
+      child: Row(
+        children: [
+          ...widget.leading,
+          Expanded(
+            child: TextField(
+              maxLines: widget.maxLines,
+              minLines: widget.minLines,
+              maxLength: widget.maxLength,
+              focusNode: widget.focusNode,
+              keyboardType: widget.keyboardType,
+              keyboardAppearance: widget.keyboardAppearance,
+              textInputAction: widget.textInputAction,
+              textCapitalization: widget.textCapitalization,
+              style: widget.style,
+              textAlign: widget.textAlign,
+              textDirection: widget.textDirection,
+              readOnly: widget.readOnly,
+              showCursor: widget.showCursor,
+              autofocus: widget.autofocus,
+              autocorrect: widget.autocorrect,
+              maxLengthEnforcement: widget.maxLengthEnforcement,
+              cursorColor: widget.cursorColor,
+              cursorRadius: widget.cursorRadius,
+              cursorWidth: widget.cursorWidth,
+              buildCounter: widget.buildCounter,
+              autofillHints: widget.autofillHints,
+              decoration: widget.decoration,
+              expands: widget.expands,
+              onEditingComplete: widget.onEditingComplete,
+              onTap: widget.onTap,
+              onSubmitted: widget.onSubmitted,
+              enabled: widget.enabled,
+              enableInteractiveSelection: widget.enableInteractiveSelection,
+              enableSuggestions: widget.enableSuggestions,
+              scrollController: widget.scrollController,
+              scrollPadding: widget.scrollPadding,
+              scrollPhysics: widget.scrollPhysics,
+              controller: controller,
             ),
-            ...widget.trailing,
-          ],
-        ),
+          ),
+          ...widget.trailing,
+        ],
       ),
     );
   }

@@ -1,12 +1,10 @@
 import 'dart:developer';
 
-import 'package:atlas_app/core/common/enum/post_type.dart';
 import 'package:atlas_app/features/auth/pages/forget_password/confirm_email_page.dart';
 import 'package:atlas_app/features/auth/pages/forget_password/email_field_page.dart';
 import 'package:atlas_app/features/auth/pages/forget_password/update_password.dart';
 import 'package:atlas_app/features/auth/pages/login_page.dart';
 import 'package:atlas_app/features/auth/pages/register_page.dart';
-import 'package:atlas_app/features/auth/providers/user_state.dart';
 import 'package:atlas_app/features/comics/pages/manhwa_page.dart';
 import 'package:atlas_app/features/explore/pages/explore_page.dart';
 import 'package:atlas_app/features/onboarding/pages/first_page.dart';

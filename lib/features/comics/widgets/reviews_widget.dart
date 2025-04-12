@@ -1,10 +1,8 @@
-import 'package:atlas_app/core/common/enum/post_type.dart';
 import 'package:atlas_app/core/common/utils/app_date_format.dart';
 import 'package:atlas_app/core/common/utils/gallery_image_view.dart';
 import 'package:atlas_app/core/common/utils/sheet.dart';
 import 'package:atlas_app/core/common/widgets/like_button.dart';
 import 'package:atlas_app/core/common/widgets/loader.dart';
-import 'package:atlas_app/features/auth/providers/user_state.dart';
 import 'package:atlas_app/features/comics/models/comic_model.dart';
 import 'package:atlas_app/features/comics/providers/manhwa_reviews_state.dart';
 import 'package:atlas_app/features/navs/navs.dart';
@@ -40,6 +38,7 @@ class _ReviewsWidgetState extends ConsumerState<ReviewsWidget> {
     final reviewsState = ref.watch(manhwaReviewsStateProvider(widget.comic.comicId));
     final avg = reviewsState.avgReviews;
     return SliverList.builder(
+      addRepaintBoundaries: true,
       itemCount: widget.reviews.length + (reviewsState.moreLoading ? 2 : 1),
       itemBuilder: (cntext, i) {
         if (i == 0) {
@@ -55,7 +54,7 @@ class _ReviewsWidgetState extends ConsumerState<ReviewsWidget> {
   }
 
   Widget buildUserReviewCard(ComicReviewModel review, int index) {
-    final me = ref.watch(userState).user!;
+    final me = ref.read(userState).user!;
     bool isMe = review.userId == me.userId;
     final reviewArabic = Bidi.hasAnyRtl(review.review);
     return Padding(
@@ -148,21 +147,24 @@ class _ReviewsWidgetState extends ConsumerState<ReviewsWidget> {
     if (widget.reviews.isEmpty || !widget.iAlreadyReviewdOnce) {
       ref.read(navsProvider).goToAddComicReviewPage('f');
     } else {
-      ref.read(navsProvider).goToMakePostPage(PostType.comic);
+      ref.read(navsProvider).goToMakePostPage(PostType.comic_review);
     }
   }
 
   Widget buildImage(ComicReviewModel review) {
     final List<ImageProvider> _imageProviders =
         review.images.map((image) => CachedNetworkAvifImageProvider(image)).toList();
-    return GalleryImageView(
-      listImage: _imageProviders,
-      width: double.infinity,
-      height: 200,
-      boxFit: BoxFit.cover,
-      imageDecoration: BoxDecoration(
-        border: Border.all(color: AppColors.secondBlackColor),
-        borderRadius: BorderRadius.circular(15),
+    return RepaintBoundary(
+      key: ValueKey(review.id),
+      child: GalleryImageView(
+        listImage: _imageProviders,
+        width: double.infinity,
+        height: 200,
+        boxFit: BoxFit.cover,
+        imageDecoration: BoxDecoration(
+          border: Border.all(color: AppColors.secondBlackColor),
+          borderRadius: BorderRadius.circular(15),
+        ),
       ),
     );
   }
@@ -266,8 +268,8 @@ Widget buildRating(String text, {required double rating, required ComicModel com
   );
 }
 
-Widget buildRatingBar({required double rating, required ComicModel comic, double itemSize = 18}) {
-  final starColor = comic.color != null ? HexColor(comic.color!) : AppColors.primary;
+Widget buildRatingBar({required double rating, ComicModel? comic, double itemSize = 18}) {
+  final starColor = comic?.color != null ? HexColor(comic!.color!) : AppColors.primary;
   return RatingBarIndicator(
     direction: Axis.horizontal,
     itemCount: 5,

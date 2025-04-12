@@ -1,6 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
 import 'package:atlas_app/core/services/syste_chrome.dart';
-import 'package:atlas_app/features/auth/providers/user_state.dart';
 import 'package:atlas_app/router.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 

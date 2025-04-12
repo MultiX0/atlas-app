@@ -1,8 +1,11 @@
+import 'package:atlas_app/features/profile/pages/posts_page.dart';
 import 'package:atlas_app/features/profile/provider/providers.dart';
 import 'package:atlas_app/imports.dart';
 
 class ProfileBody extends ConsumerStatefulWidget {
-  const ProfileBody({super.key});
+  const ProfileBody({super.key, required this.user});
+
+  final UserModel user;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _ProfileBodyState();
@@ -26,21 +29,7 @@ class _ProfileBodyState extends ConsumerState<ProfileBody> with SingleTickerProv
   Widget build(BuildContext context) {
     return TabBarView(
       controller: _tabController,
-      children: [
-        ListView.builder(
-          itemCount: 20,
-          itemBuilder: (context, i) {
-            return Container(
-              margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
-              height: 150,
-              width: double.infinity,
-              color: AppColors.primaryAccent,
-            );
-          },
-        ),
-        const SizedBox(),
-        const SizedBox(),
-      ],
+      children: [ProfilePostsPage(user: widget.user), const SizedBox(), const SizedBox()],
     );
   }
 }

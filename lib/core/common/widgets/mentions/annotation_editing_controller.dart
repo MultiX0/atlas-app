@@ -1,4 +1,3 @@
-import 'package:atlas_app/core/common/widgets/mentions/models.dart';
 import 'package:atlas_app/imports.dart';
 
 /// A custom implementation of [TextEditingController] to support @ mention or other

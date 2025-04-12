@@ -20,4 +20,6 @@ class TableNames {
   static const comic_characters = 'comic_characters';
   static const comic_views = 'comic_views';
   static const comic_review_likes = 'comic_review_likes';
+  static const post_hashtags = 'post_hashtags';
+  static const hashtags = 'hashtags';
 }

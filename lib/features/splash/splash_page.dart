@@ -1,6 +1,5 @@
 import 'dart:developer';
 
-import 'package:atlas_app/features/auth/providers/user_state.dart';
 import 'package:atlas_app/imports.dart';
 
 class SplashPage extends ConsumerStatefulWidget {

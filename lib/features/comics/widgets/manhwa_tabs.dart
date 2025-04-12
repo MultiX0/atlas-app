@@ -1,4 +1,3 @@
-import 'package:atlas_app/features/comics/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
 
 class ManhwaTabs extends ConsumerWidget {

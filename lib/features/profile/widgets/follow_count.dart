@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class FollowCount extends StatelessWidget {
   final int count;
   final String text;
-  const FollowCount({Key? key, required this.count, required this.text}) : super(key: key);
+  const FollowCount({super.key, required this.count, required this.text});
 
   @override
   Widget build(BuildContext context) {

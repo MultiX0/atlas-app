@@ -1,13 +1,13 @@
 import 'dart:developer';
 
 import 'package:atlas_app/core/common/constants/function_names.dart';
-// import 'package:atlas_app/core/common/constants/table_names.dart';
+import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/features/profile/models/follows_model.dart';
 import 'package:atlas_app/imports.dart';
 
 class ProfileDb {
   final client = Supabase.instance.client;
-  // SupabaseQueryBuilder get _usersTable => client.from(TableNames.users);
+  SupabaseQueryBuilder get _usersTable => client.from(TableNames.users);
 
   Future<FollowsCountModel> getFollowsCountString(String userId) async {
     try {
@@ -18,5 +18,15 @@ class ProfileDb {
       log(e.toString());
       rethrow;
     }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchUsersForMention(String query) async {
+    final response = await _usersTable
+        .select('id, username, full_name, avatar')
+        .ilike('username', '%$query%')
+        .order('username')
+        .limit(8);
+
+    return List<Map<String, dynamic>>.from(response);
   }
 }

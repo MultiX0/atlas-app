@@ -1,4 +1,3 @@
-import 'package:atlas_app/features/comics/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 

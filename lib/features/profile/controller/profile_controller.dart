@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:atlas_app/features/auth/controller/auth_controller.dart';
 import 'package:atlas_app/features/auth/db/auth_db.dart';
 import 'package:atlas_app/features/profile/db/profile_db.dart';
@@ -6,6 +8,10 @@ import 'package:atlas_app/imports.dart';
 final getUserByIdProvider = FutureProvider.family<UserModel, String>((ref, userId) async {
   final controller = ref.watch(authControllerProvider.notifier);
   return controller.getUserData(userId);
+});
+
+final profileControllerProvider = StateNotifierProvider<ProfileController, bool>((ref) {
+  return ProfileController(ref: ref);
 });
 
 class ProfileController extends StateNotifier<bool> {
@@ -17,4 +23,13 @@ class ProfileController extends StateNotifier<bool> {
   AuthDb get _authDb => AuthDb();
   // ignore: unused_element
   ProfileDb get _profileDb => ProfileDb();
+
+  Future<List<Map<String, dynamic>>> fetchUsersForMention(String query) async {
+    try {
+      return await _profileDb.fetchUsersForMention(query);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
 }

@@ -1,7 +1,6 @@
 import 'package:atlas_app/core/common/utils/foreground_color.dart';
 import 'package:atlas_app/core/common/utils/see_more_text.dart';
 import 'package:atlas_app/features/comics/models/comic_model.dart';
-import 'package:atlas_app/features/comics/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -149,7 +148,7 @@ class _ManhwaDataBodyState extends ConsumerState<ManhwaDataBody> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          LanguageText(
+          const LanguageText(
             'التصنيفات',
             style: TextStyle(
               fontWeight: FontWeight.bold,

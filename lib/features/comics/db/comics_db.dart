@@ -8,7 +8,6 @@ import 'package:atlas_app/features/comics/models/comic_model.dart';
 import 'package:atlas_app/features/comics/models/comic_published_model.dart';
 import 'package:atlas_app/features/comics/models/comic_titles_model.dart';
 import 'package:atlas_app/features/comics/models/genres_model.dart';
-import 'package:atlas_app/features/comics/providers/providers.dart';
 import 'package:atlas_app/features/reviews/models/comic_review_model.dart';
 import 'package:atlas_app/features/search/providers/manhwa_search_state.dart';
 import 'package:atlas_app/features/search/providers/providers.dart';

@@ -1,8 +1,6 @@
 import 'dart:io';
 
 import 'package:atlas_app/core/common/utils/image_picker.dart';
-import 'package:atlas_app/features/auth/providers/user_state.dart';
-import 'package:atlas_app/features/comics/providers/providers.dart';
 import 'package:atlas_app/features/reviews/controller/reviews_controller.dart';
 import 'package:atlas_app/features/reviews/models/comic_review_model.dart';
 import 'package:atlas_app/imports.dart';
