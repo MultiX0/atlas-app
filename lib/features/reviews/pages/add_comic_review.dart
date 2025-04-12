@@ -1,10 +1,7 @@
 import 'dart:io';
 
 import 'package:atlas_app/core/common/utils/image_picker.dart';
-import 'package:atlas_app/features/reviews/controller/reviews_controller.dart';
-import 'package:atlas_app/features/reviews/models/comic_review_model.dart';
 import 'package:atlas_app/imports.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:msh_checkbox/msh_checkbox.dart';
 
 class AddComicReview extends ConsumerStatefulWidget {

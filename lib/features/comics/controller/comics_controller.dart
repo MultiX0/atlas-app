@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:atlas_app/features/comics/db/comics_db.dart';
-import 'package:atlas_app/features/comics/models/comic_model.dart';
 import 'package:atlas_app/imports.dart';
 
 final comicsControllerProvider = StateNotifierProvider<ComicsController, bool>(

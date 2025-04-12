@@ -3,7 +3,6 @@
 import 'dart:developer';
 
 import 'package:atlas_app/features/comics/controller/comics_controller.dart';
-import 'package:atlas_app/features/comics/models/comic_model.dart';
 import 'package:atlas_app/features/search/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
 

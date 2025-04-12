@@ -1,3 +1,4 @@
+import 'package:atlas_app/features/comics/widgets/rating_bar_display.dart';
 import 'package:atlas_app/features/posts/widgets/post_card_widget.dart';
 import 'package:atlas_app/imports.dart';
 
@@ -35,7 +36,7 @@ class ReviewCardWidget extends ConsumerWidget {
                   children: [
                     Text("@${review.user?.username}"),
                     const SizedBox(height: 5),
-                    buildRatingBar(rating: review.overall, comic: null, itemSize: 12),
+                    RatingBarDisplay(rating: review.overall, comic: null, itemSize: 12),
                   ],
                 ),
               ),

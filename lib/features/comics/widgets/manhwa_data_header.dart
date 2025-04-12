@@ -1,4 +1,3 @@
-import 'package:atlas_app/core/common/utils/app_date_format.dart';
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/manhwa_status_arabic.dart';
 import 'package:atlas_app/imports.dart';

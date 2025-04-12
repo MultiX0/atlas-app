@@ -1,5 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 
+import 'dart:developer';
+
 import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/features/characters/models/comic_characters_model.dart';
 import 'package:atlas_app/features/comics/models/comic_published_model.dart';
@@ -152,16 +154,22 @@ class ComicModel {
 
   factory ComicModel.fromMap(Map<String, dynamic> map) {
     List<GenresModel> genres = [];
-
+    log("genreses is ${map['genres']}");
     if (map['genres'] != null) {
-      genres = List<GenresModel>.from(
-        (map['genres']).map<GenresModel>((x) => GenresModel.fromMap(x)),
-      );
+      if ((map['genres'] as List).isNotEmpty) {
+        genres = List<GenresModel>.from(
+          (map['genres'])
+              .where((x) => x[KeyNames.name_arabic] != null)
+              .map<GenresModel>((x) => GenresModel.fromMap(x)),
+        );
+      }
     } else {
-      final comicsGenres = List<Map>.from(map[TableNames.comic_genres]);
-      genres = List<GenresModel>.from(
-        comicsGenres.map<GenresModel>((x) => GenresModel.fromMap(x[TableNames.genres])),
-      );
+      if (map[TableNames.comic_genres] != null) {
+        final comicsGenres = List<Map>.from(map[TableNames.comic_genres]);
+        genres = List<GenresModel>.from(
+          comicsGenres.map<GenresModel>((x) => GenresModel.fromMap(x[TableNames.genres])),
+        );
+      }
     }
 
     return ComicModel(

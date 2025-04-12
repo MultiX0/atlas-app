@@ -1,4 +1,3 @@
-import 'package:atlas_app/core/common/widgets/loader.dart';
 import 'package:atlas_app/features/posts/controller/posts_controller.dart';
 import 'package:atlas_app/features/profile/widgets/post_widget.dart';
 import 'package:atlas_app/imports.dart';

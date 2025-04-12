@@ -3,8 +3,6 @@ import 'dart:developer';
 import 'package:atlas_app/core/common/constants/function_names.dart';
 import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/core/common/constants/view_names.dart';
-import 'package:atlas_app/features/reviews/models/avg_reviews_model.dart';
-import 'package:atlas_app/features/reviews/models/comic_review_model.dart';
 import 'package:atlas_app/imports.dart';
 
 final reviewsDBProvider = Provider<ReviewsDb>((ref) {

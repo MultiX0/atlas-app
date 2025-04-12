@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:atlas_app/features/posts/models/post_model.dart';
 import 'package:atlas_app/features/profile/widgets/interactions_bar.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:cached_network_image/cached_network_image.dart' show CachedNetworkImage;
 import 'package:intl/intl.dart';
 import 'package:rich_text_view/rich_text_view.dart';
 import 'dart:ui' as ui;
@@ -51,10 +52,15 @@ class PostWidget extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 5),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 23,
-            backgroundColor: AppColors.primaryAccent,
-            backgroundImage: CachedNetworkAvifImageProvider(post.user.avatar),
+          CachedNetworkImage(
+            imageUrl: user.avatar,
+            memCacheWidth: 24,
+            memCacheHeight: 24,
+            maxHeightDiskCache: 24,
+            maxWidthDiskCache: 24,
+            imageBuilder: (context, image) => CircleAvatar(backgroundImage: image, radius: 23),
+            fit: BoxFit.cover,
+            errorWidget: (context, url, error) => const Icon(Icons.error),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -109,12 +115,12 @@ class PostWidget extends ConsumerWidget {
         viewMoreText: "المزيد",
         linkStyle: const TextStyle(color: Colors.blue),
         supportedTypes: [
-          EmailParser(onTap: (email) => print('${email.value} clicked')),
-          PhoneParser(onTap: (phone) => print('click phone ${phone.value}')),
-          MentionParser(onTap: (mention) => print('${mention.value} clicked')),
-          UrlParser(onTap: (url) => print('visting ${url.value}?')),
+          EmailParser(onTap: (email) => log('${email.value} clicked')),
+          PhoneParser(onTap: (phone) => log('click phone ${phone.value}')),
+          MentionParser(onTap: (mention) => log('${mention.value} clicked')),
+          UrlParser(onTap: (url) => log('visting ${url.value}?')),
           BoldParser(),
-          HashTagParser(onTap: (hashtag) => print('is ${hashtag.value} trending?')),
+          HashTagParser(onTap: (hashtag) => log('is ${hashtag.value} trending?')),
         ],
       ),
     );

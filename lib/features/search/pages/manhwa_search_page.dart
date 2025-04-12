@@ -1,6 +1,4 @@
-import 'package:atlas_app/core/common/widgets/loader.dart';
 import 'package:atlas_app/core/common/widgets/manhwa_poster.dart';
-import 'package:atlas_app/features/navs/navs.dart';
 import 'package:atlas_app/features/search/providers/manhwa_search_state.dart';
 import 'package:atlas_app/imports.dart';
 

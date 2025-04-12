@@ -1,12 +1,5 @@
 import 'package:atlas_app/core/common/widgets/app_refresh.dart';
-import 'package:atlas_app/core/common/widgets/loader.dart';
-import 'package:atlas_app/features/comics/models/comic_model.dart';
-import 'package:atlas_app/features/comics/providers/manhwa_reviews_state.dart';
-import 'package:atlas_app/features/navs/navs.dart';
-import 'package:atlas_app/features/reviews/controller/reviews_controller.dart';
-import 'package:atlas_app/features/reviews/models/comic_review_model.dart';
 import 'package:atlas_app/imports.dart';
-import 'package:flutter/scheduler.dart';
 
 class ComicReviewsPage extends ConsumerStatefulWidget {
   const ComicReviewsPage({
@@ -42,6 +35,11 @@ class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
   }
 
   void _onScroll() {
+    if (_scrollController.offset > 100 && !hideFloating) {
+      setState(() => hideFloating = true);
+    } else if (_scrollController.offset <= 100 && hideFloating) {
+      setState(() => hideFloating = false);
+    }
     if (_isBottom) {
       ref.read(manhwaReviewsStateProvider(widget.comic.comicId).notifier).fetchReviews();
     }
@@ -55,14 +53,16 @@ class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
     return currentScroll >= (maxScroll - 100);
   }
 
-  void fetchData() async {
-    ref.read(manhwaReviewsStateProvider(widget.comic.comicId).notifier).fetchReviews();
-    final _count = await ref
-        .read(reviewsControllerProvider.notifier)
-        .getManhwaReviewsCount(widget.comic.comicId);
-    setState(() {
-      fetched = true;
-      reviewsCount = _count;
+  void fetchData() {
+    Future.microtask(() async {
+      ref.read(manhwaReviewsStateProvider(widget.comic.comicId).notifier).fetchReviews();
+      final _count = await ref
+          .read(reviewsControllerProvider.notifier)
+          .getManhwaReviewsCount(widget.comic.comicId);
+      setState(() {
+        fetched = true;
+        reviewsCount = _count;
+      });
     });
   }
 
@@ -99,12 +99,22 @@ class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
   @override
   Widget build(BuildContext context) {
     final isCurrentTab = widget.tabController.index == widget.tabIndex;
-    final reviewsState = ref.watch(manhwaReviewsStateProvider(widget.comic.comicId));
-    final reviews = reviewsState.reviews;
-    final iAlreadyReviwedOnce = reviewsState.user_have_review_before;
+    final reviews = ref.watch(
+      manhwaReviewsStateProvider(widget.comic.comicId).select((state) => state.reviews),
+    );
+    final isLoading = ref.watch(
+      manhwaReviewsStateProvider(widget.comic.comicId).select((state) => state.isLoading),
+    );
+    final user_have_review_before = ref.watch(
+      manhwaReviewsStateProvider(
+        widget.comic.comicId,
+      ).select((state) => state.user_have_review_before),
+    );
+
+    final iAlreadyReviwedOnce = user_have_review_before;
     final color = widget.comic.color != null ? HexColor(widget.comic.color!) : AppColors.primary;
 
-    if (reviewsState.isLoading) {
+    if (isLoading) {
       return const Loader();
     }
 
@@ -123,45 +133,24 @@ class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
                 tooltip: "اضافة مراجعة",
                 child: Icon(TablerIcons.edit, color: getFontColorForBackground()),
               ),
-      body: NotificationListener<ScrollNotification>(
-        onNotification: (scrollNotification) {
-          if (scrollNotification is ScrollStartNotification) {
-            SchedulerBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                setState(() => hideFloating = true);
-              }
-            });
-          } else if (scrollNotification is ScrollEndNotification) {
-            SchedulerBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                setState(() => hideFloating = false);
-              }
-            });
-          }
-          return true;
-        },
-
-        child: AppRefresh(
-          onRefresh: () async => refresh(),
-          child: CustomScrollView(
-            cacheExtent: 1000, // preload offscreen content
-            primary: isCurrentTab,
-            controller: isCurrentTab ? null : _scrollController,
-            slivers: [
-              SliverOverlapInjector(
-                handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+      body: AppRefresh(
+        onRefresh: () async => refresh(),
+        child: CustomScrollView(
+          cacheExtent: 100,
+          primary: isCurrentTab,
+          controller: isCurrentTab ? null : _scrollController,
+          slivers: [
+            SliverOverlapInjector(handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+              sliver: ReviewsWidget(
+                iAlreadyReviewdOnce: iAlreadyReviwedOnce,
+                scrollController: _scrollController,
+                reviews: reviews,
+                comic: widget.comic,
               ),
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-                sliver: ReviewsWidget(
-                  iAlreadyReviewdOnce: iAlreadyReviwedOnce,
-                  scrollController: _scrollController,
-                  reviews: reviews,
-                  comic: widget.comic,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

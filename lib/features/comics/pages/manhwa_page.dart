@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/features/comics/controller/comics_controller.dart';
-import 'package:atlas_app/features/comics/models/comic_model.dart';
 import 'package:atlas_app/features/comics/widgets/manhwa_characters_widget.dart';
 import 'package:atlas_app/features/comics/widgets/manhwa_data_body.dart';
 import 'package:atlas_app/features/comics/widgets/manhwa_data_header.dart';

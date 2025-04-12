@@ -9,7 +9,6 @@ import 'package:atlas_app/imports.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:atlas_app/features/posts/models/post_preview_model.dart';
-import 'package:atlas_app/features/reviews/models/comic_review_model.dart';
 
 class PostModel {
   final String postId;

@@ -1,4 +1,3 @@
-import 'package:atlas_app/features/comics/models/comic_model.dart';
 import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:atlas_app/router.dart';

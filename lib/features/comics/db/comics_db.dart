@@ -4,11 +4,9 @@ import 'package:atlas_app/core/common/constants/genres_json.dart';
 import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/core/common/constants/view_names.dart';
 import 'package:atlas_app/features/characters/db/characters_db.dart';
-import 'package:atlas_app/features/comics/models/comic_model.dart';
 import 'package:atlas_app/features/comics/models/comic_published_model.dart';
 import 'package:atlas_app/features/comics/models/comic_titles_model.dart';
 import 'package:atlas_app/features/comics/models/genres_model.dart';
-import 'package:atlas_app/features/reviews/models/comic_review_model.dart';
 import 'package:atlas_app/features/search/providers/manhwa_search_state.dart';
 import 'package:atlas_app/features/search/providers/providers.dart';
 import 'package:atlas_app/features/translate/translate_service.dart';
@@ -695,28 +693,38 @@ characters {
   }
 
   List<Map<String, dynamic>> extractGenresFromApi(Map<dynamic, dynamic> comic) {
-    final genreMap = {
-      for (var genre in genres) genre["name"].toString().toLowerCase(): genre["id"],
-    };
+    try {
+      final genreMap = {
+        for (var genre in genres) genre["name"].toString().toLowerCase(): genre["id"],
+      };
 
-    final enrichedGenres =
-        (comic["genres"] as List<dynamic>)
-            .map((g) {
-              final genreName = g.toString().toLowerCase();
-              final genreId = genreMap[genreName];
+      final comicGenres = (comic["genres"] as List<dynamic>);
+      if (comicGenres.isEmpty) return [];
 
-              if (genreId == null) return null;
+      log(genreMap.toString());
+      log("=========================");
+      log(comicGenres.toString());
+      log("=========================");
 
-              return {
-                "id": genreId,
-                "type": "manga",
-                "name": g,
-                "url": "https://myanimelist.net/manga/genre/0/$g",
-              };
-            })
-            .nonNulls
-            .toList();
-    return enrichedGenres;
+      List<Map<String, dynamic>> _enrichedGenres = [];
+      for (final g in (comic["genres"] as List<dynamic>)) {
+        final genreName = g.toString().toLowerCase();
+        final genreId = genreMap[genreName];
+        if (genreId == null || (g == null || g.toString().isEmpty)) continue;
+        final gen = {
+          "id": genreId,
+          "type": "manga",
+          "name": g,
+          "url": "https://myanimelist.net/manga/genre/0/$g",
+        };
+        _enrichedGenres.add(gen);
+      }
+
+      return _enrichedGenres;
+    } catch (e) {
+      log("Exception in extractGenresFrom Api $e");
+      rethrow;
+    }
   }
 
   List<String> extractTagsFromApi(Map<dynamic, dynamic> comic) {

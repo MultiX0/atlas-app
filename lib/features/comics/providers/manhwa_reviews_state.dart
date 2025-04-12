@@ -190,7 +190,11 @@ class ManhwaReviewsState extends StateNotifier<ManhwaReviewsHelper> {
       final bDate = b.updatedAt ?? b.createdAt;
       return bDate.compareTo(aDate);
     });
-    updateState(reviews: newReivews, reviewsCount: state.reviewsCount + 1);
+    updateState(
+      reviews: newReivews,
+      reviewsCount: state.reviewsCount + 1,
+      user_have_review_before: true,
+    );
     _updateCountAndAvg();
   }
 

@@ -10,15 +10,6 @@ const _defaultBackgroundColor = Colors.black;
 const _defaultCloseButtonColor = Colors.white;
 const _defaultCloseButtonTooltip = 'Close';
 
-/// Shows the given [imageProvider] in a full-screen [Dialog].
-/// Setting [immersive] to false will prevent the top and bottom bars from being hidden.
-/// The optional [onViewerDismissed] callback function is called when the dialog is closed.
-/// The optional [useSafeArea] boolean defaults to false and is passed to [showDialog].
-/// The optional [swipeDismissible] boolean defaults to false allows swipe-down-to-dismiss.
-/// The [backgroundColor] defaults to black, but can be set to any other color.
-/// The [closeButtonTooltip] text is displayed when the user long-presses on the
-/// close button and is used for accessibility.
-/// The [closeButtonColor] defaults to white, but can be set to any other color.
 Future<Dialog?> showImageViewer(
   BuildContext context,
   ImageProvider imageProvider, {
@@ -357,7 +348,6 @@ class GalleryImageView extends StatelessWidget {
                         );
                         showImageViewerPager(
                           context,
-
                           multiImageProvider,
                           useSafeArea: true,
                           backgroundColor: Colors.black.withValues(alpha: .85),

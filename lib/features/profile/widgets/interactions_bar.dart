@@ -1,4 +1,3 @@
-import 'package:atlas_app/core/common/widgets/like_button.dart';
 import 'package:atlas_app/imports.dart';
 
 class InteractionBar extends StatelessWidget {

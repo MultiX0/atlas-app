@@ -1,8 +1,4 @@
 import 'package:atlas_app/core/common/utils/deletion_sheet.dart';
-import 'package:atlas_app/core/common/utils/sheet.dart';
-import 'package:atlas_app/features/navs/navs.dart';
-import 'package:atlas_app/features/reviews/controller/reviews_controller.dart';
-import 'package:atlas_app/features/reviews/models/comic_review_model.dart';
 import 'package:atlas_app/imports.dart';
 
 class ComicReviewSheet extends ConsumerWidget {
