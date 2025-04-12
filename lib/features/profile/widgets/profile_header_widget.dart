@@ -1,4 +1,3 @@
-import 'package:atlas_app/features/posts/controller/posts_controller.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
@@ -16,12 +15,12 @@ class ProfileHeader extends ConsumerWidget {
 
     return SliverToBoxAdapter(
       child: Column(
-        children: [buildTopHeader(size, isMe), buildBottomHeader(ref), const SizedBox(height: 10)],
+        children: [buildTopHeader(size, isMe), buildBottomHeader(), const SizedBox(height: 10)],
       ),
     );
   }
 
-  Widget buildBottomHeader(WidgetRef ref) {
+  Widget buildBottomHeader() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
@@ -44,12 +43,6 @@ class ProfileHeader extends ConsumerWidget {
             const SizedBox(height: 15),
             Text(user.bio!, style: const TextStyle(fontWeight: FontWeight.w600)),
           ],
-          ElevatedButton(
-            onPressed: () {
-              ref.invalidate(getUserPostsProvider(user.userId));
-            },
-            child: const Text("refresh"),
-          ),
           const SizedBox(height: 20),
           Container(
             padding: const EdgeInsets.all(10),

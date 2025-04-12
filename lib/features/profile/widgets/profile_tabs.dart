@@ -1,15 +1,12 @@
-import 'package:atlas_app/features/profile/provider/providers.dart';
 import 'package:atlas_app/imports.dart';
 
 class ProfileTabs extends ConsumerWidget {
-  const ProfileTabs({super.key});
+  const ProfileTabs({super.key, required this.controller});
+
+  final TabController controller;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final controller = ref.watch(userTabsControllerProvider);
-    if (controller == null) {
-      return const Center(child: Row());
-    }
     return Visibility(
       maintainState: true,
       maintainSize: false,

@@ -15,7 +15,14 @@ class ProfilePage extends ConsumerStatefulWidget {
   ConsumerState<ConsumerStatefulWidget> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends ConsumerState<ProfilePage> {
+class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProviderStateMixin {
+  late TabController _controller;
+  @override
+  void initState() {
+    _controller = TabController(length: 3, vsync: this);
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(body: buildBodyController());
@@ -43,26 +50,33 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
   Widget buildBody(UserModel user, bool isMe) {
     return SafeArea(
-      child: NestedScrollView(
-        headerSliverBuilder: ((context, innerBoxIsScrolled) {
-          log(innerBoxIsScrolled.toString());
-          return [
-            ProfileHeader(user: user),
-            SliverPersistentHeader(
-              delegate: _CondensedHeaderDelegate(
-                user: user,
-                visible: innerBoxIsScrolled,
-                isMe: isMe,
-              ),
-              pinned: true,
-            ),
-            SliverPersistentHeader(
-              delegate: _SliverAppBarDelegate(const ProfileTabs()),
-              pinned: true,
-            ),
-          ];
-        }),
-        body: ProfileBody(user: user),
+      child: Builder(
+        builder: (context) {
+          return NestedScrollView(
+            headerSliverBuilder: ((context, innerBoxIsScrolled) {
+              log(innerBoxIsScrolled.toString());
+              return [
+                ProfileHeader(user: user),
+                SliverPersistentHeader(
+                  delegate: _CondensedHeaderDelegate(
+                    user: user,
+                    visible: innerBoxIsScrolled,
+                    isMe: isMe,
+                  ),
+                  pinned: true,
+                ),
+                SliverOverlapAbsorber(
+                  handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+                  sliver: SliverPersistentHeader(
+                    delegate: _SliverAppBarDelegate(ProfileTabs(controller: _controller)),
+                    pinned: true,
+                  ),
+                ),
+              ];
+            }),
+            body: ProfileBody(user: user, controller: _controller),
+          );
+        },
       ),
     );
   }

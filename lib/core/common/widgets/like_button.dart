@@ -10,6 +10,7 @@ class CustomLikeButton extends ConsumerWidget {
     this.likedIcon = Icons.favorite,
     required this.likeCount,
     this.unLikedIcon = Icons.favorite_border,
+    this.counterStyle,
   });
 
   final double size;
@@ -19,15 +20,17 @@ class CustomLikeButton extends ConsumerWidget {
   final bool isLiked;
   final IconData likedIcon;
   final IconData unLikedIcon;
+  final TextStyle? counterStyle;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return LikeButton(
       countDecoration: (count, likeCount) {
-        return Text((likeCount ?? 0).toString());
+        return Text((likeCount ?? 0).toString(), style: counterStyle);
       },
       isLiked: isLiked,
       size: size,
+
       likeCount: likeCount,
       likeCountPadding: const EdgeInsets.symmetric(horizontal: 6),
       likeCountAnimationType: LikeCountAnimationType.all,

@@ -1,5 +1,6 @@
 import 'package:atlas_app/core/common/widgets/loader.dart';
 import 'package:atlas_app/features/posts/controller/posts_controller.dart';
+import 'package:atlas_app/features/profile/widgets/post_widget.dart';
 import 'package:atlas_app/imports.dart';
 
 class ProfilePostsPage extends ConsumerWidget {
@@ -12,18 +13,24 @@ class ProfilePostsPage extends ConsumerWidget {
     final postsRef = ref.watch(getUserPostsProvider(user.userId));
     return postsRef.when(
       data: (posts) {
-        return ListView.builder(
-          itemCount: posts.length,
-          itemBuilder: (context, i) {
-            final post = posts[i];
-            return ListTile(
-              leading: CircleAvatar(
-                backgroundImage: CachedNetworkAvifImageProvider(post.user.avatar),
+        return RepaintBoundary(
+          child: CustomScrollView(
+            slivers: [
+              SliverOverlapInjector(
+                handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
               ),
-              title: Text(post.content),
-              subtitle: post.parent != null ? Text(post.parent!.content) : null,
-            );
-          },
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                sliver: SliverList.builder(
+                  itemCount: posts.length,
+                  itemBuilder: (context, i) {
+                    final post = posts[i];
+                    return PostWidget(post: post);
+                  },
+                ),
+              ),
+            ],
+          ),
         );
       },
       error: (e, _) => Center(child: ErrorWidget(e)),
