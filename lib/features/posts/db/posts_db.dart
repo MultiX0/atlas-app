@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:atlas_app/core/common/constants/function_names.dart';
+import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/core/common/constants/view_names.dart';
 import 'package:atlas_app/features/posts/models/post_model.dart';
 import 'package:atlas_app/imports.dart';
@@ -8,6 +9,7 @@ import 'package:atlas_app/imports.dart';
 class PostsDb {
   SupabaseClient get _client => Supabase.instance.client;
   SupabaseQueryBuilder get _postsView => _client.from(ViewNames.post_details_with_mentions);
+  SupabaseQueryBuilder get _postsTable => _client.from(TableNames.posts);
 
   Future<List<PostModel>> getUserPosts(String userId) async {
     try {
@@ -15,6 +17,15 @@ class PostsDb {
       log(_data.toString());
 
       return _data.map((post) => PostModel.fromMap(post)).toList();
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> insertPost(String post, String userId) async {
+    try {
+      await _postsTable.insert({KeyNames.content: post, KeyNames.userId: userId});
     } catch (e) {
       log(e.toString());
       rethrow;

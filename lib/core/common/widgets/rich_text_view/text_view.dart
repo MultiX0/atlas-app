@@ -1,16 +1,8 @@
 import 'dart:math';
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-
 import 'models.dart';
 
-/// Creates a [RichText] widget that supports emails, mentions, hashtags and more.
-///
-/// When [viewLessText] is specified, toggling between view more and view less will be supported.
-///
-/// For displaying a rich text editor, see the [RichTextEditor] class
-///
 class RichTextView extends StatefulWidget {
   final String text;
   final TextStyle? style;
@@ -26,19 +18,12 @@ class RichTextView extends StatefulWidget {
   final GestureTapCallback? onTap;
   final Function()? onMore;
   final bool truncate;
-
-  /// the view more text if `truncate` is true
   final String viewMoreText;
-
-  /// the view more and view less text's style
   final TextStyle? viewMoreLessStyle;
-
-  /// if included, will show a view less text
   final String? viewLessText;
   final List<ParserType> supportedTypes;
   final RegexOptions regexOptions;
   final TextAlign textAlign;
-
   final bool toggleTruncate;
 
   RichTextView({
@@ -107,93 +92,103 @@ class _RichTextViewState extends State<RichTextView> {
             );
 
     List<InlineSpan> parseText(String txt) {
-      var newString = txt;
+      List<InlineSpan> spans = [];
+      String remainingText = txt;
+      int currentIndex = 0;
 
-      var _mapping = <String, ParserType>{};
-
-      for (var type in widget.supportedTypes) {
-        _mapping[type.pattern!] = type;
-      }
-
-      final pattern = '(${_mapping.keys.toList().join('|')})';
-
-      var widgets = <InlineSpan>[];
-
-      newString.splitMapJoin(
-        RegExp(
-          pattern,
+      // Collect all matches from all parsers
+      List<Map<String, dynamic>> allMatches = [];
+      for (var parser in widget.supportedTypes) {
+        RegExp regExp = RegExp(
+          parser.pattern!,
           multiLine: widget.regexOptions.multiLine,
           caseSensitive: widget.regexOptions.caseSensitive,
           dotAll: widget.regexOptions.dotAll,
           unicode: widget.regexOptions.unicode,
-        ),
-        onMatch: (Match match) {
-          final matchText = match[0];
+        );
+        var matches = regExp.allMatches(txt);
+        for (var match in matches) {
+          allMatches.add({
+            'start': match.start,
+            'end': match.end,
+            'text': match.group(0)!,
+            'parser': parser,
+          });
+        }
+      }
 
-          final mapping =
-              _mapping[matchText!] ??
-              _mapping[_mapping.keys.firstWhere(
-                (element) {
-                  final reg = RegExp(
-                    element,
-                    multiLine: widget.regexOptions.multiLine,
-                    caseSensitive: widget.regexOptions.caseSensitive,
-                    dotAll: widget.regexOptions.dotAll,
-                    unicode: widget.regexOptions.unicode,
-                  );
-                  return reg.hasMatch(matchText);
-                },
-                orElse: () {
-                  return '';
-                },
-              )];
+      // Sort matches by start position, and by length (longer matches first) if start positions are equal
+      allMatches.sort((a, b) {
+        int startCompare = a['start'].compareTo(b['start']);
+        if (startCompare != 0) return startCompare;
+        return (b['end'] - b['start']).compareTo(a['end'] - a['start']);
+      });
 
-          InlineSpan span;
-
-          if (mapping != null) {
-            if (mapping.renderText != null) {
-              var result = mapping.renderText!(str: matchText);
-
-              result.start = match.start;
-              result.end = match.end;
-
-              span = TextSpan(
-                text: '${result.display}',
-                style: mapping.style ?? linkStyle,
-                recognizer:
-                    mapping.onTap == null
-                        ? null
-                        : (TapGestureRecognizer()..onTap = () => mapping.onTap!(result)),
-              );
-            } else {
-              var matched = Matched(
-                display: matchText,
-                value: matchText,
-                start: match.start,
-                end: match.end,
-              );
-              span = TextSpan(
-                text: '$matchText',
-                style: mapping.style ?? linkStyle,
-                recognizer:
-                    mapping.onTap == null
-                        ? null
-                        : (TapGestureRecognizer()..onTap = () => mapping.onTap!(matched)),
-              );
-            }
-          } else {
-            span = TextSpan(text: '$matchText', style: _style);
+      // Process matches, ensuring no overlaps
+      List<Map<String, dynamic>> processedMatches = [];
+      for (var match in allMatches) {
+        bool overlaps = false;
+        for (var processed in processedMatches) {
+          if (match['start'] < processed['end'] && match['end'] > processed['start']) {
+            overlaps = true;
+            break;
           }
-          widgets.add(span);
-          return '';
-        },
-        onNonMatch: (String text) {
-          widgets.add(TextSpan(text: '$text', style: _style));
+        }
+        if (!overlaps) {
+          processedMatches.add(match);
+        }
+      }
 
-          return '';
-        },
-      );
-      return widgets;
+      // Sort processed matches by start position
+      processedMatches.sort((a, b) => a['start'].compareTo(b['start']));
+
+      // Build the spans
+      for (var match in processedMatches) {
+        int start = match['start'];
+        int end = match['end'];
+        String matchText = match['text'];
+        ParserType parser = match['parser'];
+
+        // Add text before the match
+        if (currentIndex < start) {
+          spans.add(TextSpan(text: txt.substring(currentIndex, start), style: _style));
+        }
+
+        // Process the match
+        InlineSpan span;
+        if (parser.renderText != null) {
+          var result = parser.renderText!(str: matchText);
+          result.start = start;
+          result.end = end;
+          span = TextSpan(
+            text: result.display,
+            style: parser.style ?? linkStyle,
+            recognizer:
+                parser.onTap == null
+                    ? null
+                    : (TapGestureRecognizer()..onTap = () => parser.onTap!(result)),
+          );
+        } else {
+          var matched = Matched(display: matchText, value: matchText, start: start, end: end);
+          span = TextSpan(
+            text: matchText,
+            style: parser.style ?? linkStyle,
+            recognizer:
+                parser.onTap == null
+                    ? null
+                    : (TapGestureRecognizer()..onTap = () => parser.onTap!(matched)),
+          );
+        }
+        spans.add(span);
+        currentIndex = end;
+      }
+
+      // Add remaining text after the last match
+      if (currentIndex < txt.length) {
+        spans.add(TextSpan(text: txt.substring(currentIndex), style: _style));
+      }
+
+      return spans;
     }
 
     final content = TextSpan(children: parseText(widget.text), style: _style);

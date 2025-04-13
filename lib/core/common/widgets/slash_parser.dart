@@ -1,6 +1,9 @@
 import 'dart:developer';
 
+import 'package:atlas_app/core/common/widgets/rich_text_view/models.dart' show Matched, ParserType;
 import 'package:petitparser/petitparser.dart';
+
+import '../../../imports.dart' show TextStyle;
 
 class SlashEntity {
   final String type;
@@ -35,6 +38,33 @@ Parser buildSlashEntityParser() {
   });
 }
 
+// Updated SlashEntityParser with debug logging
+class SlashEntityParser extends ParserType {
+  SlashEntityParser({Function(Matched)? onTap, TextStyle? style})
+    : super(
+        // Use the same regex as checkResult
+        pattern: r"/(comic|char|novel)\[[^\]]+\]:[^/]+/",
+        onTap: onTap,
+        style: style,
+      ) {
+    renderText = ({String? str}) {
+      log('Matched string: $str'); // Debug: Log the matched string
+      final parser = buildSlashEntityParser();
+      final result = parser.parse(str!);
+      if (result.isSuccess) {
+        final entity = result.value as SlashEntity;
+        log('Parsed entity: $entity'); // Debug: Log the parsed entity
+        log(entity.title.toString());
+        return Matched(display: entity.title, value: '${entity.type}:${entity.id}:${entity.title}');
+      } else {
+        log('Parse failed for "$str": ${result.message}'); // Debug: Log parse failures
+        return Matched(display: str, value: str);
+      }
+    };
+  }
+}
+
+// For completeness, include checkResult to compare
 void checkResult() {
   final input = '''
 #AI
@@ -60,21 +90,15 @@ Check out /comic[aa11bb22-cc33-dd44-ee55-ff6677889900]:Demon Slayer/ if you have
 /char[12121212-3434-5656-7878-909090909090]:Ichigo Kurosaki/ deserves more love too.
 
 See you all in the next post! 🚀
-
 ''';
 
-  // Step 1: Define a regex to find all potential slash entities
   final regex = RegExp(r"/(comic|char|novel)\[[^\]]+\]:[^/]+/");
   final matches = regex.allMatches(input);
 
-  // Step 2: Create the parser
   final parser = buildSlashEntityParser();
-
-  // Step 3: Parse each match
   for (var match in matches) {
     final entityText = match.group(0)!;
     final result = parser.parse(entityText);
-
     if (result.isSuccess) {
       final entity = result.value as SlashEntity;
       log('Parsed: $entity');
@@ -82,10 +106,5 @@ See you all in the next post! 🚀
     } else {
       log('Parse error for "$entityText": ${result.message}');
     }
-  }
-
-  // If no entities were found, log a message
-  if (matches.isEmpty) {
-    log('No slash entities found in the input.');
   }
 }

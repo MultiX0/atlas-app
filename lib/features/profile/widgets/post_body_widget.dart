@@ -1,8 +1,8 @@
 import 'dart:developer';
-import 'package:atlas_app/core/common/widgets/custom_mention_parser.dart';
 import 'package:atlas_app/core/common/widgets/image_view_controller.dart';
 import 'package:atlas_app/core/common/widgets/rich_text_view/models.dart';
 import 'package:atlas_app/core/common/widgets/rich_text_view/text_view.dart';
+import 'package:atlas_app/core/common/widgets/slash_parser.dart';
 import 'package:atlas_app/features/posts/models/post_model.dart';
 import 'package:atlas_app/features/profile/widgets/interactions_bar.dart';
 import 'package:atlas_app/imports.dart';
@@ -31,6 +31,7 @@ class PostBodyWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: hasArabic ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
+          // ElevatedButton(onPressed: () => checkResult(), child: Text("fuck")),
           const SizedBox(height: 10),
           buildContentText(hasArabic),
           if (post.images.isNotEmpty) ...[
@@ -83,7 +84,7 @@ class PostBodyWidget extends StatelessWidget {
               final parts = matched.value?.split(":");
               final type = parts?[0];
               final id = parts?[1];
-              final title = parts?.sublist(2).join(":"); // in case ':' in title
+              final title = parts?.sublist(2).join(":"); // Handles ':' in title
 
               switch (type) {
                 case 'comic':
@@ -98,6 +99,7 @@ class PostBodyWidget extends StatelessWidget {
                   break;
               }
             },
+            style: const TextStyle(color: AppColors.primary), // Optional: match linkStyle
           ),
         ],
       ),

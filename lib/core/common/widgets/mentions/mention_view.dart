@@ -201,57 +201,80 @@ class EnhancedFlutterMentionsState extends State<EnhancedFlutterMentions> {
 
   void suggestionListerner() {
     final cursorPos = controller!.selection.baseOffset;
+    final text = controller!.text;
 
-    if (cursorPos >= 0) {
-      var _pos = 0;
+    if (cursorPos < 0) return;
 
-      final lengthMap = <LengthMap>[];
+    final mentionTriggers = widget.mentions.map((e) => e.trigger).toList();
+    final slashMention = widget.mentions.firstWhere(
+      (e) => e.trigger == '/',
+      orElse: () => Mention(trigger: '/', data: []), // ✅ FIXED: return dummy Mention, not null
+    );
 
-      controller!.value.text.split(RegExp(r'(\s)')).forEach((element) {
-        lengthMap.add(LengthMap(str: element, start: _pos, end: _pos + element.length));
-        _pos = _pos + element.length + 1;
-      });
-
-      final val = lengthMap.indexWhere((element) {
-        _pattern = widget.mentions.map((e) => e.trigger).join('|');
-        return element.end == cursorPos && element.str.toLowerCase().contains(RegExp(_pattern));
-      });
-
-      showSuggestions.value = val != -1;
-
-      if (widget.onSuggestionVisibleChanged != null) {
-        widget.onSuggestionVisibleChanged!(val != -1);
+    // Handle slash trigger with space support
+    if (slashMention.trigger == '/') {
+      int start = cursorPos - 1;
+      while (start >= 0 && text[start] != '\n') {
+        if (text[start] == '/') {
+          break;
+        }
+        start--;
       }
 
-      if (val != -1) {
-        final mention = lengthMap[val];
+      if (start >= 0 && text[start] == '/') {
+        final substring = text.substring(start, cursorPos);
+        final mention = LengthMap(str: substring, start: start, end: cursorPos);
+
         setState(() {
           _selectedMention = mention;
-
-          // Determine which trigger is currently active
-          for (var trigger in widget.mentions.map((e) => e.trigger)) {
-            if (mention.str.startsWith(trigger)) {
-              _currentTrigger = trigger;
-              break;
-            }
-          }
+          _currentTrigger = '/';
         });
 
-        // Call the appropriate trigger callback
-        if (_currentTrigger != null && widget.triggerCallbacks.containsKey(_currentTrigger)) {
-          // Only call if we have a new mention or the text changed
-          final query = mention.str.substring(1); // Remove trigger character
-          widget.triggerCallbacks[_currentTrigger!]!(query);
-        }
-      } else {
-        setState(() {
-          _selectedMention = null;
-          _currentTrigger = null;
-        });
+        final query = substring.substring(1); // Remove the slash
+        widget.triggerCallbacks['/']?.call(query);
+
+        showSuggestions.value = true;
+        widget.onSuggestionVisibleChanged?.call(true);
+        return;
       }
     }
 
-    // Update the previous text
+    // Fallback to original logic for other triggers
+    var _pos = 0;
+    final lengthMap = <LengthMap>[];
+
+    controller!.value.text.split(RegExp(r'(\s)')).forEach((element) {
+      lengthMap.add(LengthMap(str: element, start: _pos, end: _pos + element.length));
+      _pos = _pos + element.length + 1;
+    });
+
+    final val = lengthMap.indexWhere((element) {
+      _pattern = widget.mentions.map((e) => e.trigger).join('|');
+      return element.end == cursorPos && mentionTriggers.any((t) => element.str.startsWith(t));
+    });
+
+    if (val != -1) {
+      final mention = lengthMap[val];
+
+      setState(() {
+        _selectedMention = mention;
+        _currentTrigger = mentionTriggers.firstWhere((t) => mention.str.startsWith(t));
+      });
+
+      final query = mention.str.substring(1); // remove the trigger
+      widget.triggerCallbacks[_currentTrigger!]?.call(query);
+
+      showSuggestions.value = true;
+      widget.onSuggestionVisibleChanged?.call(true);
+    } else {
+      setState(() {
+        _selectedMention = null;
+        _currentTrigger = null;
+      });
+
+      showSuggestions.value = false;
+      widget.onSuggestionVisibleChanged?.call(false);
+    }
   }
 
   void inputListeners() {
