@@ -24,7 +24,13 @@ class ProfilePostsPage extends ConsumerWidget {
                   itemCount: posts.length,
                   itemBuilder: (context, i) {
                     final post = posts[i];
-                    return PostWidget(post: post);
+                    return PostWidget(
+                      post: post,
+                      onComment: () {},
+                      onLike: (_) async => true,
+                      onRepost: () {},
+                      onShare: () {},
+                    );
                   },
                 ),
               ),

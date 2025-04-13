@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:developer';
 
 import 'package:atlas_app/imports.dart';
@@ -12,30 +14,28 @@ class SplashPage extends ConsumerStatefulWidget {
 class _SplashPageState extends ConsumerState<SplashPage> {
   @override
   void initState() {
+    log("==============");
+    log("on splash");
+    log("==============");
+
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => handleNext());
-  }
-
-  Future<void> handleNext() async {
-    log("---------- test ----------");
-
-    final userStateValue = ref.read(userState);
-    final isUserLoggedIn = userStateValue.user != null;
-    log(isUserLoggedIn.toString());
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final user = await ref.read(userState.notifier).initlizeUser();
+      if (user != null) {
+        context.go(Routes.home);
+      } else {
+        context.go(Routes.onboardingPage);
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          const LinesPattren(),
-          SafeArea(
-            child: Center(
-              child: AvifImage.asset('assets/images/logo_transparent.avif', width: 600),
-            ),
-          ),
-        ],
+    return RepaintBoundary(
+      child: Scaffold(
+        body: Stack(
+          children: [Center(child: Image.asset('assets/images/logo_atlas.png', width: 200))],
+        ),
       ),
     );
   }

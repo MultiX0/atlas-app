@@ -28,4 +28,13 @@ class PostsController extends StateNotifier<bool> {
       rethrow;
     }
   }
+
+  Future<List<Map<String, dynamic>>> slashMentionSearch(String query) async {
+    try {
+      return await db.slashMentionSearch(query);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
 }

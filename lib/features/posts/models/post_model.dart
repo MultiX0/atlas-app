@@ -29,6 +29,8 @@ class PostModel {
   final List<NovelPreviewModel> novelsMentioned;
   final ComicReviewModel? reviewMentioned;
   final List hashtags;
+  final int shares_count;
+  final bool shared_by_me;
   PostModel({
     required this.postId,
     required this.createdAt,
@@ -46,6 +48,8 @@ class PostModel {
     required this.manhwaMentioned,
     required this.charactersMentioned,
     required this.novelsMentioned,
+    required this.shared_by_me,
+    required this.shares_count,
     this.reviewMentioned,
     required this.hashtags,
   });
@@ -69,6 +73,8 @@ class PostModel {
     List<NovelPreviewModel>? novelsMentioned,
     ComicReviewModel? reviewMentioned,
     List? hashtags,
+    int? shares_count,
+    bool? shared_by_me,
   }) {
     return PostModel(
       postId: postId ?? this.postId,
@@ -89,6 +95,8 @@ class PostModel {
       novelsMentioned: novelsMentioned ?? this.novelsMentioned,
       reviewMentioned: reviewMentioned ?? this.reviewMentioned,
       hashtags: hashtags ?? this.hashtags,
+      shared_by_me: shared_by_me ?? this.shared_by_me,
+      shares_count: shares_count ?? this.shares_count,
     );
   }
 
@@ -117,10 +125,10 @@ class PostModel {
 
   factory PostModel.fromMap(Map<String, dynamic> map) {
     return PostModel(
-      postId: map[KeyNames.post_id] as String,
+      postId: map[KeyNames.post_id] ?? "",
       createdAt: DateTime.parse(map[KeyNames.created_at]),
-      content: map[KeyNames.content] as String,
-      userId: map[KeyNames.userId] as String,
+      content: map[KeyNames.content] ?? "NA",
+      userId: map[KeyNames.userId] ?? "",
       parentId: map[KeyNames.parent_post],
       parent:
           map[KeyNames.parent] != null
@@ -128,11 +136,13 @@ class PostModel {
               : null,
       user: UserModel.fromMap(map[KeyNames.user] as Map<String, dynamic>),
       images: List.from((jsonDecode(map[KeyNames.images]) ?? [])),
-      canReposted: map[KeyNames.can_reposted] as bool,
-      likeCount: map[KeyNames.like_count] as int,
-      userLiked: map[KeyNames.user_liked] as bool,
-      commentsCount: map[KeyNames.comments_count] as int,
-      repostedCount: map[KeyNames.reposts_count] as int,
+      canReposted: map[KeyNames.can_reposted] ?? true,
+      likeCount: map[KeyNames.like_count] ?? 0,
+      userLiked: map[KeyNames.user_liked] ?? false,
+      commentsCount: map[KeyNames.comments_count] ?? 0,
+      repostedCount: map[KeyNames.reposts_count] ?? 0,
+      shared_by_me: map[KeyNames.shared_by_me] ?? false,
+      shares_count: map[KeyNames.shares_count] ?? 0,
       manhwaMentioned:
           map[KeyNames.manhwa_mentions] == null
               ? []

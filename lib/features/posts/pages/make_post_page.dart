@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/features/posts/widgets/comic_review_tree_widget.dart';
@@ -53,6 +54,8 @@ class _MakePostPageState extends ConsumerState<MakePostPage> {
                   if (inputVal.trim().isEmpty) {
                     return;
                   }
+                  final data = ref.read(postInputProvider);
+                  log("the final data is $data");
                 },
                 icon: const Icon(LucideIcons.check),
               ),

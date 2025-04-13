@@ -57,14 +57,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
               log(innerBoxIsScrolled.toString());
               return [
                 ProfileHeader(user: user),
-                SliverPersistentHeader(
-                  delegate: _CondensedHeaderDelegate(
-                    user: user,
-                    visible: innerBoxIsScrolled,
-                    isMe: isMe,
-                  ),
-                  pinned: true,
-                ),
                 SliverOverlapAbsorber(
                   handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
                   sliver: SliverPersistentHeader(

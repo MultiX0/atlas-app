@@ -25,9 +25,14 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: Routes.splashPage,
     redirect: (context, state) {
-      final userStateValue = ref.watch(userState);
-      final isUserLoggedIn = userStateValue.user != null;
-      final isLoading = userStateValue.isLoading;
+      final splashRoute = state.uri.toString() == Routes.splashPage;
+      if (splashRoute) {
+        return null;
+      }
+
+      final userStateValue = ref.watch(userState.select((state) => state.user));
+      // log("user state is $userStateValue");
+      final isUserLoggedIn = userStateValue != null;
       final loginRoute = state.uri.toString() == Routes.loginPage;
       final registerRoute = state.uri.toString() == Routes.registerPage;
       final forgetPasswordPage =
@@ -35,20 +40,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           state.uri.toString() == Routes.forgotPasswordEmailPage ||
           state.uri.toString() == Routes.updatePasswordPage;
       final firstPageRoute = state.uri.toString() == Routes.onboardingPage;
-      final splashRoute = state.uri.toString() == Routes.splashPage;
-
-      if (splashRoute) {
-        log("on splash page");
-        if (isLoading) {
-          return null; // Stay on splash while loading
-        }
-        if (isUserLoggedIn) {
-          log("user logged in, redirecting to home");
-          return Routes.home; // Redirect to home if user is logged in
-        }
-        log("user not logged in, redirecting to onboarding");
-        return Routes.onboardingPage; // Redirect to onboarding if not logged in
-      }
 
       if (!isUserLoggedIn) {
         log("user is not logged in");

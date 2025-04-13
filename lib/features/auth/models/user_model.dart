@@ -24,6 +24,16 @@ class UserModel {
     this.followsCount,
   });
 
+  factory UserModel.newUser(UserModel user) {
+    return UserModel(
+      fullName: user.fullName,
+      username: user.username,
+      userId: user.userId,
+      avatar: user.avatar,
+      banner: user.banner,
+    );
+  }
+
   UserModel copyWith({
     String? fullName,
     String? username,

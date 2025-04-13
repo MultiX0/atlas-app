@@ -32,7 +32,7 @@ class _ReviewsWidgetState extends ConsumerState<ReviewsWidget> {
     return SliverList.builder(
       addRepaintBoundaries: true,
       itemCount: widget.reviews.length + (moreLoading ? 2 : 1),
-      itemBuilder: (cntext, i) {
+      itemBuilder: (context, i) {
         if (i == 0) {
           return RepaintBoundary(
             child: ReviewsAverageCard(
@@ -43,11 +43,16 @@ class _ReviewsWidgetState extends ConsumerState<ReviewsWidget> {
             ),
           );
         }
-        if (i == (widget.reviews.length + 1)) {
+        if (i == widget.reviews.length + 1) {
           return const Center(child: Padding(padding: EdgeInsets.all(8.0), child: Loader()));
         }
-        final review = widget.reviews.elementAt(i - 1);
-        return UserReviewCard(review: review, index: i - 1, comic: widget.comic);
+        final review = widget.reviews[i - 1];
+        return UserReviewCard(
+          key: ValueKey(review.id),
+          review: review,
+          index: i - 1,
+          comic: widget.comic,
+        );
       },
     );
   }

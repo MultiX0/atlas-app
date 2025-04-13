@@ -1,6 +1,7 @@
 import 'package:atlas_app/imports.dart';
 
 class InteractionBar extends StatelessWidget {
+  static final defaultColor = Colors.grey.shade700;
   final int likes;
   final int comments;
   final int reposts;
@@ -10,6 +11,7 @@ class InteractionBar extends StatelessWidget {
   final VoidCallback? onComment;
   final VoidCallback? onRepost;
   final VoidCallback? onShare;
+  final bool isShared;
 
   const InteractionBar({
     super.key,
@@ -22,6 +24,7 @@ class InteractionBar extends StatelessWidget {
     this.onRepost,
     this.onShare,
     required this.isLiked,
+    required this.isShared,
   });
 
   @override
@@ -42,6 +45,7 @@ class InteractionBar extends StatelessWidget {
           count: comments,
           onPressed: onComment,
           tooltip: 'Comment',
+          iconColor: defaultColor,
           countStyle: countStyle,
         ),
         _InteractionButton(
@@ -50,6 +54,7 @@ class InteractionBar extends StatelessWidget {
           onPressed: onRepost,
           tooltip: 'Repost',
           countStyle: countStyle,
+          iconColor: defaultColor,
         ),
 
         _InteractionButton(
@@ -57,6 +62,7 @@ class InteractionBar extends StatelessWidget {
           countStyle: countStyle,
           onPressed: onShare,
           tooltip: "Share",
+          iconColor: isShared ? AppColors.primary.withValues(alpha: .5) : defaultColor,
           icon: TablerIcons.share_2,
         ),
       ],
@@ -70,6 +76,7 @@ class _InteractionButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final String tooltip;
   final TextStyle countStyle;
+  final Color iconColor;
 
   const _InteractionButton({
     required this.icon,
@@ -77,19 +84,22 @@ class _InteractionButton extends StatelessWidget {
     required this.onPressed,
     required this.tooltip,
     required this.countStyle,
+    this.iconColor = Colors.grey,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onPressed,
-      borderRadius: BorderRadius.circular(10),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: Colors.grey.shade700),
-          const SizedBox(width: 4),
-          Text('$count', style: countStyle),
-        ],
+    return RepaintBoundary(
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(10),
+        child: Row(
+          children: [
+            Icon(icon, size: 20, color: iconColor),
+            const SizedBox(width: 4),
+            Text('$count', style: countStyle),
+          ],
+        ),
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:atlas_app/core/common/widgets/app_refresh.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:flutter/scheduler.dart';
 
 class ComicReviewsPage extends ConsumerStatefulWidget {
   const ComicReviewsPage({
@@ -34,12 +35,11 @@ class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
     super.initState();
   }
 
+  DateTime? _lastCheck;
   void _onScroll() {
-    if (_scrollController.offset > 100 && !hideFloating) {
-      setState(() => hideFloating = true);
-    } else if (_scrollController.offset <= 100 && hideFloating) {
-      setState(() => hideFloating = false);
-    }
+    final now = DateTime.now();
+    if (_lastCheck != null && now.difference(_lastCheck!).inMilliseconds < 500) return;
+    _lastCheck = now;
     if (_isBottom) {
       ref.read(manhwaReviewsStateProvider(widget.comic.comicId).notifier).fetchReviews();
     }
@@ -49,7 +49,6 @@ class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
     if (!_scrollController.hasClients) return false;
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.offset;
-    // Load more when we're 100 pixels from the bottom
     return currentScroll >= (maxScroll - 100);
   }
 
@@ -63,6 +62,16 @@ class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
         fetched = true;
         reviewsCount = _count;
       });
+      final initialReviews = ref
+          .read(manhwaReviewsStateProvider(widget.comic.comicId))
+          .reviews
+          .take(3);
+      for (var review in initialReviews) {
+        for (var image in review.images) {
+          // ignore: use_build_context_synchronously
+          precacheImage(CachedNetworkAvifImageProvider(image), context);
+        }
+      }
     });
   }
 
@@ -92,7 +101,7 @@ class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
     if (reviews.isEmpty || !iAlreadyReviewdOnce) {
       ref.read(navsProvider).goToAddComicReviewPage('f');
     } else {
-      ref.read(navsProvider).goToMakePostPage(PostType.comic_review);
+      ref.read(navsProvider).goToMakePostPage(PostType.comic);
     }
   }
 
@@ -133,24 +142,45 @@ class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
                 tooltip: "اضافة مراجعة",
                 child: Icon(TablerIcons.edit, color: getFontColorForBackground()),
               ),
-      body: AppRefresh(
-        onRefresh: () async => refresh(),
-        child: CustomScrollView(
-          cacheExtent: 100,
-          primary: isCurrentTab,
-          controller: isCurrentTab ? null : _scrollController,
-          slivers: [
-            SliverOverlapInjector(handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)),
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-              sliver: ReviewsWidget(
-                iAlreadyReviewdOnce: iAlreadyReviwedOnce,
-                scrollController: _scrollController,
-                reviews: reviews,
-                comic: widget.comic,
+      body: NotificationListener<ScrollNotification>(
+        onNotification: (scrollNotification) {
+          if (scrollNotification is ScrollStartNotification) {
+            SchedulerBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                setState(() => hideFloating = true);
+              }
+            });
+          } else if (scrollNotification is ScrollEndNotification) {
+            SchedulerBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                setState(() => hideFloating = false);
+              }
+            });
+          }
+          return true;
+        },
+        child: AppRefresh(
+          onRefresh: () async => refresh(),
+          child: CustomScrollView(
+            cacheExtent: 300,
+            primary: isCurrentTab,
+            physics: const ClampingScrollPhysics(),
+            controller: isCurrentTab ? null : _scrollController,
+            slivers: [
+              SliverOverlapInjector(
+                handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
               ),
-            ),
-          ],
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+                sliver: ReviewsWidget(
+                  iAlreadyReviewdOnce: iAlreadyReviwedOnce,
+                  scrollController: _scrollController,
+                  reviews: reviews,
+                  comic: widget.comic,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

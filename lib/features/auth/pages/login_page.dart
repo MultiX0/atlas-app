@@ -50,7 +50,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     return Scaffold(
       body: Stack(
         children: [
-          const LinesPattren(),
           Positioned.fill(
             child: SafeArea(
               child: Center(

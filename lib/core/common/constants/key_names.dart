@@ -103,4 +103,6 @@ class KeyNames {
   static const novel_mentions = 'novel_mentions';
   static const review_mentioned = 'review_mentioned';
   static const hashtags = 'hashtags';
+  static const shared_by_me = 'shared_by_me';
+  static const shares_count = 'shares_count';
 }

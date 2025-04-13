@@ -50,6 +50,7 @@ class Mention {
 class Annotation {
   Annotation({
     required this.trigger,
+    required this.data,
     this.style,
     this.id,
     this.display,
@@ -61,6 +62,7 @@ class Annotation {
   String? id;
   String? display;
   String trigger;
+  Map<String, dynamic>? data;
   bool disableMarkup;
   final String Function(String trigger, String mention, String value)? markupBuilder;
 }
