@@ -27,14 +27,14 @@ class EnhancedAnnotationEditingController extends TextEditingController {
           final type = mention.data?['type'] ?? "";
 
           // Format as /type[id]:display
-          return '/$type[${mention.id}]:${mention.display}';
+          return '/$type[${mention.id}]:${mention.display}/';
         }
 
         // Default markup format for mentions
         if (!mention.disableMarkup) {
           return mention.markupBuilder != null
               ? mention.markupBuilder!(mention.trigger, mention.id!, mention.display!)
-              : '${mention.trigger}[__${mention.id}__](__${mention.display}__)';
+              : '${mention.trigger}[__${mention.id}__](__${mention.display}__)${mention.trigger}';
         } else {
           return match[0]!;
         }
@@ -73,33 +73,81 @@ class EnhancedAnnotationEditingController extends TextEditingController {
   TextSpan buildTextSpan({BuildContext? context, TextStyle? style, bool? withComposing}) {
     var children = <InlineSpan>[];
 
+    // If there's no pattern, render the text as-is
     if (_pattern == null || _pattern == '()') {
       children.add(TextSpan(text: text, style: style));
-    } else {
-      text.splitMapJoin(
-        RegExp('$_pattern'),
-        onMatch: (Match match) {
-          if (_mapping.isNotEmpty) {
-            final mention = _findMention(match[0]!);
+      return TextSpan(style: style, children: children);
+    }
 
-            // For slash commands, only show the display part (title)
-            if (mention.trigger == '/' && mention.display != null) {
-              // Just show the display text for slash commands
-              children.add(TextSpan(text: mention.display, style: style!.merge(mention.style)));
-            } else {
-              // For other mentions, show the full text
-              children.add(TextSpan(text: match[0], style: style!.merge(mention.style)));
-            }
-          }
-          return '';
-        },
-        onNonMatch: (String text) {
-          children.add(TextSpan(text: text, style: style));
-          return '';
-        },
-      );
+    // First, process mentions and slash commands that are in the mapping
+    int lastEnd = 0;
+
+    // Find all matches for the existing pattern (mentions, slash commands, and known hashtags)
+    final matches = RegExp('$_pattern').allMatches(text).toList();
+    for (var match in matches) {
+      final start = match.start;
+      final end = match.end;
+
+      // Add any text before the match (which might contain hashtags)
+      if (start > lastEnd) {
+        final beforeText = text.substring(lastEnd, start);
+        children.addAll(_processTextWithHashtags(beforeText, style));
+      }
+
+      // Process the match (mention, slash command, or known hashtag)
+      if (_mapping.isNotEmpty) {
+        final mention = _findMention(match[0]!);
+        if (mention.trigger == '/' && mention.display != null) {
+          // Slash commands: show only the display text
+          children.add(TextSpan(text: mention.display, style: style!.merge(mention.style)));
+        } else {
+          // Mentions and known hashtags: show the full text with style
+          children.add(TextSpan(text: match[0], style: style!.merge(mention.style)));
+        }
+      }
+
+      lastEnd = end;
+    }
+
+    // Add any remaining text after the last match (which might contain hashtags)
+    if (lastEnd < text.length) {
+      final remaining = text.substring(lastEnd);
+      children.addAll(_processTextWithHashtags(remaining, style));
     }
 
     return TextSpan(style: style, children: children);
+  }
+
+  /// Helper method to process text and style hashtags that aren't in the mapping
+  List<TextSpan> _processTextWithHashtags(String text, TextStyle? style) {
+    final children = <TextSpan>[];
+    final hashtagRegex = RegExp(r'#\w+'); // Regex to match hashtags (e.g., #hashtag)
+
+    int lastEnd = 0;
+    final matches = hashtagRegex.allMatches(text).toList();
+
+    for (var match in matches) {
+      final start = match.start;
+      final end = match.end;
+
+      // Add any text before the hashtag
+      if (start > lastEnd) {
+        children.add(TextSpan(text: text.substring(lastEnd, start), style: style));
+      }
+
+      // Add the hashtag with the specified style
+      children.add(
+        TextSpan(text: match[0], style: style!.merge(const TextStyle(color: AppColors.primary))),
+      );
+
+      lastEnd = end;
+    }
+
+    // Add any remaining text after the last hashtag
+    if (lastEnd < text.length) {
+      children.add(TextSpan(text: text.substring(lastEnd), style: style));
+    }
+
+    return children;
   }
 }

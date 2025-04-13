@@ -15,7 +15,12 @@ class CachedAvatar extends StatelessWidget {
       memCacheHeight: 24,
       maxHeightDiskCache: 24,
       maxWidthDiskCache: 24,
-      imageBuilder: (context, image) => CircleAvatar(backgroundImage: image, radius: raduis),
+      imageBuilder:
+          (context, image) => CircleAvatar(
+            backgroundImage: image,
+            radius: raduis,
+            backgroundColor: AppColors.blackColor,
+          ),
       fit: BoxFit.cover,
       errorWidget: (context, url, error) => const Icon(Icons.error),
     );

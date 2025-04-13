@@ -11,12 +11,14 @@ class CustomLikeButton extends ConsumerWidget {
     required this.likeCount,
     this.unLikedIcon = Icons.favorite_border,
     this.counterStyle,
+    this.inActiveColor = Colors.grey,
   });
 
   final double size;
   final Future<bool?> Function(bool)? onTap;
   // final Color color;
   final int likeCount;
+  final Color inActiveColor;
   final bool isLiked;
   final IconData likedIcon;
   final IconData unLikedIcon;
@@ -30,7 +32,6 @@ class CustomLikeButton extends ConsumerWidget {
       },
       isLiked: isLiked,
       size: size,
-
       likeCount: likeCount,
       likeCountPadding: const EdgeInsets.symmetric(horizontal: 6),
       likeCountAnimationType: LikeCountAnimationType.all,
@@ -38,7 +39,7 @@ class CustomLikeButton extends ConsumerWidget {
       likeBuilder: (bool isLiked) {
         return Icon(
           isLiked ? likedIcon : unLikedIcon,
-          color: isLiked ? Colors.pinkAccent : Colors.grey.shade800,
+          color: isLiked ? Colors.pinkAccent : inActiveColor,
           size: size,
         );
       },

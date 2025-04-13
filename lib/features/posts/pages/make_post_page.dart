@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 import 'package:atlas_app/features/posts/db/posts_db.dart';
 import 'package:atlas_app/features/posts/providers/providers.dart';
@@ -59,6 +58,7 @@ class _MakePostPageState extends ConsumerState<MakePostPage> {
                   final _post = PostsDb();
                   final me = ref.read(userState).user!.userId;
                   await _post.insertPost(data, me);
+                  // ignore: use_build_context_synchronously
                   context.pop();
                 },
                 icon: const Icon(LucideIcons.check),

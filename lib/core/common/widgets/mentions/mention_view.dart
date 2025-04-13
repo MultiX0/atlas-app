@@ -351,7 +351,7 @@ class EnhancedFlutterMentionsState extends State<EnhancedFlutterMentions> {
                   suggestionListDecoration: widget.suggestionListDecoration,
                   data:
                       list.data.where((element) {
-                        final ele = element['display'].toLowerCase();
+                        final ele = element['display'].toString().toLowerCase();
                         final str = _selectedMention!.str.toLowerCase().replaceAll(
                           RegExp(_pattern),
                           '',

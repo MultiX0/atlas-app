@@ -19,6 +19,10 @@ class ProfilePostsPage extends ConsumerWidget {
               ref.invalidate(getUserPostsProvider(user.userId));
             },
             child: CustomScrollView(
+              cacheExtent: 1000.0,
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(decelerationRate: ScrollDecelerationRate.normal),
+              ),
               slivers: [
                 SliverOverlapInjector(
                   handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
@@ -26,11 +30,13 @@ class ProfilePostsPage extends ConsumerWidget {
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(vertical: 20),
                   sliver: SliverList.builder(
+                    addRepaintBoundaries: true,
                     itemCount: posts.length,
                     itemBuilder: (context, i) {
                       final post = posts[i];
                       return PostWidget(
                         post: post,
+                        key: ValueKey(post.postId),
                         onComment: () {},
                         onLike: (_) async => true,
                         onRepost: () {},

@@ -42,7 +42,6 @@ class PostWidget extends ConsumerWidget {
               onLike: onLike,
               onRepost: onRepost,
               onShare: onShare,
-              key: ValueKey(post.postId),
             ),
           ],
         ),

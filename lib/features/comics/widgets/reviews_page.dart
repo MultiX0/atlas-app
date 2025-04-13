@@ -1,6 +1,5 @@
 import 'package:atlas_app/core/common/widgets/app_refresh.dart';
 import 'package:atlas_app/imports.dart';
-import 'package:flutter/scheduler.dart';
 
 class ComicReviewsPage extends ConsumerStatefulWidget {
   const ComicReviewsPage({
@@ -20,12 +19,15 @@ class ComicReviewsPage extends ConsumerStatefulWidget {
 
 class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
   final ScrollController _scrollController = ScrollController();
-
+  late final Color color;
+  late final Color fontColorForBackground;
   bool fetched = false;
   int? reviewsCount;
   bool hideFloating = false;
   @override
   void initState() {
+    color = widget.comic.color != null ? HexColor(widget.comic.color!) : AppColors.primary;
+    fontColorForBackground = (color.computeLuminance() > 0.128) ? Colors.black : Colors.white;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!fetched) {
         fetchData();
@@ -108,76 +110,84 @@ class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
   @override
   Widget build(BuildContext context) {
     final isCurrentTab = widget.tabController.index == widget.tabIndex;
-    final reviews = ref.watch(
-      manhwaReviewsStateProvider(widget.comic.comicId).select((state) => state.reviews),
-    );
-    final isLoading = ref.watch(
-      manhwaReviewsStateProvider(widget.comic.comicId).select((state) => state.isLoading),
-    );
-    final user_have_review_before = ref.watch(
-      manhwaReviewsStateProvider(
-        widget.comic.comicId,
-      ).select((state) => state.user_have_review_before),
-    );
 
-    final iAlreadyReviwedOnce = user_have_review_before;
-    final color = widget.comic.color != null ? HexColor(widget.comic.color!) : AppColors.primary;
+    return Consumer(
+      builder: (context, ref, child) {
+        final isLoading = ref.watch(
+          manhwaReviewsStateProvider(widget.comic.comicId).select((state) => state.isLoading),
+        );
 
-    if (isLoading) {
-      return const Loader();
-    }
+        if (isLoading) {
+          return const Loader();
+        }
 
-    Color getFontColorForBackground() {
-      return (color.computeLuminance() > 0.128) ? Colors.black : Colors.white;
-    }
+        return child!;
+      },
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        floatingActionButton: Consumer(
+          builder: (context, ref, child) {
+            final userHaveReviewBefore = ref.watch(
+              manhwaReviewsStateProvider(
+                widget.comic.comicId,
+              ).select((state) => state.user_have_review_before),
+            );
+            final iAlreadyReviwedOnce = userHaveReviewBefore;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      floatingActionButton:
-          hideFloating
-              ? null
-              : FloatingActionButton(
-                onPressed: () => addReview(reviews, iAlreadyReviwedOnce),
-                backgroundColor: color,
-                tooltip: "اضافة مراجعة",
-                child: Icon(TablerIcons.edit, color: getFontColorForBackground()),
-              ),
-      body: NotificationListener<ScrollNotification>(
-        onNotification: (scrollNotification) {
-          if (scrollNotification is ScrollStartNotification) {
-            SchedulerBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                setState(() => hideFloating = true);
-              }
-            });
-          } else if (scrollNotification is ScrollEndNotification) {
-            SchedulerBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                setState(() => hideFloating = false);
-              }
-            });
-          }
-          return true;
-        },
-        child: AppRefresh(
+            return hideFloating
+                ? const SizedBox.shrink()
+                : FloatingActionButton(
+                  onPressed:
+                      () => addReview(
+                        ref.read(
+                          manhwaReviewsStateProvider(
+                            widget.comic.comicId,
+                          ).select((state) => state.reviews),
+                        ),
+                        iAlreadyReviwedOnce,
+                      ),
+                  backgroundColor: color,
+                  tooltip: "اضافة مراجعة",
+                  child: Icon(TablerIcons.edit, color: fontColorForBackground),
+                );
+          },
+        ),
+        body: AppRefresh(
           onRefresh: () async => refresh(),
           child: CustomScrollView(
-            cacheExtent: 300,
+            cacheExtent: 500,
             primary: isCurrentTab,
-            physics: const ClampingScrollPhysics(),
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics(decelerationRate: ScrollDecelerationRate.normal),
+            ),
             controller: isCurrentTab ? null : _scrollController,
             slivers: [
               SliverOverlapInjector(
                 handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
               ),
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-                sliver: ReviewsWidget(
-                  iAlreadyReviewdOnce: iAlreadyReviwedOnce,
-                  scrollController: _scrollController,
-                  reviews: reviews,
-                  comic: widget.comic,
-                ),
+              Consumer(
+                builder: (context, ref, child) {
+                  final reviews = ref.watch(
+                    manhwaReviewsStateProvider(
+                      widget.comic.comicId,
+                    ).select((state) => state.reviews),
+                  );
+
+                  return SliverPadding(
+                    padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+                    sliver: ReviewsWidget(
+                      key: UniqueKey(),
+                      iAlreadyReviewdOnce: ref.read(
+                        manhwaReviewsStateProvider(
+                          widget.comic.comicId,
+                        ).select((state) => state.user_have_review_before),
+                      ),
+                      scrollController: _scrollController,
+                      reviews: reviews,
+                      comic: widget.comic,
+                    ),
+                  );
+                },
               ),
             ],
           ),

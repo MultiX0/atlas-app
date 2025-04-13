@@ -22,7 +22,7 @@ class ProfileDb {
 
   Future<List<Map<String, dynamic>>> fetchUsersForMention(String query) async {
     final response = await _usersTable
-        .select('id, username, full_name, avatar')
+        .select('${KeyNames.id}, ${KeyNames.username}, ${KeyNames.fullName}, ${KeyNames.avatar}')
         .ilike('username', '%$query%')
         .order('username')
         .limit(8);

@@ -96,36 +96,35 @@ abstract class ParserType {
 
 class MentionParser extends ParserType {
   MentionParser({
-    String? pattern = RTUtils.mentionPattern,
-    Function(Matched)? onTap,
+    super.pattern = RTUtils.mentionPattern,
+    Function(Matched)? super.onTap,
     TextStyle? style,
     bool enableID = false,
-  }) : super(pattern: pattern, onTap: onTap);
+  });
 }
 
 class HashTagParser extends ParserType {
-  HashTagParser({String? pattern = RTUtils.hashPattern, Function(Matched)? onTap, TextStyle? style})
-    : super(pattern: pattern, style: style, onTap: onTap);
+  HashTagParser({super.pattern = RTUtils.hashPattern, Function(Matched)? super.onTap, super.style});
 }
 
 class PhoneParser extends ParserType {
-  PhoneParser({String? pattern = RTUtils.phonePattern, Function(Matched)? onTap, TextStyle? style})
-    : super(pattern: pattern, style: style, onTap: onTap);
+  PhoneParser({super.pattern = RTUtils.phonePattern, Function(Matched)? super.onTap, super.style});
 }
 
 class EmailParser extends ParserType {
-  EmailParser({String? pattern = RTUtils.emailPattern, Function(Matched)? onTap, TextStyle? style})
-    : super(pattern: pattern, style: style, onTap: onTap);
+  EmailParser({super.pattern = RTUtils.emailPattern, Function(Matched)? super.onTap, super.style});
 }
 
 class UrlParser extends ParserType {
-  UrlParser({String? pattern = RTUtils.urlPattern, Function(Matched)? onTap, TextStyle? style})
-    : super(pattern: pattern, style: style, onTap: onTap);
+  UrlParser({super.pattern = RTUtils.urlPattern, Function(Matched)? super.onTap, super.style});
 }
 
 class BoldParser extends ParserType {
-  BoldParser({Function(Matched)? onTap, TextStyle? style, String pattern = RTUtils.boldPattern})
-    : super(style: style, onTap: onTap, pattern: pattern) {
+  BoldParser({
+    Function(Matched)? super.onTap,
+    super.style,
+    String super.pattern = RTUtils.boldPattern,
+  }) {
     renderText = ({String? str}) {
       return Matched(
         display: str?.substring(1, str.length - 1),
@@ -136,8 +135,11 @@ class BoldParser extends ParserType {
 }
 
 class ItalicParser extends ParserType {
-  ItalicParser({Function(Matched)? onTap, TextStyle? style, String pattern = RTUtils.italicPattern})
-    : super(style: style, onTap: onTap, pattern: pattern) {
+  ItalicParser({
+    Function(Matched)? super.onTap,
+    super.style,
+    String super.pattern = RTUtils.italicPattern,
+  }) {
     renderText = ({String? str}) {
       return Matched(
         display: str?.substring(1, str.length - 1),

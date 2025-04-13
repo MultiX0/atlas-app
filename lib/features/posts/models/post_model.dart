@@ -25,6 +25,7 @@ class PostModel {
   final int commentsCount;
   final int repostedCount;
   final List<ComicPreviewModel> manhwaMentioned;
+
   final List<CharacterPreviewModel> charactersMentioned;
   final List<NovelPreviewModel> novelsMentioned;
   final ComicReviewModel? reviewMentioned;
