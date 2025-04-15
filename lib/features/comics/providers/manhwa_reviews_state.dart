@@ -154,12 +154,13 @@ class ManhwaReviewsState extends StateNotifier<ManhwaReviewsHelper> {
       );
 
       final hasReachedEnd = reviews.length < _pageSize;
+      final newReviews = refresh ? reviews : [...state.reviews, ...reviews];
       updateState(
         moreLoading: false,
         hasReachEnd: hasReachedEnd,
         error: null,
         isLoading: false,
-        reviews: [...state.reviews, ...reviews],
+        reviews: newReviews,
       );
     } catch (e) {
       updateState(isLoading: false, error: e.toString(), moreLoading: false);

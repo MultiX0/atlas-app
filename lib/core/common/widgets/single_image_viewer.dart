@@ -21,10 +21,13 @@ class SingleImageViewer extends StatelessWidget {
           backgroundColor: Colors.black.withValues(alpha: .85),
         );
       },
-      child: CachedNetworkAvifImage(
-        provider.url,
-        cacheHeight: min(size.width.toInt(), 500), // Cap at 500px
-        cacheWidth: min(size.width.toInt(), 500),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: size.height * .35),
+        child: CachedNetworkAvifImage(
+          provider.url,
+          cacheHeight: min(size.width.toInt(), 500), // Cap at 500px
+          cacheWidth: min(size.width.toInt(), 500),
+        ),
       ),
     );
   }
