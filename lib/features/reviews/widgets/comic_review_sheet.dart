@@ -61,7 +61,7 @@ class ComicReviewSheet extends ConsumerWidget {
     child: ListTile(
       onTap: onTap,
       title: Text(text),
-      leading: Icon(icon),
+      leading: Icon(icon, color: AppColors.mutedSilver),
 
       titleTextStyle: const TextStyle(fontFamily: arabicPrimaryFont, fontSize: 16),
     ),

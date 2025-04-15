@@ -16,4 +16,5 @@ class Routes {
   static const manhwaPage = '/manhwaPage';
   static const addComicReview = '/addComicReviewPage';
   static const makePostPage = '/makePostPage';
+  static const hashtagsPage = '/hashtagsPage';
 }

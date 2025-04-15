@@ -155,7 +155,7 @@ class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
         body: AppRefresh(
           onRefresh: () async => refresh(),
           child: CustomScrollView(
-            cacheExtent: 500,
+            cacheExtent: MediaQuery.sizeOf(context).height * 1.5,
             primary: isCurrentTab,
             physics: const AlwaysScrollableScrollPhysics(
               parent: BouncingScrollPhysics(decelerationRate: ScrollDecelerationRate.normal),

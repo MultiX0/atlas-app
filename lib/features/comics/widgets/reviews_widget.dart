@@ -46,6 +46,11 @@ class _ReviewsWidgetState extends ConsumerState<ReviewsWidget> {
         if (i == widget.reviews.length + 1) {
           return const Center(child: Padding(padding: EdgeInsets.all(8.0), child: Loader()));
         }
+
+        if (moreLoading && i == widget.reviews.length) {
+          return const Loader();
+        }
+
         final review = widget.reviews[i - 1];
         return UserReviewCard(
           key: ValueKey(review.id),

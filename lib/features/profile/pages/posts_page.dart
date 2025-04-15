@@ -30,6 +30,7 @@ class ProfilePostsPage extends ConsumerWidget {
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(vertical: 20),
                   sliver: SliverList.builder(
+                    addAutomaticKeepAlives: true,
                     addRepaintBoundaries: true,
                     itemCount: posts.length,
                     itemBuilder: (context, i) {

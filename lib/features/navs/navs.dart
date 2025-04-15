@@ -22,4 +22,8 @@ class Navs {
     _ref.read(postTypeProvider.notifier).state = postType;
     router.push("${Routes.makePostPage}/${postType.name.trim()}");
   }
+
+  void goToHashtagPage(String hashtag) {
+    router.push("${Routes.hashtagsPage}/$hashtag");
+  }
 }

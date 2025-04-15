@@ -94,6 +94,7 @@ dependencies:
   comment_tree: ^0.3.0
   timeago: ^3.7.0
   petitparser: ^6.1.0
+  async: ^2.12.0
 
 dev_dependencies:
   flutter_test:

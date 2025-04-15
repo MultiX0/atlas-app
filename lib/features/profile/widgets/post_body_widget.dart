@@ -56,7 +56,6 @@ class PostBodyWidget extends StatelessWidget {
             onShare: onShare,
           ),
           const SizedBox(height: 15),
-          Divider(height: 0.25, color: AppColors.mutedSilver.withValues(alpha: .15)),
         ],
       ),
     );
@@ -89,7 +88,12 @@ class PostContentWidget extends StatelessWidget {
             PhoneParser(onTap: (phone) => log('click phone ${phone.value}')),
             MentionParser(onTap: (mention) => log('${mention.value} clicked')),
             BoldParser(),
-            HashTagParser(onTap: (hashtag) => log('is ${hashtag.value} trending?')),
+            HashTagParser(
+              onTap: (hashtag) {
+                final _validHashtag = hashtag.value?.split('#').last;
+                context.push("${Routes.hashtagsPage}/$_validHashtag");
+              },
+            ),
             SlashEntityParser(
               onTap: (matched) {
                 final parts = matched.value?.split(":");

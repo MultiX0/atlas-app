@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:atlas_app/core/common/constants/function_names.dart';
 import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/core/common/constants/view_names.dart';
+import 'package:atlas_app/core/common/enum/hashtag_enum.dart';
 import 'package:atlas_app/features/posts/models/post_model.dart';
 import 'package:atlas_app/imports.dart';
 
@@ -37,6 +38,31 @@ class PostsDb {
       final data = await _client.rpc(FunctionNames.search_all, params: {'keyword': query}) as List;
       // log(data.toString());
       return List.from(data);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<List<PostModel>> getPostsByHashtag({
+    required String hashtag,
+    required int startIndex,
+    required int pageSize,
+    required HashtagFilter filter,
+  }) async {
+    try {
+      var query = _postsView
+          .select("*")
+          .contains(KeyNames.hashtags, [hashtag])
+          .range(startIndex, startIndex + pageSize - 1);
+      if (filter == HashtagFilter.LAST_CREATED) {
+        query = query.order(KeyNames.created_at, ascending: false);
+      } else {
+        query = query.order(KeyNames.like_count, ascending: false);
+      }
+
+      final data = await query;
+      return data.map((post) => PostModel.fromMap(post)).toList();
     } catch (e) {
       log(e.toString());
       rethrow;

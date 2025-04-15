@@ -27,11 +27,12 @@ class PostWidget extends ConsumerWidget {
     return RepaintBoundary(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 0),
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 0),
         child: Column(
           crossAxisAlignment: hasArabic ? CrossAxisAlignment.end : CrossAxisAlignment.start,
 
           children: [
+            Divider(height: 0.25, color: AppColors.mutedSilver.withValues(alpha: .1)),
+            const SizedBox(height: 15),
             if (post.parent != null) ...[PostReplyedWidget(post: post), const SizedBox(height: 8)],
 
             PostHeaderWidget(post: post),
@@ -43,6 +44,7 @@ class PostWidget extends ConsumerWidget {
               onRepost: onRepost,
               onShare: onShare,
             ),
+            const SizedBox(height: 5),
           ],
         ),
       ),
