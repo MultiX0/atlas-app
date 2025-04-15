@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:atlas_app/features/posts/db/posts_db.dart';
 import 'package:atlas_app/features/posts/providers/providers.dart';
@@ -8,8 +9,9 @@ import 'package:atlas_app/imports.dart';
 
 // Main page widget
 class MakePostPage extends ConsumerStatefulWidget {
-  const MakePostPage({super.key, required this.postType});
+  const MakePostPage({super.key, required this.postType, this.defaultText});
 
+  final String? defaultText;
   final PostType postType;
 
   @override
@@ -55,6 +57,7 @@ class _MakePostPageState extends ConsumerState<MakePostPage> {
                     return;
                   }
                   final data = ref.read(postInputProvider);
+                  log("post input: $data");
                   final _post = PostsDb();
                   final me = ref.read(userState).user!.userId;
                   await _post.insertPost(data, me);
@@ -67,10 +70,14 @@ class _MakePostPageState extends ConsumerState<MakePostPage> {
           ),
         ],
       ),
-      body: const Column(
+      body: Column(
         children: [
-          Expanded(child: SingleChildScrollView(child: TypeControllerWidget())),
-          ToolsWidget(),
+          Expanded(
+            child: SingleChildScrollView(
+              child: TypeControllerWidget(defaultText: widget.defaultText),
+            ),
+          ),
+          const ToolsWidget(),
         ],
       ),
     );
@@ -78,7 +85,9 @@ class _MakePostPageState extends ConsumerState<MakePostPage> {
 }
 
 class TypeControllerWidget extends ConsumerWidget {
-  const TypeControllerWidget({super.key});
+  const TypeControllerWidget({super.key, this.defaultText});
+
+  final String? defaultText;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -87,7 +96,7 @@ class TypeControllerWidget extends ConsumerWidget {
       case PostType.comic_review:
         return const ComicReviewTreeWidget();
       default:
-        return const PostFieldWidget();
+        return PostFieldWidget(defaultText: defaultText);
     }
   }
 }

@@ -4,13 +4,23 @@ import 'package:atlas_app/core/common/constants/function_names.dart';
 import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/core/common/constants/view_names.dart';
 import 'package:atlas_app/core/common/enum/hashtag_enum.dart';
+import 'package:atlas_app/core/common/utils/extract_key_words.dart';
+import 'package:atlas_app/features/hashtags/db/hashtags_db.dart';
 import 'package:atlas_app/features/posts/models/post_model.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:uuid/uuid.dart';
+
+final postsDbProvider = Provider<PostsDb>((ref) {
+  return PostsDb();
+});
 
 class PostsDb {
   SupabaseClient get _client => Supabase.instance.client;
   SupabaseQueryBuilder get _postsView => _client.from(ViewNames.post_details_with_mentions);
   SupabaseQueryBuilder get _postsTable => _client.from(TableNames.posts);
+  SupabaseQueryBuilder get _postLikesTable => _client.from(TableNames.post_likes);
+  final uuid = const Uuid();
+  HashtagsDb get hashtagDb => HashtagsDb();
 
   Future<List<PostModel>> getUserPosts(String userId) async {
     try {
@@ -26,7 +36,17 @@ class PostsDb {
 
   Future<void> insertPost(String post, String userId) async {
     try {
-      await _postsTable.insert({KeyNames.content: post, KeyNames.userId: userId});
+      final postId = uuid.v4();
+
+      await _postsTable.insert({
+        KeyNames.id: postId,
+        KeyNames.content: post,
+        KeyNames.userId: userId,
+      });
+
+      final hashtags = extractHashtagKeyword(post);
+      await hashtagDb.insertNewHashTag(hashtags);
+      await hashtagDb.insertPostHashTag(hashtags, postId);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -40,6 +60,28 @@ class PostsDb {
       return List.from(data);
     } catch (e) {
       log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> handleUserLike(PostModel post, String userId) async {
+    try {
+      log("Database operation: post.userLiked = ${post.userLiked}");
+
+      if (!post.userLiked) {
+        // User IS liking the post now, so INSERT a like
+        log("Inserting like");
+        await _postLikesTable.insert({KeyNames.userId: userId, KeyNames.post_id: post.postId});
+      } else {
+        // User is NOT liking the post now, so DELETE the like
+        log("Deleting like");
+        await _postLikesTable
+            .delete()
+            .eq(KeyNames.post_id, post.postId)
+            .eq(KeyNames.userId, userId);
+      }
+    } catch (e) {
+      log("Database error: ${e.toString()}");
       rethrow;
     }
   }

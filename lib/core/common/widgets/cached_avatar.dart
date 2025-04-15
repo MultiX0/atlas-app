@@ -9,20 +9,24 @@ class CachedAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CachedNetworkImage(
-      imageUrl: avatar,
-      memCacheWidth: 24,
-      memCacheHeight: 24,
-      maxHeightDiskCache: 24,
-      maxWidthDiskCache: 24,
-      imageBuilder:
-          (context, image) => CircleAvatar(
-            backgroundImage: image,
-            radius: raduis,
-            backgroundColor: AppColors.blackColor,
-          ),
-      fit: BoxFit.cover,
-      errorWidget: (context, url, error) => const Icon(Icons.error),
+    return CircleAvatar(
+      radius: raduis,
+      backgroundColor: AppColors.blackColor,
+      child: CachedNetworkImage(
+        imageUrl: avatar,
+        memCacheWidth: 24,
+        memCacheHeight: 24,
+        maxHeightDiskCache: 24,
+        maxWidthDiskCache: 24,
+        imageBuilder:
+            (context, image) => CircleAvatar(
+              backgroundImage: image,
+              radius: raduis,
+              backgroundColor: AppColors.blackColor,
+            ),
+        fit: BoxFit.cover,
+        errorWidget: (context, url, error) => const Icon(Icons.error),
+      ),
     );
   }
 }

@@ -13,7 +13,8 @@ import 'package:atlas_app/imports.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class PostFieldWidget extends ConsumerStatefulWidget {
-  const PostFieldWidget({super.key});
+  const PostFieldWidget({super.key, this.defaultText});
+  final String? defaultText;
 
   @override
   ConsumerState<PostFieldWidget> createState() => _PostFieldWidgetState();
@@ -163,6 +164,7 @@ class _PostFieldWidgetState extends ConsumerState<PostFieldWidget> {
           ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 200),
             child: EnhancedFlutterMentions(
+              defaultText: widget.defaultText,
               onMarkupChanged: (val) {
                 log(val);
                 ref.read(postInputProvider.notifier).state = val.trim();

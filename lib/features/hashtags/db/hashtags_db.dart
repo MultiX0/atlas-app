@@ -40,7 +40,7 @@ class HashtagsDb {
     try {
       final _data =
           hashtags.map((hashtag) => {KeyNames.hashtag: hashtag, KeyNames.post_id: postId}).toList();
-      await _postsHashtags.insert(_data);
+      await _postsHashtags.upsert(_data, onConflict: KeyNames.post_id, ignoreDuplicates: false);
     } catch (e) {
       log(e.toString());
       rethrow;

@@ -297,6 +297,7 @@ class EnhancedFlutterMentionsState extends State<EnhancedFlutterMentions> {
     final data = mapToAnotation();
     controller = EnhancedAnnotationEditingController(data);
 
+    log("defaultText is ${widget.defaultText}");
     if (widget.defaultText != null) {
       controller!.text = widget.defaultText!;
     }

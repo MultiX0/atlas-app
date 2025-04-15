@@ -12,6 +12,7 @@ class HashtagStateHelper {
   final HashtagModel? hashtag;
   final List<PostModel> posts;
   final bool isLoading;
+  final bool isLiking;
   final bool loadingMore;
   final String? error;
   final bool hasReachedEnd;
@@ -21,6 +22,7 @@ class HashtagStateHelper {
     required this.isLoading,
     required this.loadingMore,
     required this.hasReachedEnd,
+    required this.isLiking,
     this.error,
   });
 
@@ -31,6 +33,7 @@ class HashtagStateHelper {
     bool? loadingMore,
     String? error,
     bool? hasReachedEnd,
+    bool? isLiking,
   }) {
     return HashtagStateHelper(
       hashtag: hashtag ?? this.hashtag,
@@ -39,6 +42,7 @@ class HashtagStateHelper {
       loadingMore: loadingMore ?? this.loadingMore,
       error: error ?? this.error,
       hasReachedEnd: hasReachedEnd ?? this.hasReachedEnd,
+      isLiking: isLiking ?? this.isLiking,
     );
   }
 }
@@ -49,6 +53,7 @@ class HashtagStateProvider extends StateNotifier<HashtagStateHelper> {
     posts: [],
     isLoading: true,
     loadingMore: false,
+    isLiking: false,
   );
   // ignore: unused_field
   final Ref _ref;
@@ -96,6 +101,10 @@ class HashtagStateProvider extends StateNotifier<HashtagStateHelper> {
     HashtagFilter filter = HashtagFilter.LAST_CREATED,
   }) async {
     try {
+      if (state.isLiking) {
+        log("Skipping fetch: like action in progress");
+        return;
+      }
       updateState(error: null);
       log("Fetching hashtags data for hashtag: $_hashtag, refresh: $refresh");
 
@@ -129,15 +138,36 @@ class HashtagStateProvider extends StateNotifier<HashtagStateHelper> {
         isLoading: false,
         posts: updatedPosts,
       );
-      log("Updated state with ${updatedPosts.length} total posts");
+      log(
+        "fetchData completed, updated posts: ${state.posts.map((p) => "${p.postId}: ${p.userLiked}").toList()}",
+      );
     } catch (e) {
       log("fetchData error: $e");
       updateState(isLoading: false, loadingMore: false, error: e.toString());
     }
   }
+
+  void likePost({required PostModel postModel}) {
+    state = state.copyWith(isLiking: true);
+    log("Updating post like state: ${postModel.postId}, userLiked: ${postModel.userLiked}");
+
+    final posts = List<PostModel>.from(state.posts);
+    final indexOfPost = posts.indexWhere((post) => post.postId == postModel.postId);
+
+    if (indexOfPost == -1) {
+      log("Post not found in state: ${postModel.postId}");
+      return;
+    }
+
+    // Replace with the updated post
+    posts[indexOfPost] = postModel;
+    state = state.copyWith(posts: posts);
+    state = state.copyWith(isLiking: false);
+  }
 }
 
 final hashtagStateProvider =
     StateNotifierProvider.family<HashtagStateProvider, HashtagStateHelper, String>((ref, hashtag) {
+      log("state notifier on value: $hashtag");
       return HashtagStateProvider(ref: ref, hashtag: hashtag);
     });

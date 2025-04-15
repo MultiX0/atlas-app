@@ -1,4 +1,7 @@
+import 'dart:developer';
+
 import 'package:atlas_app/core/common/enum/hashtag_enum.dart';
+import 'package:atlas_app/core/common/enum/post_like_enum.dart';
 import 'package:atlas_app/features/hashtags/widgets/hashtag_filter_widget.dart';
 import 'package:atlas_app/features/posts/models/post_model.dart';
 import 'package:atlas_app/features/profile/widgets/post_widget.dart';
@@ -62,12 +65,14 @@ class HashtagsBody extends StatelessWidget {
 
         // Posts (from i == 1 to posts.length)
         final post = posts[i - 1];
+        log("post updated...");
+
         return PostWidget(
           hashtag: hashtag,
           key: ValueKey(post.postId),
           post: post,
           onComment: () {},
-          onLike: (_) async => true,
+          postLikeType: PostLikeEnum.HASHTAG,
           onRepost: () {},
           onShare: () {},
         );

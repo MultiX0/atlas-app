@@ -1,3 +1,4 @@
+import 'package:atlas_app/features/hashtags/providers/providers.dart';
 import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:atlas_app/router.dart';
@@ -24,6 +25,7 @@ class Navs {
   }
 
   void goToHashtagPage(String hashtag) {
+    _ref.read(selectedHashtagProvider.notifier).state = hashtag;
     router.push("${Routes.hashtagsPage}/$hashtag");
   }
 }

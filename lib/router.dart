@@ -144,13 +144,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
-        path: "${Routes.makePostPage}/:type",
+        path: "${Routes.makePostPage}/:type/:defaultText",
         pageBuilder: (context, state) {
           final typeString = state.pathParameters["type"];
+          final defaultText = Uri.decodeComponent(state.pathParameters["defaultText"] ?? "");
           final type = stringToPostType(typeString ?? "normal");
 
           return CustomTransitionPage(
-            child: MakePostPage(postType: type),
+            child: MakePostPage(postType: type, defaultText: defaultText),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);
             },

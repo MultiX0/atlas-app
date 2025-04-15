@@ -71,7 +71,10 @@ class HashtagsHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    final encoded = Uri.encodeComponent("#$hashtag");
+                    context.push("${Routes.makePostPage}/${PostType.normal.name}/$encoded");
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary.withValues(alpha: .85),
                     foregroundColor: Colors.white,

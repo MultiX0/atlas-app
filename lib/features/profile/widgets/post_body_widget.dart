@@ -32,39 +32,37 @@ class PostBodyWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RepaintBoundary(
-      child: Column(
-        crossAxisAlignment: hasArabic ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-        children: [
+    return Column(
+      crossAxisAlignment: hasArabic ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 10),
+        PostContentWidget(post: post, hashtag: hashtag),
+        if (post.images.isNotEmpty) ...[
           const SizedBox(height: 10),
-          PostContentWidget(post: post),
-          if (post.images.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            ViewImagesController(
-              images: post.images.map((image) => CachedNetworkAvifImageProvider(image)).toList(),
-            ),
-          ],
-          const SizedBox(height: 12),
-          InteractionBar(
-            isShared: post.shared_by_me,
-            likes: post.likeCount,
-            comments: post.commentsCount,
-            reposts: post.repostedCount,
-            shares: post.shares_count,
-            isLiked: post.userLiked,
-            onLike: onLike,
-            onComment: onComment,
-            onRepost: onRepost,
-            onShare: onShare,
+          ViewImagesController(
+            images: post.images.map((image) => CachedNetworkAvifImageProvider(image)).toList(),
           ),
-          const SizedBox(height: 15),
         ],
-      ),
+        const SizedBox(height: 12),
+        InteractionBar(
+          isShared: post.shared_by_me,
+          likes: post.likeCount,
+          comments: post.commentsCount,
+          reposts: post.repostedCount,
+          shares: post.shares_count,
+          isLiked: post.userLiked,
+          onLike: onLike,
+          onComment: onComment,
+          onRepost: onRepost,
+          onShare: onShare,
+        ),
+        const SizedBox(height: 15),
+      ],
     );
   }
 }
 
-class PostContentWidget extends StatelessWidget {
+class PostContentWidget extends ConsumerWidget {
   final String? hashtag;
   const PostContentWidget({super.key, required this.post, this.hashtag});
 
@@ -72,7 +70,7 @@ class PostContentWidget extends StatelessWidget {
   bool get hasArabic => Bidi.hasAnyRtl(post.content);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: RepaintBoundary(
@@ -94,14 +92,13 @@ class PostContentWidget extends StatelessWidget {
             HashTagParser(
               onTap: (hash) {
                 final _validHashtag = hash.value?.split('#').last;
-                if (hashtag == null) {
-                  context.push("${Routes.hashtagsPage}/$_validHashtag");
-                  return;
-                }
+                log(_validHashtag.toString());
+                log(hashtag.toString());
                 if (hashtag == _validHashtag) {
                   return;
                 }
-                context.push("${Routes.hashtagsPage}/$hashtag");
+
+                ref.read(navsProvider).goToHashtagPage(_validHashtag ?? "unknown");
               },
             ),
             SlashEntityParser(

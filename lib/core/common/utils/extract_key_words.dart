@@ -11,13 +11,12 @@ String? extractMentionKeyword(String text) {
 }
 
 /// Extract hashtag query - gets the text after # symbol being typed
-String? extractHashtagKeyword(String text) {
-  // Find the last # symbol followed by word characters
-  final match = RegExp(r'#(\w+)$').firstMatch(text);
-  if (match != null && match.group(1) != null) {
-    return match.group(1);
+List<String> extractHashtagKeyword(String text) {
+  final match = RegExp(r'\B(\#[a-zA-Z]+\b)(?!;)').allMatches(text);
+  if (match.isNotEmpty && match.first.group(1) != null) {
+    return match.map((hash) => hash.group(1)!.replaceAll("#", '').trim()).toList();
   }
-  return null;
+  return [];
 }
 
 /// Extract slash command query - gets the text after / symbol being typed
