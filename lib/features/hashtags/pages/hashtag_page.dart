@@ -131,6 +131,7 @@ class _HashtagPageState extends ConsumerState<HashtagPage> {
                     const SliverFillRemaining(child: Loader()),
                   ] else ...[
                     HashtagsBody(
+                      hashtag: widget.hashtag,
                       currentFilter: _currentFilter,
                       posts: state.posts,
                       loadingMore: state.loadingMore,

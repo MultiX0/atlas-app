@@ -13,6 +13,7 @@ class PostWidget extends ConsumerWidget {
     required this.onLike,
     required this.onRepost,
     required this.onShare,
+    this.hashtag,
   }) : hasArabic = Bidi.hasAnyRtl(post.content);
 
   final PostModel post;
@@ -21,6 +22,7 @@ class PostWidget extends ConsumerWidget {
   final VoidCallback? onComment;
   final VoidCallback? onRepost;
   final VoidCallback? onShare;
+  final String? hashtag;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -38,6 +40,7 @@ class PostWidget extends ConsumerWidget {
             PostHeaderWidget(post: post),
             PostBodyWidget(
               post: post,
+              hashtag: hashtag,
               hasArabic: hasArabic,
               onComment: onComment,
               onLike: onLike,

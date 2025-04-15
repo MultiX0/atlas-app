@@ -19,6 +19,7 @@ class PostBodyWidget extends StatelessWidget {
     required this.onRepost,
     required this.onShare,
     required this.hasArabic,
+    this.hashtag,
   });
 
   final PostModel post;
@@ -27,6 +28,7 @@ class PostBodyWidget extends StatelessWidget {
   final VoidCallback? onComment;
   final VoidCallback? onRepost;
   final VoidCallback? onShare;
+  final String? hashtag;
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +65,8 @@ class PostBodyWidget extends StatelessWidget {
 }
 
 class PostContentWidget extends StatelessWidget {
-  const PostContentWidget({super.key, required this.post});
+  final String? hashtag;
+  const PostContentWidget({super.key, required this.post, this.hashtag});
 
   final PostModel post;
   bool get hasArabic => Bidi.hasAnyRtl(post.content);
@@ -89,9 +92,16 @@ class PostContentWidget extends StatelessWidget {
             MentionParser(onTap: (mention) => log('${mention.value} clicked')),
             BoldParser(),
             HashTagParser(
-              onTap: (hashtag) {
-                final _validHashtag = hashtag.value?.split('#').last;
-                context.push("${Routes.hashtagsPage}/$_validHashtag");
+              onTap: (hash) {
+                final _validHashtag = hash.value?.split('#').last;
+                if (hashtag == null) {
+                  context.push("${Routes.hashtagsPage}/$_validHashtag");
+                  return;
+                }
+                if (hashtag == _validHashtag) {
+                  return;
+                }
+                context.push("${Routes.hashtagsPage}/$hashtag");
               },
             ),
             SlashEntityParser(

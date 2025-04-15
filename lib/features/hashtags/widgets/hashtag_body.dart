@@ -11,12 +11,14 @@ class HashtagsBody extends StatelessWidget {
     required this.loadingMore,
     required this.updateFilter,
     required this.currentFilter,
+    required this.hashtag,
   });
 
   final List<PostModel> posts;
   final bool loadingMore;
   final Function(HashtagFilter) updateFilter;
   final HashtagFilter currentFilter;
+  final String hashtag;
 
   @override
   Widget build(BuildContext context) {
@@ -61,6 +63,7 @@ class HashtagsBody extends StatelessWidget {
         // Posts (from i == 1 to posts.length)
         final post = posts[i - 1];
         return PostWidget(
+          hashtag: hashtag,
           key: ValueKey(post.postId),
           post: post,
           onComment: () {},
