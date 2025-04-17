@@ -4,13 +4,20 @@ class CharacterPreviewModel {
   final String id;
   final String name;
   final String poster;
-  CharacterPreviewModel({required this.id, required this.name, required this.poster});
+  final String description;
+  CharacterPreviewModel({
+    required this.id,
+    required this.name,
+    required this.poster,
+    required this.description,
+  });
 
-  CharacterPreviewModel copyWith({String? id, String? name, String? poster}) {
+  CharacterPreviewModel copyWith({String? id, String? name, String? poster, String? description}) {
     return CharacterPreviewModel(
       id: id ?? this.id,
       name: name ?? this.name,
       poster: poster ?? this.poster,
+      description: description ?? this.description,
     );
   }
 
@@ -19,6 +26,7 @@ class CharacterPreviewModel {
       id: map[KeyNames.entity_id] ?? "",
       name: map[KeyNames.fullName] ?? "",
       poster: map[KeyNames.poster] ?? "",
+      description: map[KeyNames.ar_description] ?? "",
     );
   }
 

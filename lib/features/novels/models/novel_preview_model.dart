@@ -5,19 +5,28 @@ class NovelPreviewModel {
   final String title;
   final String poster;
   final String banner;
+  final String description;
   NovelPreviewModel({
     required this.id,
     required this.title,
     required this.poster,
     required this.banner,
+    required this.description,
   });
 
-  NovelPreviewModel copyWith({String? id, String? title, String? poster, String? banner}) {
+  NovelPreviewModel copyWith({
+    String? id,
+    String? title,
+    String? poster,
+    String? banner,
+    String? description,
+  }) {
     return NovelPreviewModel(
       id: id ?? this.id,
       title: title ?? this.title,
       poster: poster ?? this.poster,
       banner: banner ?? this.banner,
+      description: description ?? this.description,
     );
   }
 
@@ -31,6 +40,7 @@ class NovelPreviewModel {
       title: map[KeyNames.title] ?? '',
       poster: map[KeyNames.poster] ?? "",
       banner: map[KeyNames.banner] ?? "",
+      description: map[KeyNames.story] ?? "",
     );
   }
 

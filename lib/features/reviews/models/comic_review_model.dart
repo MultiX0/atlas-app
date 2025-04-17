@@ -1,4 +1,3 @@
-import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/imports.dart';
 
 class ComicReviewModel {
@@ -19,6 +18,8 @@ class ComicReviewModel {
   final String review;
   final List images;
   final UserModel? user;
+  final int reviewsCount;
+  final String comic_title;
   ComicReviewModel({
     required this.id,
     required this.likes_count,
@@ -36,7 +37,9 @@ class ComicReviewModel {
     required this.overall,
     required this.review,
     required this.spoilers,
+    required this.reviewsCount,
     this.user,
+    required this.comic_title,
   });
 
   ComicReviewModel copyWith({
@@ -57,6 +60,8 @@ class ComicReviewModel {
     String? id,
     int? likes_count,
     bool? i_liked,
+    int? reviewsCount,
+    String? comic_title,
   }) {
     return ComicReviewModel(
       comicId: comicId ?? this.comicId,
@@ -70,12 +75,14 @@ class ComicReviewModel {
       spoilers: spoilers ?? this.spoilers,
       images: images ?? this.images,
       review: review ?? this.review,
-      user: this.user,
+      user: user ?? this.user,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       i_liked: i_liked ?? this.i_liked,
       id: id ?? this.id,
       likes_count: likes_count ?? this.likes_count,
+      reviewsCount: reviewsCount ?? this.reviewsCount,
+      comic_title: comic_title ?? this.comic_title,
     );
   }
 
@@ -98,6 +105,8 @@ class ComicReviewModel {
       i_liked: reviewModel.i_liked,
       id: reviewModel.id,
       likes_count: reviewModel.likes_count,
+      reviewsCount: reviewModel.reviewsCount,
+      comic_title: reviewModel.comic_title,
     );
   }
 
@@ -135,10 +144,12 @@ class ComicReviewModel {
       images: List.from(map[KeyNames.images] ?? []),
       overall: map[KeyNames.overall] ?? 1.0,
       spoilers: map[KeyNames.spoilers] ?? false,
-      user: map[TableNames.users] == null ? null : UserModel.fromMap(map[TableNames.users]),
+      user: map[KeyNames.user] == null ? null : UserModel.fromMap(map[KeyNames.user]),
       review: map[KeyNames.review_text] ?? "",
       createdAt: DateTime.parse(map[KeyNames.created_at]),
       updatedAt: DateTime.parse(map[KeyNames.updated_at]),
+      reviewsCount: map[KeyNames.reviewsCount] ?? 0,
+      comic_title: map[KeyNames.comic_title] ?? "",
     );
   }
 

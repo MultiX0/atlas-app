@@ -13,6 +13,12 @@ android {
     compileSdk = 35
     ndkVersion = "27.0.12077973"
 
+    bundle {
+        abi {
+            enableSplit = true
+        }
+    }
+
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_11
@@ -41,6 +47,8 @@ android {
         release {
             signingConfig = signingConfigs.getByName("debug")
             isMinifyEnabled = true
+            isShrinkResources = true
+
             proguardFiles(
                 getDefaultProguardFile("proguard-android.txt"),
                 "proguard-rules.pro"

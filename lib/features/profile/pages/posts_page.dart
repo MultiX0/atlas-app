@@ -1,3 +1,4 @@
+import 'package:atlas_app/core/common/enum/post_like_enum.dart';
 import 'package:atlas_app/core/common/widgets/app_refresh.dart';
 import 'package:atlas_app/features/posts/controller/posts_controller.dart';
 import 'package:atlas_app/features/profile/widgets/post_widget.dart';
@@ -19,25 +20,29 @@ class ProfilePostsPage extends ConsumerWidget {
               ref.invalidate(getUserPostsProvider(user.userId));
             },
             child: CustomScrollView(
+              cacheExtent: 1000.0,
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(decelerationRate: ScrollDecelerationRate.normal),
+              ),
               slivers: [
                 SliverOverlapInjector(
                   handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
                 ),
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  sliver: SliverList.builder(
-                    itemCount: posts.length,
-                    itemBuilder: (context, i) {
-                      final post = posts[i];
-                      return PostWidget(
-                        post: post,
-                        onComment: () {},
-                        onLike: (_) async => true,
-                        onRepost: () {},
-                        onShare: () {},
-                      );
-                    },
-                  ),
+                SliverList.builder(
+                  addAutomaticKeepAlives: true,
+                  addRepaintBoundaries: true,
+                  itemCount: posts.length,
+                  itemBuilder: (context, i) {
+                    final post = posts[i];
+                    return PostWidget(
+                      post: post,
+                      key: ValueKey(post.postId),
+                      onComment: () {},
+                      postLikeType: PostLikeEnum.PROFILE,
+                      onRepost: () {},
+                      onShare: () {},
+                    );
+                  },
                 ),
               ],
             ),

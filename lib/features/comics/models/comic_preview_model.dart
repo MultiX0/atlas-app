@@ -5,19 +5,28 @@ class ComicPreviewModel {
   final String title;
   final String poster;
   final String banner;
+  final String description;
   ComicPreviewModel({
     required this.id,
     required this.title,
     required this.poster,
     required this.banner,
+    required this.description,
   });
 
-  ComicPreviewModel copyWith({String? id, String? title, String? poster, String? banner}) {
+  ComicPreviewModel copyWith({
+    String? description,
+    String? id,
+    String? title,
+    String? poster,
+    String? banner,
+  }) {
     return ComicPreviewModel(
       id: id ?? this.id,
       title: title ?? this.title,
       poster: poster ?? this.poster,
       banner: banner ?? this.banner,
+      description: description ?? this.description,
     );
   }
 
@@ -27,6 +36,7 @@ class ComicPreviewModel {
       title: map[KeyNames.title] ?? "",
       poster: map[KeyNames.poster] ?? "",
       banner: map[KeyNames.banner] ?? "",
+      description: map[KeyNames.ar_synopsis] ?? "",
     );
   }
 

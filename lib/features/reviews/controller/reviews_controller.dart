@@ -42,6 +42,7 @@ class ReviewsController extends StateNotifier<bool> {
       final _images = await uploadImages(images, comicId: comicId, userId: userId);
       final now = DateTime.now();
       final review = ComicReviewModel(
+        comic_title: "",
         id: uuid.v4(),
         likes_count: 0,
         i_liked: false,
@@ -59,6 +60,7 @@ class ReviewsController extends StateNotifier<bool> {
         worldBackground: worldBackground,
         overall: overall,
         spoilers: spoilers,
+        reviewsCount: 0,
       );
 
       await db.insertComicReview(review);

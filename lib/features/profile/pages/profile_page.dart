@@ -5,7 +5,7 @@ import 'package:atlas_app/features/profile/provider/providers.dart';
 import 'package:atlas_app/features/profile/widgets/profile_body.dart';
 import 'package:atlas_app/features/profile/widgets/profile_header_widget.dart';
 import 'package:atlas_app/features/profile/widgets/profile_tabs.dart';
-import 'package:atlas_app/features/profile/widgets/profile_top_info_widget.dart';
+// import 'package:atlas_app/features/profile/widgets/profile_top_info_widget.dart';
 import 'package:atlas_app/imports.dart';
 
 class ProfilePage extends ConsumerStatefulWidget {
@@ -96,26 +96,26 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   }
 }
 
-class _CondensedHeaderDelegate extends SliverPersistentHeaderDelegate {
-  final UserModel user;
-  final bool visible;
-  final bool isMe;
+// class _CondensedHeaderDelegate extends SliverPersistentHeaderDelegate {
+//   final UserModel user;
+//   final bool visible;
+//   final bool isMe;
 
-  _CondensedHeaderDelegate({required this.user, required this.visible, required this.isMe});
+//   _CondensedHeaderDelegate({required this.user, required this.visible, required this.isMe});
 
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return ProfileTopInfo(visible: visible, isMe: isMe, user: user);
-  }
+//   @override
+//   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+//     return ProfileTopInfo(visible: visible, isMe: isMe, user: user);
+//   }
 
-  @override
-  double get maxExtent => visible ? 50.0 : 0.0;
+//   @override
+//   double get maxExtent => visible ? 50.0 : 0.0;
 
-  @override
-  double get minExtent => visible ? 50.0 : 0.0;
+//   @override
+//   double get minExtent => visible ? 50.0 : 0.0;
 
-  @override
-  bool shouldRebuild(covariant _CondensedHeaderDelegate oldDelegate) {
-    return oldDelegate.visible != visible || oldDelegate.user != user;
-  }
-}
+//   @override
+//   bool shouldRebuild(covariant _CondensedHeaderDelegate oldDelegate) {
+//     return oldDelegate.visible != visible || oldDelegate.user != user;
+//   }
+// }

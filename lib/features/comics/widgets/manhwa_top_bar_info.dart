@@ -1,5 +1,4 @@
 import 'package:atlas_app/imports.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 class ManhwaTopBarInfo extends ConsumerWidget {
   const ManhwaTopBarInfo({super.key, required this.visible});

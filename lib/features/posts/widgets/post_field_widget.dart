@@ -10,10 +10,10 @@ import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/features/posts/widgets/user_data_widget.dart';
 import 'package:atlas_app/features/profile/controller/profile_controller.dart';
 import 'package:atlas_app/imports.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 class PostFieldWidget extends ConsumerStatefulWidget {
-  const PostFieldWidget({super.key});
+  const PostFieldWidget({super.key, this.defaultText});
+  final String? defaultText;
 
   @override
   ConsumerState<PostFieldWidget> createState() => _PostFieldWidgetState();
@@ -32,26 +32,24 @@ class _PostFieldWidgetState extends ConsumerState<PostFieldWidget> {
   final List<Map<String, dynamic>> confirmedHashtags = [];
 
   void onMentionSearchChanged(String query) {
-    if (query.isEmpty) return;
-
     _mentionDebounce?.cancel();
-    _mentionDebounce = Timer(const Duration(milliseconds: 200), () async {
+    _mentionDebounce = Timer(const Duration(milliseconds: 150), () async {
       log("querying for mentions: $query");
       final users = await ref.read(profileControllerProvider.notifier).fetchUsersForMention(query);
-
+      log("Users fetched: $users");
       final newSuggestions =
           users
               .map(
                 (u) => {
-                  "id": u[KeyNames.id],
-                  "display": u[KeyNames.username],
-                  "photo": u[KeyNames.avatar],
+                  "id": u[KeyNames.id] ?? "",
+                  "display": u[KeyNames.fullName] ?? "Unknown",
+                  "username": u[KeyNames.username] ?? "Unknown",
+                  "photo": u[KeyNames.avatar] ?? "",
                   'trigger': '@',
                 },
               )
               .toList();
 
-      // Merge confirmed mentions to the new suggestions
       for (var item in confirmedMentions) {
         if (!newSuggestions.any((e) => e['id'] == item['id'])) {
           newSuggestions.add(item);
@@ -60,15 +58,14 @@ class _PostFieldWidgetState extends ConsumerState<PostFieldWidget> {
 
       setState(() {
         mentionSuggestions = newSuggestions;
+        log("Mention suggestions updated: $mentionSuggestions");
       });
     });
   }
 
   void onHashtagSearchChanged(String query) {
-    if (query.isEmpty) return;
-
     _hashtagDebounce?.cancel();
-    _hashtagDebounce = Timer(const Duration(milliseconds: 200), () async {
+    _hashtagDebounce = Timer(const Duration(milliseconds: 150), () async {
       log("querying for hashtags: $query");
       final hashTags = await ref.read(hashtagsDbProvider).searchHashTags(query);
       final newData =
@@ -98,10 +95,8 @@ class _PostFieldWidgetState extends ConsumerState<PostFieldWidget> {
 
   // Handler for / slash commands
   void onSlashCommandSearchChanged(String query) {
-    if (query.isEmpty) return;
-
     _slashDebounce?.cancel();
-    _slashDebounce = Timer(const Duration(milliseconds: 200), () async {
+    _slashDebounce = Timer(const Duration(milliseconds: 150), () async {
       log("querying for slash commands: $query");
       final data = await ref.read(postsControllerProvider.notifier).slashMentionSearch(query);
 
@@ -162,6 +157,7 @@ class _PostFieldWidgetState extends ConsumerState<PostFieldWidget> {
           ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 200),
             child: EnhancedFlutterMentions(
+              defaultText: widget.defaultText,
               onMarkupChanged: (val) {
                 log(val);
                 ref.read(postInputProvider.notifier).state = val.trim();
@@ -191,24 +187,22 @@ class _PostFieldWidgetState extends ConsumerState<PostFieldWidget> {
                       (data) => Material(
                         color: AppColors.blackColor,
                         child: ListTile(
-                          title: Text(data['display']),
+                          title: Text(data['display'] ?? "No Name"),
+                          subtitle: Text("@${data['username'] ?? "No Username"}"),
                           leading: CircleAvatar(
-                            backgroundImage: CachedNetworkAvifImageProvider(data['photo']),
+                            backgroundColor: AppColors.blackColor,
+                            backgroundImage:
+                                data['photo']?.isNotEmpty == true
+                                    ? CachedNetworkAvifImageProvider(data['photo'])
+                                    : null,
+                            child:
+                                data['photo']?.isNotEmpty != true ? const Icon(Icons.person) : null,
                           ),
                         ),
                       ),
                   trigger: "@",
                   style: const TextStyle(color: AppColors.primary),
-                  data:
-                      mentionSuggestions
-                          .map(
-                            (u) => {
-                              "id": u[KeyNames.id],
-                              "display": u[KeyNames.username],
-                              "photo": u[KeyNames.avatar],
-                            },
-                          )
-                          .toList(),
+                  data: mentionSuggestions,
                 ),
                 Mention(
                   trigger: "#",
@@ -216,6 +210,24 @@ class _PostFieldWidgetState extends ConsumerState<PostFieldWidget> {
                   style: const TextStyle(color: AppColors.primary),
                   data: hashTagsSuggestions,
                   matchAll: true,
+
+                  suggestionBuilder:
+                      (data) => Material(
+                        color: AppColors.blackColor,
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            radius: 23,
+                            backgroundColor: AppColors.scaffoldForeground,
+                            child: Icon(LucideIcons.hash, color: AppColors.whiteColor),
+                          ),
+                          title: Text(data['display']),
+                          subtitle: Text(
+                            "${data["count"]} منشور",
+                            textDirection: TextDirection.rtl,
+                            textAlign: TextAlign.end,
+                          ),
+                        ),
+                      ),
                 ),
                 Mention(
                   trigger: "/",
@@ -227,7 +239,6 @@ class _PostFieldWidgetState extends ConsumerState<PostFieldWidget> {
                     );
                     final type = item['type'] ?? 'novel';
 
-                    // ✅ This now becomes a well-formed, bounded mention
                     return '/$type[$id]:$display/';
                   },
                   style: const TextStyle(color: AppColors.primary),
@@ -237,6 +248,7 @@ class _PostFieldWidgetState extends ConsumerState<PostFieldWidget> {
                         child: ListTile(
                           title: Text(data['display'] ?? ""),
                           leading: CircleAvatar(
+                            backgroundColor: AppColors.primaryAccent,
                             backgroundImage: CachedNetworkImageProvider(data['photo'] ?? ''),
                           ),
                           subtitle: Text(extractSlashMentionType(data['type'] ?? "")),

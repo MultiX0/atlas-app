@@ -36,8 +36,10 @@ class InteractionBar extends StatelessWidget {
       children: [
         CustomLikeButton(
           onTap: onLike,
+          size: 20,
           isLiked: isLiked,
           likeCount: likes,
+          inActiveColor: defaultColor,
           counterStyle: countStyle,
         ),
         _InteractionButton(

@@ -1,7 +1,6 @@
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/manhwa_status_arabic.dart';
 import 'package:atlas_app/imports.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 class ManhwaDataHeader extends ConsumerStatefulWidget {
   const ManhwaDataHeader({super.key});

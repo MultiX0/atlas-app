@@ -106,4 +106,7 @@ class KeyNames {
   static const shared_by_me = 'shared_by_me';
   static const shares_count = 'shares_count';
   static const post_count = 'post_count';
+  static const mention_type = 'mention_type';
+  static const reviewsCount = 'reviews_count';
+  static const comic_title = 'comic_title';
 }

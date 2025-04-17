@@ -297,6 +297,7 @@ class EnhancedFlutterMentionsState extends State<EnhancedFlutterMentions> {
     final data = mapToAnotation();
     controller = EnhancedAnnotationEditingController(data);
 
+    log("defaultText is ${widget.defaultText}");
     if (widget.defaultText != null) {
       controller!.text = widget.defaultText!;
     }
@@ -351,7 +352,7 @@ class EnhancedFlutterMentionsState extends State<EnhancedFlutterMentions> {
                   suggestionListDecoration: widget.suggestionListDecoration,
                   data:
                       list.data.where((element) {
-                        final ele = element['display'].toLowerCase();
+                        final ele = element['display'].toString().toLowerCase();
                         final str = _selectedMention!.str.toLowerCase().replaceAll(
                           RegExp(_pattern),
                           '',

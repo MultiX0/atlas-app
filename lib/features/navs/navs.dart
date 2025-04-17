@@ -1,3 +1,4 @@
+import 'package:atlas_app/features/hashtags/providers/providers.dart';
 import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:atlas_app/router.dart';
@@ -21,5 +22,10 @@ class Navs {
   void goToMakePostPage(PostType postType) {
     _ref.read(postTypeProvider.notifier).state = postType;
     router.push("${Routes.makePostPage}/${postType.name.trim()}");
+  }
+
+  void goToHashtagPage(String hashtag) {
+    _ref.read(selectedHashtagProvider.notifier).state = hashtag;
+    router.push("${Routes.hashtagsPage}/$hashtag");
   }
 }

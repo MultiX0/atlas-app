@@ -154,12 +154,13 @@ class ManhwaReviewsState extends StateNotifier<ManhwaReviewsHelper> {
       );
 
       final hasReachedEnd = reviews.length < _pageSize;
+      final newReviews = refresh ? reviews : [...state.reviews, ...reviews];
       updateState(
         moreLoading: false,
         hasReachEnd: hasReachedEnd,
         error: null,
         isLoading: false,
-        reviews: reviews,
+        reviews: newReviews,
       );
     } catch (e) {
       updateState(isLoading: false, error: e.toString(), moreLoading: false);
@@ -230,6 +231,14 @@ class ManhwaReviewsState extends StateNotifier<ManhwaReviewsHelper> {
     );
     updated[index] = updatedReview;
 
+    updateState(reviews: updated);
+  }
+
+  void handleNewRepost(ComicReviewModel review) {
+    final indexOf = state.reviews.indexWhere((r) => r.id == review.id);
+    final updated = List<ComicReviewModel>.from(state.reviews);
+    final updatedReview = review.copyWith(reviewsCount: updated[indexOf].reviewsCount + 1);
+    updated[indexOf] = updatedReview;
     updateState(reviews: updated);
   }
 }

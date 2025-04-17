@@ -1,5 +1,7 @@
 // Utility functions to extract different trigger queries
 
+import 'package:atlas_app/core/common/widgets/slash_parser.dart';
+
 /// Extract mention query - gets the text after @ symbol being typed
 String? extractMentionKeyword(String text) {
   // Find the last @ symbol followed by word characters
@@ -11,23 +13,31 @@ String? extractMentionKeyword(String text) {
 }
 
 /// Extract hashtag query - gets the text after # symbol being typed
-String? extractHashtagKeyword(String text) {
-  // Find the last # symbol followed by word characters
-  final match = RegExp(r'#(\w+)$').firstMatch(text);
-  if (match != null && match.group(1) != null) {
-    return match.group(1);
+List<String> extractHashtagKeyword(String text) {
+  final match = RegExp(r'\B(\#[a-zA-Z]+\b)(?!;)').allMatches(text);
+  if (match.isNotEmpty && match.first.group(1) != null) {
+    return match.map((hash) => hash.group(1)!.replaceAll("#", '').trim()).toList();
   }
-  return null;
+  return [];
 }
 
-/// Extract slash command query - gets the text after / symbol being typed
-String? extractSlashKeyword(String text) {
-  // Find the last / symbol followed by word characters
-  final match = RegExp(r'/(\w+)$').firstMatch(text);
-  if (match != null && match.group(1) != null) {
-    return match.group(1);
+List<SlashEntity> extractSlashKeywords(String text) {
+  final match = RegExp(r"/(comic|char|novel)\[[^\]]+\]:[^/]+/").allMatches(text);
+
+  if (match.isNotEmpty && match.first.group(0) != null) {
+    List<SlashEntity> entities = [];
+    for (final m in match) {
+      final parser = buildSlashEntityParser();
+      final result = parser.parse(m.group(0)!);
+      // ignore: deprecated_member_use
+      if (result.isSuccess) {
+        final entity = result.value as SlashEntity;
+        entities.add(entity);
+      }
+    }
+    return entities;
   }
-  return null;
+  return [];
 }
 
 /// Get currently active trigger character at cursor position

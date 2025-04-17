@@ -15,7 +15,7 @@ class HashtagsDb {
   SupabaseQueryBuilder get _postsHashtags => _client.from(TableNames.post_hashtags);
   SupabaseQueryBuilder get _hashTagsView => _client.from(ViewNames.hashtag_post_counts);
 
-  Future<void> insertNewHashTag(List<String> hashtags) async {
+  Future<List<HashtagModel>> insertNewHashTag(List<String> hashtags) async {
     try {
       final now = DateTime.now().toIso8601String();
       final _data =
@@ -29,6 +29,7 @@ class HashtagsDb {
               )
               .toList();
       await _hashTagsTable.upsert(_data, onConflict: KeyNames.hashtag, ignoreDuplicates: false);
+      return hashtags.map((hash) => HashtagModel(hashtag: hash, postCount: 0)).toList();
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -39,7 +40,22 @@ class HashtagsDb {
     try {
       final _data =
           hashtags.map((hashtag) => {KeyNames.hashtag: hashtag, KeyNames.post_id: postId}).toList();
-      await _postsHashtags.insert(_data);
+      await _postsHashtags.upsert(_data, onConflict: KeyNames.post_id, ignoreDuplicates: false);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<HashtagModel> getHashtag(String hashtag) async {
+    try {
+      var data = await _hashTagsView.select("*").eq(KeyNames.hashtag, hashtag).maybeSingle();
+      if (data == null) {
+        log("hashtag not found");
+        final hash = await insertNewHashTag([hashtag]);
+        return hash.first;
+      }
+      return HashtagModel.fromMap(data);
     } catch (e) {
       log(e.toString());
       rethrow;

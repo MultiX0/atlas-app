@@ -1,5 +1,4 @@
 import 'package:atlas_app/core/common/widgets/cached_avatar.dart';
-import 'package:atlas_app/features/posts/models/post_model.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
