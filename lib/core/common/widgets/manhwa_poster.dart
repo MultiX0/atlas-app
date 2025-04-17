@@ -1,5 +1,4 @@
 import 'package:atlas_app/imports.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 
 class ManhwaPoster extends StatelessWidget {

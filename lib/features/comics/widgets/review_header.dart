@@ -1,6 +1,5 @@
 import 'package:atlas_app/features/comics/widgets/rating_bar_display.dart';
 import 'package:atlas_app/imports.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 class ReviewHeader extends ConsumerWidget {
   const ReviewHeader({super.key, required this.review, required this.comic, required this.isMe});

@@ -1,8 +1,9 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:atlas_app/core/common/enum/post_like_enum.dart';
+import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/features/posts/controller/posts_controller.dart';
-import 'package:atlas_app/features/posts/models/post_model.dart';
 import 'package:atlas_app/features/profile/widgets/post_body_widget.dart';
 import 'package:atlas_app/features/profile/widgets/post_header.dart';
 import 'package:atlas_app/features/profile/widgets/post_replayed_widget.dart';
@@ -59,11 +60,18 @@ class PostWidget extends ConsumerWidget {
     );
   }
 
+  final Debouncer _debouncer = Debouncer();
   Future<bool?> onLike(WidgetRef ref, String userId) async {
     log("liking...");
-    await ref
-        .read(postsControllerProvider.notifier)
-        .likesMiddleware(userId: userId, post: post, postType: postLikeType);
+    _debouncer.debounce(
+      duration: const Duration(milliseconds: 200),
+      onDebounce: () async {
+        await ref
+            .read(postsControllerProvider.notifier)
+            .likesMiddleware(userId: userId, post: post, postType: postLikeType);
+      },
+    );
+
     return true;
   }
 }

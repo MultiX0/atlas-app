@@ -38,6 +38,12 @@ class _UserReviewCardState extends ConsumerState<UserReviewCard> {
   }
 
   @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final me = ref.watch(userState).user!;
     bool isMe = widget.review.userId == me.userId;

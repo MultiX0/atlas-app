@@ -1,6 +1,5 @@
 import 'package:atlas_app/core/services/gal_service.dart';
 import 'package:atlas_app/imports.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:flutter/services.dart';
 import 'package:gallery_image_viewer/gallery_image_viewer.dart';

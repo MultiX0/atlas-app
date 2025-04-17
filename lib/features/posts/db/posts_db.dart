@@ -5,8 +5,8 @@ import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/core/common/constants/view_names.dart';
 import 'package:atlas_app/core/common/enum/hashtag_enum.dart';
 import 'package:atlas_app/core/common/utils/extract_key_words.dart';
+import 'package:atlas_app/core/common/widgets/slash_parser.dart';
 import 'package:atlas_app/features/hashtags/db/hashtags_db.dart';
-import 'package:atlas_app/features/posts/models/post_model.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:uuid/uuid.dart';
 
@@ -19,6 +19,7 @@ class PostsDb {
   SupabaseQueryBuilder get _postsView => _client.from(ViewNames.post_details_with_mentions);
   SupabaseQueryBuilder get _postsTable => _client.from(TableNames.posts);
   SupabaseQueryBuilder get _postLikesTable => _client.from(TableNames.post_likes);
+  SupabaseQueryBuilder get _mentionsTable => _client.from(TableNames.post_mentions);
   final uuid = const Uuid();
   HashtagsDb get hashtagDb => HashtagsDb();
 
@@ -45,8 +46,28 @@ class PostsDb {
       });
 
       final hashtags = extractHashtagKeyword(post);
-      await hashtagDb.insertNewHashTag(hashtags);
+      final mentions = extractSlashKeywords(post);
+      await Future.wait([hashtagDb.insertNewHashTag(hashtags), insertMentions(mentions, postId)]);
       await hashtagDb.insertPostHashTag(hashtags, postId);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> insertMentions(List<SlashEntity> mentions, String postId) async {
+    try {
+      final data =
+          mentions
+              .map(
+                (mention) => {
+                  KeyNames.entity_id: mention.id,
+                  KeyNames.mention_type: mention.type == 'char' ? "character" : mention.type,
+                  KeyNames.post_id: postId,
+                },
+              )
+              .toList();
+      await _mentionsTable.upsert(data);
     } catch (e) {
       log(e.toString());
       rethrow;

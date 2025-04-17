@@ -10,7 +10,6 @@ import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/features/posts/widgets/user_data_widget.dart';
 import 'package:atlas_app/features/profile/controller/profile_controller.dart';
 import 'package:atlas_app/imports.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 class PostFieldWidget extends ConsumerStatefulWidget {
   const PostFieldWidget({super.key, this.defaultText});

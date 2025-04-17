@@ -158,6 +158,20 @@ final routerProvider = Provider<GoRouter>((ref) {
           );
         },
       ),
+      GoRoute(
+        path: "${Routes.makePostPage}/:type",
+        pageBuilder: (context, state) {
+          final typeString = state.pathParameters["type"];
+          final type = stringToPostType(typeString ?? "normal");
+
+          return CustomTransitionPage(
+            child: MakePostPage(postType: type),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+          );
+        },
+      ),
     ],
   );
 });

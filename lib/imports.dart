@@ -43,3 +43,5 @@ export 'package:atlas_app/features/reviews/models/comic_review_model.dart';
 export 'package:atlas_app/features/reviews/widgets/comic_review_sheet.dart';
 export 'package:flutter_rating_bar/flutter_rating_bar.dart';
 export 'package:url_launcher/url_launcher.dart';
+export 'package:cached_network_image/cached_network_image.dart';
+export 'package:atlas_app/features/posts/models/post_model.dart';

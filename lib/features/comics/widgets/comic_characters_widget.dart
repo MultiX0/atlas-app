@@ -1,7 +1,6 @@
 import 'package:atlas_app/features/characters/models/character_model.dart';
 import 'package:atlas_app/features/characters/models/comic_characters_model.dart';
 import 'package:atlas_app/imports.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 class ComicCharactersWidget extends ConsumerWidget {
   const ComicCharactersWidget({super.key, required this.characters, this.mainCharacters = true});

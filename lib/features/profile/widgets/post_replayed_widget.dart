@@ -1,6 +1,5 @@
 import 'package:atlas_app/core/common/widgets/cached_avatar.dart';
 // import 'package:atlas_app/core/common/widgets/slash_parser.dart';
-import 'package:atlas_app/features/posts/models/post_model.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:intl/intl.dart';
 import 'dart:ui' as ui;

@@ -5,7 +5,6 @@ import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/features/hashtags/providers/hashtag_state_provider.dart';
 import 'package:atlas_app/features/hashtags/providers/providers.dart';
 import 'package:atlas_app/features/posts/db/posts_db.dart';
-import 'package:atlas_app/features/posts/models/post_model.dart';
 import 'package:atlas_app/imports.dart';
 
 final postsControllerProvider = StateNotifierProvider<PostsController, bool>((ref) {

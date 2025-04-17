@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:atlas_app/core/common/enum/hashtag_enum.dart';
 import 'package:atlas_app/core/common/enum/post_like_enum.dart';
 import 'package:atlas_app/features/hashtags/widgets/hashtag_filter_widget.dart';
-import 'package:atlas_app/features/posts/models/post_model.dart';
 import 'package:atlas_app/features/profile/widgets/post_widget.dart';
 import 'package:atlas_app/imports.dart';
 

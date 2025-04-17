@@ -1,5 +1,4 @@
 import 'package:atlas_app/imports.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 class CachedAvatar extends StatelessWidget {
   const CachedAvatar({super.key, required this.avatar, this.raduis = 23});

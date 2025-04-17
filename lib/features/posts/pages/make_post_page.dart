@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 import 'package:atlas_app/features/posts/db/posts_db.dart';
 import 'package:atlas_app/features/posts/providers/providers.dart';
@@ -57,7 +56,6 @@ class _MakePostPageState extends ConsumerState<MakePostPage> {
                     return;
                   }
                   final data = ref.read(postInputProvider);
-                  log("post input: $data");
                   final _post = PostsDb();
                   final me = ref.read(userState).user!.userId;
                   await _post.insertPost(data, me);
