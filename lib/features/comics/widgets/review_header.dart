@@ -1,3 +1,4 @@
+import 'package:atlas_app/core/common/widgets/cached_avatar.dart';
 import 'package:atlas_app/features/comics/widgets/rating_bar_display.dart';
 import 'package:atlas_app/imports.dart';
 
@@ -13,16 +14,7 @@ class ReviewHeader extends ConsumerWidget {
     return RepaintBoundary(
       child: Row(
         children: [
-          CachedNetworkImage(
-            imageUrl: review.user!.avatar,
-            memCacheWidth: 24,
-            memCacheHeight: 24,
-            maxHeightDiskCache: 24,
-            maxWidthDiskCache: 24,
-            imageBuilder: (context, image) => CircleAvatar(backgroundImage: image),
-            fit: BoxFit.cover,
-            errorWidget: (context, url, error) => const Icon(Icons.error),
-          ),
+          CachedAvatar(avatar: review.user!.avatar),
           const SizedBox(width: 10),
           Expanded(
             child: Column(

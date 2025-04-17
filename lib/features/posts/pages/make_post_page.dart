@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:atlas_app/features/posts/db/posts_db.dart';
+import 'package:atlas_app/features/posts/controller/posts_controller.dart';
 import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/features/posts/widgets/comic_review_tree_widget.dart';
 import 'package:atlas_app/features/posts/widgets/post_field_widget.dart';
@@ -51,16 +51,14 @@ class _MakePostPageState extends ConsumerState<MakePostPage> {
               scale: inputVal.trim().isNotEmpty ? 1 : 0,
               duration: const Duration(milliseconds: 400),
               child: IconButton(
-                onPressed: () async {
+                onPressed: () {
                   if (inputVal.trim().isEmpty) {
                     return;
                   }
                   final data = ref.read(postInputProvider);
-                  final _post = PostsDb();
-                  final me = ref.read(userState).user!.userId;
-                  await _post.insertPost(data, me);
-                  // ignore: use_build_context_synchronously
-                  context.pop();
+                  ref
+                      .read(postsControllerProvider.notifier)
+                      .insertPost(postType: widget.postType, postContent: data, context: context);
                 },
                 icon: const Icon(LucideIcons.check),
               ),

@@ -8,7 +8,6 @@ import 'package:atlas_app/core/common/utils/extract_key_words.dart';
 import 'package:atlas_app/core/common/widgets/slash_parser.dart';
 import 'package:atlas_app/features/hashtags/db/hashtags_db.dart';
 import 'package:atlas_app/imports.dart';
-import 'package:uuid/uuid.dart';
 
 final postsDbProvider = Provider<PostsDb>((ref) {
   return PostsDb();
@@ -20,7 +19,6 @@ class PostsDb {
   SupabaseQueryBuilder get _postsTable => _client.from(TableNames.posts);
   SupabaseQueryBuilder get _postLikesTable => _client.from(TableNames.post_likes);
   SupabaseQueryBuilder get _mentionsTable => _client.from(TableNames.post_mentions);
-  final uuid = const Uuid();
   HashtagsDb get hashtagDb => HashtagsDb();
 
   Future<List<PostModel>> getUserPosts(String userId) async {
@@ -35,14 +33,13 @@ class PostsDb {
     }
   }
 
-  Future<void> insertPost(String post, String userId) async {
+  Future<void> insertPost(String postId, String post, String userId, List<String>? images) async {
     try {
-      final postId = uuid.v4();
-
       await _postsTable.insert({
         KeyNames.id: postId,
         KeyNames.content: post,
         KeyNames.userId: userId,
+        KeyNames.images: images ?? [],
       });
 
       final hashtags = extractHashtagKeyword(post);

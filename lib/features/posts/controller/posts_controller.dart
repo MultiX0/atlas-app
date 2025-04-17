@@ -1,11 +1,19 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:atlas_app/core/common/enum/post_like_enum.dart';
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
+import 'package:atlas_app/core/common/utils/image_to_avif_convert.dart';
+import 'package:atlas_app/core/common/utils/upload_storage.dart';
+import 'package:atlas_app/core/common/widgets/slash_parser.dart';
 import 'package:atlas_app/features/hashtags/providers/hashtag_state_provider.dart';
 import 'package:atlas_app/features/hashtags/providers/providers.dart';
 import 'package:atlas_app/features/posts/db/posts_db.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:loader_overlay/loader_overlay.dart';
+import 'package:uuid/uuid.dart';
 
 final postsControllerProvider = StateNotifierProvider<PostsController, bool>((ref) {
   return PostsController(ref: ref);
@@ -22,6 +30,38 @@ class PostsController extends StateNotifier<bool> {
   PostsController({required Ref ref}) : _ref = ref, super(false);
 
   PostsDb get db => _ref.watch(postsDbProvider);
+  final uuid = const Uuid();
+
+  Future<void> insertPost({
+    required PostType postType,
+    required String postContent,
+    List<File>? images,
+    required BuildContext context,
+  }) async {
+    try {
+      final userId = _ref.read(userState).user!.userId;
+      final postId = uuid.v4();
+      List<String>? links;
+      if (images != null && images.isNotEmpty) {
+        links = await uploadImages(postId: postId, userId: userId, images);
+      }
+      context.loaderOverlay.show();
+      await db.insertPost(postId, postContent, userId, links);
+      if (postType == PostType.comic_review) {
+        final review = _ref.read(selectedReview);
+        await db.insertMentions([SlashEntity('comic_review', review!.id, 'Review')], postId);
+        _ref.read(manhwaReviewsStateProvider(review.comicId).notifier).handleNewRepost(review);
+      }
+
+      context.loaderOverlay.hide();
+      CustomToast.success("تم النشر");
+      context.pop();
+    } catch (e) {
+      context.loaderOverlay.hide();
+      log(e.toString());
+      rethrow;
+    }
+  }
 
   Future<List<PostModel>> getUserPosts(String userId) async {
     try {
@@ -77,6 +117,47 @@ class PostsController extends StateNotifier<bool> {
   Future<List<Map<String, dynamic>>> slashMentionSearch(String query) async {
     try {
       return await db.slashMentionSearch(query);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<List<String>> uploadImages(
+    List<File> images, {
+    required String postId,
+    required String userId,
+  }) async {
+    try {
+      const uuid = Uuid();
+      String extension = '';
+      List<String> _links = [];
+      for (final image in images) {
+        // Convert image to AVIF first
+        final avifImage = await AvifConverter.convertToAvif(image, quality: 80);
+        log("avifImage: ${avifImage?.absolute.path}");
+
+        // Check if conversion was successful before proceeding
+        if (avifImage != null) {
+          extension = avifImage.absolute.path.split('.').last.trim().toString();
+          final link = await UploadStorage.uploadImages(
+            image: avifImage,
+            path: 'posts/$postId/${uuid.v4()}.$extension',
+          );
+          log("avif image uploaded: $link");
+          _links.add(link);
+        } else {
+          // If AVIF conversion fails, use the original image as fallback
+          log('AVIF conversion failed for image. Using original format.');
+          extension = image.absolute.path.split('.').last.trim().toString();
+          final link = await UploadStorage.uploadImages(
+            image: image,
+            path: 'posts/$postId/${uuid.v4()}.$extension',
+          );
+          _links.add(link);
+        }
+      }
+      return _links;
     } catch (e) {
       log(e.toString());
       rethrow;

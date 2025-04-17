@@ -7,6 +7,7 @@ import 'package:atlas_app/features/posts/controller/posts_controller.dart';
 import 'package:atlas_app/features/profile/widgets/post_body_widget.dart';
 import 'package:atlas_app/features/profile/widgets/post_header.dart';
 import 'package:atlas_app/features/profile/widgets/post_replayed_widget.dart';
+import 'package:atlas_app/features/profile/widgets/review_mentioned_widget.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:intl/intl.dart';
 
@@ -42,6 +43,10 @@ class PostWidget extends ConsumerWidget {
             Divider(height: 0.25, color: AppColors.mutedSilver.withValues(alpha: .1)),
             const SizedBox(height: 15),
             if (post.parent != null) ...[PostReplyedWidget(post: post), const SizedBox(height: 8)],
+            if (post.reviewMentioned != null) ...[
+              ReviewMentionedWidget(post: post),
+              const SizedBox(height: 8),
+            ],
 
             PostHeaderWidget(post: post),
             PostBodyWidget(

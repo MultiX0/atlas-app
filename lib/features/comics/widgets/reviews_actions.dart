@@ -1,6 +1,6 @@
 import 'package:atlas_app/imports.dart';
 
-class ReviewActions extends StatelessWidget {
+class ReviewActions extends ConsumerWidget {
   const ReviewActions({
     super.key,
     required this.review,
@@ -13,7 +13,7 @@ class ReviewActions extends StatelessWidget {
   final Future<bool?> Function(bool)? onLike;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Row(
       children: [
         CustomLikeButton(
@@ -22,6 +22,15 @@ class ReviewActions extends StatelessWidget {
           isLiked: review.i_liked,
           size: 24,
         ),
+        const SizedBox(width: 15),
+        IconButton(
+          onPressed: () {
+            ref.read(selectedReview.notifier).state = review;
+            ref.read(navsProvider).goToMakePostPage(PostType.comic_review);
+          },
+          icon: const Icon(LucideIcons.repeat, size: 22, color: Colors.grey),
+        ),
+        Text(review.reviewsCount.toString()),
       ],
     );
   }
