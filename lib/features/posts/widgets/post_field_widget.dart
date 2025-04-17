@@ -32,10 +32,8 @@ class _PostFieldWidgetState extends ConsumerState<PostFieldWidget> {
   final List<Map<String, dynamic>> confirmedHashtags = [];
 
   void onMentionSearchChanged(String query) {
-    if (query.isEmpty) return;
-
     _mentionDebounce?.cancel();
-    _mentionDebounce = Timer(const Duration(milliseconds: 200), () async {
+    _mentionDebounce = Timer(const Duration(milliseconds: 150), () async {
       log("querying for mentions: $query");
       final users = await ref.read(profileControllerProvider.notifier).fetchUsersForMention(query);
       log("Users fetched: $users");
@@ -66,10 +64,8 @@ class _PostFieldWidgetState extends ConsumerState<PostFieldWidget> {
   }
 
   void onHashtagSearchChanged(String query) {
-    if (query.isEmpty) return;
-
     _hashtagDebounce?.cancel();
-    _hashtagDebounce = Timer(const Duration(milliseconds: 200), () async {
+    _hashtagDebounce = Timer(const Duration(milliseconds: 150), () async {
       log("querying for hashtags: $query");
       final hashTags = await ref.read(hashtagsDbProvider).searchHashTags(query);
       final newData =
@@ -99,10 +95,8 @@ class _PostFieldWidgetState extends ConsumerState<PostFieldWidget> {
 
   // Handler for / slash commands
   void onSlashCommandSearchChanged(String query) {
-    if (query.isEmpty) return;
-
     _slashDebounce?.cancel();
-    _slashDebounce = Timer(const Duration(milliseconds: 200), () async {
+    _slashDebounce = Timer(const Duration(milliseconds: 150), () async {
       log("querying for slash commands: $query");
       final data = await ref.read(postsControllerProvider.notifier).slashMentionSearch(query);
 

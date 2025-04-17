@@ -2,7 +2,9 @@ import 'package:atlas_app/features/posts/widgets/tool_tile_widget.dart';
 import 'package:atlas_app/imports.dart';
 
 class ToolsWidget extends ConsumerWidget {
-  const ToolsWidget({super.key});
+  const ToolsWidget({super.key, required this.selectImages});
+
+  final Function() selectImages;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -15,10 +17,7 @@ class ToolsWidget extends ConsumerWidget {
           child: Row(
             spacing: 10,
             children: [
-              ToolTileWidget(text: "اضافة صور", icon: TablerIcons.photo, onTap: () {}),
-              ToolTileWidget(text: "منشن شخصية", icon: TablerIcons.slash, onTap: () {}),
-              ToolTileWidget(text: "منشن مانهوا", icon: TablerIcons.slash, onTap: () {}),
-              ToolTileWidget(text: "منشن رواية", icon: TablerIcons.book, onTap: () {}),
+              ToolTileWidget(text: "اضافة صور", icon: TablerIcons.photo, onTap: selectImages),
               ToolTileWidget(text: "اعدادات اضافية", icon: TablerIcons.settings_2, onTap: () {}),
             ],
           ),
