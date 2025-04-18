@@ -176,6 +176,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           );
         },
       ),
+      // Catch-all for invalid links
+      GoRoute(
+        path: '/:path(.*)',
+        builder:
+            (context, state) => Scaffold(body: Center(child: Text('Invalid Link: ${state.path}'))),
+      ),
     ],
   );
 });
