@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:atlas_app/features/profile/controller/profile_controller.dart';
 import 'package:atlas_app/features/profile/provider/providers.dart';
 import 'package:atlas_app/features/profile/widgets/profile_body.dart';
@@ -54,7 +52,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
         builder: (context) {
           return NestedScrollView(
             headerSliverBuilder: ((context, innerBoxIsScrolled) {
-              log(innerBoxIsScrolled.toString());
               return [
                 ProfileHeader(user: user),
                 SliverOverlapAbsorber(

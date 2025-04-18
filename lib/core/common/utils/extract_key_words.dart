@@ -14,7 +14,7 @@ String? extractMentionKeyword(String text) {
 
 /// Extract hashtag query - gets the text after # symbol being typed
 List<String> extractHashtagKeyword(String text) {
-  final match = RegExp(r'\B(\#[a-zA-Z]+\b)(?!;)').allMatches(text);
+  final match = RegExp(r'\B(\#[a-zA-Z\u0600-\u06FF]+\b)(?!;)').allMatches(text);
   if (match.isNotEmpty && match.first.group(1) != null) {
     return match.map((hash) => hash.group(1)!.replaceAll("#", '').trim()).toList();
   }

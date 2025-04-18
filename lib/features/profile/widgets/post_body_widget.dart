@@ -48,6 +48,8 @@ class PostBodyWidget extends StatelessWidget {
           ],
           const SizedBox(height: 12),
           InteractionBar(
+            canRepost: post.canReposted,
+            commentOpens: post.comments_open,
             isShared: post.shared_by_me,
             likes: post.likeCount,
             comments: post.commentsCount,

@@ -10,7 +10,7 @@ class Routes {
   static const aiPage = '/aiPage';
   static const explore = '/explore';
   static const library = '/library';
-  static const clips = '/clips';
+  static const scrolls = '/scrolls';
   static const user = '/user';
   static const search = '/searchPage';
   static const manhwaPage = '/manhwaPage';

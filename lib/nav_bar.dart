@@ -13,10 +13,16 @@ class MyNavBar extends ConsumerWidget {
     // return NewVersionPage();
 
     void onTap(BuildContext context, int index) {
-      if (index == 4) {
+      if (index == 6) {
         final me = ref.read(userState);
         ref.read(selectedUserIdProvider.notifier).state = me.user?.userId ?? "";
       }
+
+      if (index == 3) {
+        ref.read(navsProvider).goToMakePostPage(PostType.normal);
+        return;
+      }
+
       navigationShell.goBranch(index, initialLocation: index == navigationShell.currentIndex);
     }
 
@@ -42,11 +48,13 @@ class MyNavBar extends ConsumerWidget {
                   activeColor: AppColors.primary,
                   inactiveColor: AppColors.mutedSilver,
                   items: const [
-                    BottomNavigationBarItem(icon: Icon(TablerIcons.smart_home), label: "الرئيسية"),
-                    BottomNavigationBarItem(icon: Icon(TablerIcons.sparkles), label: "Ask Ai"),
-                    BottomNavigationBarItem(icon: Icon(TablerIcons.category_2), label: "استكشاف"),
-                    BottomNavigationBarItem(icon: Icon(LucideIcons.library), label: "المكتبة"),
-                    BottomNavigationBarItem(icon: Icon(TablerIcons.user), label: "أنا"),
+                    BottomNavigationBarItem(icon: Icon(TablerIcons.smart_home)),
+                    BottomNavigationBarItem(icon: Icon(TablerIcons.sparkles)),
+                    BottomNavigationBarItem(icon: Icon(TablerIcons.category_2)),
+                    BottomNavigationBarItem(icon: Icon(TablerIcons.edit)),
+                    BottomNavigationBarItem(icon: Icon(TablerIcons.device_tv)),
+                    BottomNavigationBarItem(icon: Icon(LucideIcons.library)),
+                    BottomNavigationBarItem(icon: Icon(TablerIcons.user)),
                   ],
                 ),
               ),

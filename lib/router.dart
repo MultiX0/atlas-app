@@ -25,6 +25,7 @@ final navigationShellProvider = Provider<StatefulNavigationShell>((ref) {
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: Routes.splashPage,
+
     redirect: (context, state) {
       final splashRoute = state.uri.toString() == Routes.splashPage;
       if (splashRoute) {
@@ -69,6 +70,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           StatefulShellBranch(
             routes: [buildRoute(path: Routes.explore, child: const ExplorePage(), fade: true)],
+          ),
+          StatefulShellBranch(
+            routes: [buildRoute(path: Routes.makePostPage, child: const SizedBox(), fade: true)],
+          ),
+          StatefulShellBranch(
+            routes: [buildRoute(path: Routes.scrolls, child: const SizedBox(), fade: true)],
           ),
           StatefulShellBranch(
             routes: [buildRoute(path: Routes.library, child: const SizedBox(), fade: true)],
@@ -151,7 +158,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           final type = stringToPostType(typeString ?? "normal");
 
           return CustomTransitionPage(
-            child: MakePostPage(postType: type, defaultText: defaultText),
+            child: MakePostPage(
+              postType: type,
+              defaultText: defaultText.isNotEmpty ? '$defaultText\n' : '',
+            ),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);
             },
@@ -171,6 +181,12 @@ final routerProvider = Provider<GoRouter>((ref) {
             },
           );
         },
+      ),
+      // Catch-all for invalid links
+      GoRoute(
+        path: '/:path(.*)',
+        builder:
+            (context, state) => Scaffold(body: Center(child: Text('Invalid Link: ${state.path}'))),
       ),
     ],
   );

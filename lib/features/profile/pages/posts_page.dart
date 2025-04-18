@@ -31,6 +31,7 @@ class ProfilePostsPage extends ConsumerWidget {
                 SliverList.builder(
                   addAutomaticKeepAlives: true,
                   addRepaintBoundaries: true,
+                  addSemanticIndexes: true,
                   itemCount: posts.length,
                   itemBuilder: (context, i) {
                     final post = posts[i];
