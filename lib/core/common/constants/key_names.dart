@@ -109,4 +109,5 @@ class KeyNames {
   static const mention_type = 'mention_type';
   static const reviewsCount = 'reviews_count';
   static const comic_title = 'comic_title';
+  static const comments_open = 'comments_open';
 }

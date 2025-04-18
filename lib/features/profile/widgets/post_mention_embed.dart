@@ -94,6 +94,8 @@ class _MentionItemWidget extends StatelessWidget {
                       children: [
                         Text(
                           item is CharacterPreviewModel ? item.name : item.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontFamily: accentFont,
                             fontSize: 18,

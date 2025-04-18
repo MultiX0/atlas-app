@@ -42,10 +42,10 @@ class PostsController extends StateNotifier<bool> {
       final userId = _ref.read(userState).user!.userId;
       final postId = uuid.v4();
       List<String>? links;
+      context.loaderOverlay.show();
       if (images != null && images.isNotEmpty) {
         links = await uploadImages(postId: postId, userId: userId, images);
       }
-      context.loaderOverlay.show();
       await db.insertPost(postId, postContent, userId, links);
       if (postType == PostType.comic_review) {
         final review = _ref.read(selectedReview);

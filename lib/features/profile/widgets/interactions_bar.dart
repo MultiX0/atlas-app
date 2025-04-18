@@ -1,3 +1,4 @@
+import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/imports.dart';
 
 class InteractionBar extends StatelessWidget {
@@ -7,6 +8,8 @@ class InteractionBar extends StatelessWidget {
   final int reposts;
   final bool isLiked;
   final int shares;
+  final bool commentOpens;
+  final bool canRepost;
   final Future<bool?> Function(bool)? onLike;
   final VoidCallback? onComment;
   final VoidCallback? onRepost;
@@ -25,11 +28,14 @@ class InteractionBar extends StatelessWidget {
     this.onShare,
     required this.isLiked,
     required this.isShared,
+    required this.canRepost,
+    required this.commentOpens,
   });
 
   @override
   Widget build(BuildContext context) {
     TextStyle countStyle = TextStyle(fontSize: 14, color: Colors.grey.shade600);
+    TextStyle inActiveCountStyle = TextStyle(fontSize: 14, color: Colors.grey.shade800);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -43,20 +49,22 @@ class InteractionBar extends StatelessWidget {
           counterStyle: countStyle,
         ),
         _InteractionButton(
-          icon: LucideIcons.message_circle,
+          icon: commentOpens ? LucideIcons.message_circle : LucideIcons.message_circle_off,
           count: comments,
+          active: commentOpens,
           onPressed: onComment,
           tooltip: 'Comment',
-          iconColor: defaultColor,
-          countStyle: countStyle,
+          iconColor: commentOpens ? defaultColor : Colors.grey[800]!,
+          countStyle: commentOpens ? countStyle : inActiveCountStyle,
         ),
         _InteractionButton(
           icon: LucideIcons.repeat,
           count: reposts,
+          active: canRepost,
           onPressed: onRepost,
           tooltip: 'Repost',
-          countStyle: countStyle,
-          iconColor: defaultColor,
+          countStyle: canRepost ? countStyle : inActiveCountStyle,
+          iconColor: canRepost ? defaultColor : Colors.grey[800]!,
         ),
 
         _InteractionButton(
@@ -79,6 +87,7 @@ class _InteractionButton extends StatelessWidget {
   final String tooltip;
   final TextStyle countStyle;
   final Color iconColor;
+  final bool active;
 
   const _InteractionButton({
     required this.icon,
@@ -86,6 +95,7 @@ class _InteractionButton extends StatelessWidget {
     required this.onPressed,
     required this.tooltip,
     required this.countStyle,
+    this.active = true,
     this.iconColor = Colors.grey,
   });
 
@@ -93,7 +103,17 @@ class _InteractionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return RepaintBoundary(
       child: InkWell(
-        onTap: onPressed,
+        onTap: () {
+          if (!active) {
+            CustomToast.error("هذه الخاصية غير فعالة على هذا المنشور");
+            return;
+          }
+
+          if (onPressed != null) {
+            onPressed!();
+          }
+          return;
+        },
         borderRadius: BorderRadius.circular(10),
         child: Row(
           children: [

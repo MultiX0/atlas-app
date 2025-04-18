@@ -189,12 +189,11 @@ class EnhancedFlutterMentionsState extends State<EnhancedFlutterMentions> {
 
     if (widget.onMentionAdd != null) widget.onMentionAdd!(value);
 
-    // Log the markdown after adding mention
     if (_list.trigger == '/') {
       log("Added slash mention. Markdown: ${controller!.markupText}");
     }
 
-    var nextCursorPosition = selectedMention.start + 1 + value['display']?.length as int? ?? 0;
+    var nextCursorPosition = selectedMention.start + 1 + (value['display']?.length ?? 0) as int;
     if (widget.appendSpaceOnAdd) nextCursorPosition++;
     controller!.selection = TextSelection.fromPosition(TextPosition(offset: nextCursorPosition));
   }

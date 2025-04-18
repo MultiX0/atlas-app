@@ -121,7 +121,7 @@ class EnhancedAnnotationEditingController extends TextEditingController {
   /// Helper method to process text and style hashtags that aren't in the mapping
   List<TextSpan> _processTextWithHashtags(String text, TextStyle? style) {
     final children = <TextSpan>[];
-    final hashtagRegex = RegExp(r'#\w+'); // Regex to match hashtags (e.g., #hashtag)
+    final hashtagRegex = RegExp(r'#[\w\u0600-\u06FF]+');
 
     int lastEnd = 0;
     final matches = hashtagRegex.allMatches(text).toList();

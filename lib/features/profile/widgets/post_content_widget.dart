@@ -25,7 +25,11 @@ class PostContentWidget extends ConsumerWidget {
           text: post.content,
           maxLines: 20,
           truncate: true,
-          style: TextStyle(fontWeight: FontWeight.w300, color: AppColors.whiteColor),
+          style: TextStyle(
+            fontWeight: FontWeight.w300,
+            color: AppColors.whiteColor,
+            fontFamily: arabicPrimaryFont,
+          ),
           viewLessText: 'أقل',
           viewMoreText: "المزيد",
           linkStyle: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
@@ -33,6 +37,7 @@ class PostContentWidget extends ConsumerWidget {
             EmailParser(onTap: (email) => log('${email.value} clicked')),
             PhoneParser(onTap: (phone) => log('click phone ${phone.value}')),
             MentionParser(onTap: (mention) => log('${mention.value} clicked')),
+            UrlParser(),
             BoldParser(),
             HashTagParser(
               onTap: (hash) {

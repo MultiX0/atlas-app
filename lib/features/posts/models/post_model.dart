@@ -32,6 +32,7 @@ class PostModel {
   final List hashtags;
   final int shares_count;
   final bool shared_by_me;
+  final bool comments_open;
   PostModel({
     required this.postId,
     required this.createdAt,
@@ -53,6 +54,7 @@ class PostModel {
     required this.shares_count,
     this.reviewMentioned,
     required this.hashtags,
+    required this.comments_open,
   });
 
   PostModel copyWith({
@@ -76,6 +78,7 @@ class PostModel {
     List? hashtags,
     int? shares_count,
     bool? shared_by_me,
+    bool? comments_open,
   }) {
     return PostModel(
       postId: postId ?? this.postId,
@@ -98,6 +101,7 @@ class PostModel {
       hashtags: hashtags ?? this.hashtags,
       shared_by_me: shared_by_me ?? this.shared_by_me,
       shares_count: shares_count ?? this.shares_count,
+      comments_open: comments_open ?? this.comments_open,
     );
   }
 
@@ -144,6 +148,7 @@ class PostModel {
       repostedCount: map[KeyNames.reposts_count] ?? 0,
       shared_by_me: map[KeyNames.shared_by_me] ?? false,
       shares_count: map[KeyNames.shares_count] ?? 0,
+      comments_open: map[KeyNames.comments_open] ?? true,
       manhwaMentioned:
           map[KeyNames.manhwa_mentions] == null
               ? []
