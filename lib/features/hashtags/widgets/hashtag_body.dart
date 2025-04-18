@@ -72,7 +72,6 @@ class HashtagsBody extends StatelessWidget {
           post: post,
           onComment: () {},
           postLikeType: PostLikeEnum.HASHTAG,
-          onRepost: () {},
           onShare: () {},
         );
       },

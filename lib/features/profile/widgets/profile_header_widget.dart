@@ -12,10 +12,18 @@ class ProfileHeader extends ConsumerWidget {
     bool isMe = me.userId == user.userId;
     final size = MediaQuery.sizeOf(context);
 
-    return SliverToBoxAdapter(
-      child: Column(
-        children: [buildTopHeader(size, isMe), buildBottomHeader(), const SizedBox(height: 10)],
+    return SliverAppBar(
+      expandedHeight: size.width * .85,
+      flexibleSpace: FlexibleSpaceBar(
+        collapseMode: CollapseMode.parallax,
+        background: Material(
+          color: AppColors.scaffoldBackground,
+          child: Column(children: [buildTopHeader(size, isMe), buildBottomHeader()]),
+        ),
       ),
+      pinned: false,
+      floating: true,
+      snap: true,
     );
   }
 
@@ -33,7 +41,6 @@ class ProfileHeader extends ConsumerWidget {
               fontFamily: accentFont,
             ),
           ),
-          // const SizedBox(height: 5),
           Text(
             "@${user.username}",
             style: TextStyle(fontSize: 13, color: AppColors.mutedSilver.withValues(alpha: .95)),
@@ -76,7 +83,6 @@ class ProfileHeader extends ConsumerWidget {
   SizedBox buildTopHeader(Size size, bool isMe) {
     return SizedBox(
       height: size.width * 0.45,
-
       child: Stack(
         children: [
           Opacity(

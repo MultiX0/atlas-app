@@ -21,10 +21,16 @@ class PostsDb {
   SupabaseQueryBuilder get _mentionsTable => _client.from(TableNames.post_mentions);
   HashtagsDb get hashtagDb => HashtagsDb();
 
-  Future<List<PostModel>> getUserPosts(String userId) async {
+  Future<List<PostModel>> getUserPosts({
+    required int startIndex,
+    required int pageSize,
+    required String userId,
+  }) async {
     try {
-      final _data = await _postsView.select("*").eq(KeyNames.userId, userId);
-      log(_data.toString());
+      final _data = await _postsView
+          .select("*")
+          .eq(KeyNames.userId, userId)
+          .range(startIndex, startIndex + pageSize - 1);
 
       return _data.map((post) => PostModel.fromMap(post)).toList();
     } catch (e) {
@@ -33,13 +39,24 @@ class PostsDb {
     }
   }
 
-  Future<void> insertPost(String postId, String post, String userId, List<String>? images) async {
+  Future<void> insertPost(
+    String postId,
+    String post,
+    String userId,
+    List<String>? images, {
+    bool canRepost = true,
+    bool canComment = true,
+    String? parentId,
+  }) async {
     try {
       await _postsTable.insert({
         KeyNames.id: postId,
         KeyNames.content: post,
         KeyNames.userId: userId,
         KeyNames.images: images ?? [],
+        KeyNames.can_reposted: canRepost,
+        KeyNames.comments_open: canComment,
+        KeyNames.parent_post: parentId,
       });
 
       final hashtags = extractHashtagKeyword(post);

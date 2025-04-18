@@ -9,8 +9,9 @@ import 'dart:ui' as ui;
 
 class PostContentWidget extends ConsumerWidget {
   final String? hashtag;
-  const PostContentWidget({super.key, required this.post, this.hashtag});
+  const PostContentWidget({super.key, required this.post, this.hashtag, this.repost = false});
 
+  final bool repost;
   final PostModel post;
   bool get hasArabic => Bidi.hasAnyRtl(post.content);
 
@@ -23,7 +24,7 @@ class PostContentWidget extends ConsumerWidget {
           key: ValueKey(post.postId),
           textDirection: hasArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
           text: post.content,
-          maxLines: 20,
+          maxLines: repost ? 3 : 20,
           truncate: true,
           style: TextStyle(
             fontWeight: FontWeight.w300,
@@ -37,7 +38,17 @@ class PostContentWidget extends ConsumerWidget {
             EmailParser(onTap: (email) => log('${email.value} clicked')),
             PhoneParser(onTap: (phone) => log('click phone ${phone.value}')),
             MentionParser(onTap: (mention) => log('${mention.value} clicked')),
-            UrlParser(),
+            UrlParser(
+              onTap: (url) {
+                final regex = RegExp(r'^(https?://)?([a-zA-Z0-9-]+\.)?atlasmanga\.app(/.*)?$');
+                if (regex.hasMatch(url.value ?? "")) {
+                  log("valid app domain");
+                } else {
+                  // print("not valid url");
+                  alertDialog(context, url.value ?? "");
+                }
+              },
+            ),
             BoldParser(),
             HashTagParser(
               onTap: (hash) {
@@ -76,6 +87,43 @@ class PostContentWidget extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+
+  void alertDialog(BuildContext context, String url) {
+    const btnStyle = TextStyle(fontFamily: arabicAccentFont, color: AppColors.primary);
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.primaryAccent,
+          title: const Text(
+            textDirection: ui.TextDirection.rtl,
+            "تحذير: رابط غير موثوق",
+            style: TextStyle(fontFamily: arabicAccentFont),
+          ),
+          content: const Text(
+            'لقد نقرت على رابط لا ينتمي إلى atlasmanga.app. زيارة مواقع غير موثوقة قد تعرضك للتصيد الاحتيالي أو البرمجيات الخبيثة. تأكد من أن الرابط يبدأ بـ "atlasmanga.app" قبل المتابعة. إذا كان مشبوهًا، ارجع إلى التطبيق.',
+            style: TextStyle(fontFamily: arabicPrimaryFont),
+            textDirection: ui.TextDirection.rtl,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                context.pop();
+                await launchUrl(Uri.parse(url), mode: LaunchMode.platformDefault);
+              },
+              child: const Text("الااستمرار", style: btnStyle),
+            ),
+            TextButton(
+              onPressed: () {
+                context.pop();
+              },
+              child: const Text("عودة", style: btnStyle),
+            ),
+          ],
+        );
+      },
     );
   }
 }

@@ -48,24 +48,18 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
 
   Widget buildBody(UserModel user, bool isMe) {
     return SafeArea(
-      child: Builder(
-        builder: (context) {
-          return NestedScrollView(
-            headerSliverBuilder: ((context, innerBoxIsScrolled) {
-              return [
-                ProfileHeader(user: user),
-                SliverOverlapAbsorber(
-                  handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-                  sliver: SliverPersistentHeader(
-                    delegate: _SliverAppBarDelegate(ProfileTabs(controller: _controller)),
-                    pinned: true,
-                  ),
-                ),
-              ];
-            }),
-            body: ProfileBody(user: user, controller: _controller),
-          );
-        },
+      child: NestedScrollView(
+        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+        headerSliverBuilder: ((context, innerBoxIsScrolled) {
+          return [
+            ProfileHeader(user: user),
+            SliverPersistentHeader(
+              delegate: _SliverAppBarDelegate(ProfileTabs(controller: _controller)),
+              pinned: true,
+            ),
+          ];
+        }),
+        body: ProfileBody(user: user, controller: _controller),
       ),
     );
   }

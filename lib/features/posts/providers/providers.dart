@@ -7,3 +7,7 @@ final postInputProvider = StateProvider<String>((ref) {
 final postTypeProvider = StateProvider<PostType>((ref) {
   return PostType.normal;
 });
+
+final selectedPostProvider = StateProvider<PostModel?>((ref) {
+  return null;
+});

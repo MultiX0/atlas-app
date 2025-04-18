@@ -1,10 +1,20 @@
+import 'package:atlas_app/features/posts/widgets/post_more_options.dart';
 import 'package:atlas_app/features/posts/widgets/tool_tile_widget.dart';
 import 'package:atlas_app/imports.dart';
 
 class ToolsWidget extends ConsumerWidget {
-  const ToolsWidget({super.key, required this.selectImages});
+  const ToolsWidget({
+    super.key,
+    required this.selectImages,
+    required this.handleOptions,
+    required this.canComment,
+    required this.canRepost,
+  });
 
   final Function() selectImages;
+  final Function(bool canRepost, bool canComment) handleOptions;
+  final bool canComment;
+  final bool canRepost;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -18,7 +28,17 @@ class ToolsWidget extends ConsumerWidget {
             spacing: 10,
             children: [
               ToolTileWidget(text: "اضافة صور", icon: TablerIcons.photo, onTap: selectImages),
-              ToolTileWidget(text: "اعدادات اضافية", icon: TablerIcons.settings_2, onTap: () {}),
+              ToolTileWidget(
+                text: "اعدادات اضافية",
+                icon: TablerIcons.settings_2,
+                onTap:
+                    () => postOptionsSheet(
+                      context,
+                      handleOptions,
+                      canComments: canComment,
+                      canRepost: canRepost,
+                    ),
+              ),
             ],
           ),
         ),

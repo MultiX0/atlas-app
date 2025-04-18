@@ -11,17 +11,14 @@ import 'package:atlas_app/core/common/widgets/slash_parser.dart';
 import 'package:atlas_app/features/hashtags/providers/hashtag_state_provider.dart';
 import 'package:atlas_app/features/hashtags/providers/providers.dart';
 import 'package:atlas_app/features/posts/db/posts_db.dart';
+import 'package:atlas_app/features/posts/providers/providers.dart';
+import 'package:atlas_app/features/profile/provider/profile_posts_state.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:uuid/uuid.dart';
 
 final postsControllerProvider = StateNotifierProvider<PostsController, bool>((ref) {
   return PostsController(ref: ref);
-});
-
-final getUserPostsProvider = FutureProvider.family<List<PostModel>, String>((ref, userId) async {
-  final controller = ref.watch(postsControllerProvider.notifier);
-  return await controller.getUserPosts(userId);
 });
 
 class PostsController extends StateNotifier<bool> {
@@ -37,6 +34,8 @@ class PostsController extends StateNotifier<bool> {
     required String postContent,
     List<File>? images,
     required BuildContext context,
+    required bool canRepost,
+    required bool canComment,
   }) async {
     try {
       final userId = _ref.read(userState).user!.userId;
@@ -46,7 +45,22 @@ class PostsController extends StateNotifier<bool> {
       if (images != null && images.isNotEmpty) {
         links = await uploadImages(postId: postId, userId: userId, images);
       }
-      await db.insertPost(postId, postContent, userId, links);
+
+      String? parentId;
+      if (postType == PostType.repost) {
+        final _id = _ref.read(selectedPostProvider);
+        parentId = _id!.postId;
+      }
+
+      await db.insertPost(
+        postId,
+        postContent,
+        userId,
+        links,
+        canComment: canComment,
+        canRepost: canRepost,
+        parentId: parentId,
+      );
       if (postType == PostType.comic_review) {
         final review = _ref.read(selectedReview);
         await db.insertMentions([SlashEntity('comic_review', review!.id, 'Review')], postId);
@@ -58,15 +72,6 @@ class PostsController extends StateNotifier<bool> {
       context.pop();
     } catch (e) {
       context.loaderOverlay.hide();
-      log(e.toString());
-      rethrow;
-    }
-  }
-
-  Future<List<PostModel>> getUserPosts(String userId) async {
-    try {
-      return await db.getUserPosts(userId);
-    } catch (e) {
       log(e.toString());
       rethrow;
     }
@@ -92,6 +97,10 @@ class PostsController extends StateNotifier<bool> {
           _ref.read(hashtagStateProvider(hashtag).notifier).likePost(postModel: newPost);
           break;
         case PostLikeEnum.PROFILE:
+          _ref.read(profilePostsStateProvider(post.userId).notifier).likePost(postModel: newPost);
+          log("After state update: expecting userLiked = ${newPost.userLiked}");
+          await db.handleUserLike(post, userId);
+          _ref.read(hashtagStateProvider(post.userId).notifier).likePost(postModel: newPost);
           break;
         case PostLikeEnum.GENERAL:
           break;

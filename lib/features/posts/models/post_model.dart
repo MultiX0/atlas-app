@@ -33,6 +33,7 @@ class PostModel {
   final int shares_count;
   final bool shared_by_me;
   final bool comments_open;
+  final DateTime? updatedAt;
   PostModel({
     required this.postId,
     required this.createdAt,
@@ -55,6 +56,7 @@ class PostModel {
     this.reviewMentioned,
     required this.hashtags,
     required this.comments_open,
+    this.updatedAt,
   });
 
   PostModel copyWith({
@@ -79,6 +81,7 @@ class PostModel {
     int? shares_count,
     bool? shared_by_me,
     bool? comments_open,
+    DateTime? updatedAt,
   }) {
     return PostModel(
       postId: postId ?? this.postId,
@@ -102,6 +105,7 @@ class PostModel {
       shared_by_me: shared_by_me ?? this.shared_by_me,
       shares_count: shares_count ?? this.shares_count,
       comments_open: comments_open ?? this.comments_open,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
@@ -149,6 +153,7 @@ class PostModel {
       shared_by_me: map[KeyNames.shared_by_me] ?? false,
       shares_count: map[KeyNames.shares_count] ?? 0,
       comments_open: map[KeyNames.comments_open] ?? true,
+      updatedAt: map[KeyNames.updated_at] == null ? null : DateTime.parse(map[KeyNames.updated_at]),
       manhwaMentioned:
           map[KeyNames.manhwa_mentions] == null
               ? []
