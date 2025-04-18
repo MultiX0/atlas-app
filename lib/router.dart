@@ -25,6 +25,7 @@ final navigationShellProvider = Provider<StatefulNavigationShell>((ref) {
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: Routes.splashPage,
+
     redirect: (context, state) {
       final splashRoute = state.uri.toString() == Routes.splashPage;
       if (splashRoute) {
@@ -151,7 +152,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           final type = stringToPostType(typeString ?? "normal");
 
           return CustomTransitionPage(
-            child: MakePostPage(postType: type, defaultText: defaultText),
+            child: MakePostPage(
+              postType: type,
+              defaultText: defaultText.isNotEmpty ? '$defaultText\n' : '',
+            ),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);
             },
