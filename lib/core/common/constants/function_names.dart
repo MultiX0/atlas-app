@@ -9,4 +9,5 @@ class FunctionNames {
   static const check_if_review_before = 'check_if_review_before';
   static const get_comic_avg_ratings = 'get_comic_avg_ratings';
   static const search_all = 'search_all';
+  static const get_existing_genres = 'get_existing_genres';
 }

@@ -22,4 +22,6 @@ class TableNames {
   static const comic_review_likes = 'comic_review_likes';
   static const post_hashtags = 'post_hashtags';
   static const hashtags = 'hashtags';
+  static const pinned_posts = 'pinned_posts';
+  static const saved_posts = 'saved_posts';
 }

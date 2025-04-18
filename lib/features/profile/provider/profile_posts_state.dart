@@ -100,6 +100,18 @@ class ProfilePostsStateProvider extends StateNotifier<ProfilePostsStateHelper> {
         pageSize: _pageSize,
       );
 
+      newPosts.sort((a, b) {
+        // Handle pinned posts first
+        if (a.isPinned && !b.isPinned) {
+          return -1; // a is pinned, b is not, so a comes first
+        } else if (!a.isPinned && b.isPinned) {
+          return 1; // b is pinned, a is not, so b comes first
+        } else {
+          // Both are pinned or both are not pinned, sort by createdAt (latest first)
+          return b.createdAt.compareTo(a.createdAt);
+        }
+      });
+
       log("Fetched ${newPosts.length} posts: ${newPosts.map((p) => p.postId).toList()}");
 
       final hasReachedEnd = newPosts.length < _pageSize;
@@ -141,8 +153,54 @@ class ProfilePostsStateProvider extends StateNotifier<ProfilePostsStateHelper> {
 
   void newPost({required PostModel post}) {
     final updatedPosts = List<PostModel>.from(state.posts);
-    updatedPosts.insert(0, post);
+    final insertationPos = pinnedPostCount();
+    updatedPosts.insert(insertationPos, post);
     state = state.copyWith(posts: updatedPosts);
+  }
+
+  void pinPost({required PostModel post}) {
+    try {
+      if (pinnedPostCount() >= 3) {
+        throw "الحد الأقصى للمنشورات المثبتة هو 3";
+      }
+
+      final indexOf = state.posts.indexWhere((p) => p.postId == post.postId);
+      List<PostModel> updatedPosts = List<PostModel>.from(state.posts);
+      final newPost = post.copyWith(isPinned: !post.isPinned);
+
+      updatedPosts[indexOf] = newPost;
+
+      updatedPosts.sort((a, b) {
+        // Handle pinned posts first
+        if (a.isPinned && !b.isPinned) {
+          return -1; // a is pinned, b is not, so a comes first
+        } else if (!a.isPinned && b.isPinned) {
+          return 1; // b is pinned, a is not, so b comes first
+        } else {
+          // Both are pinned or both are not pinned, sort by createdAt (latest first)
+          return b.createdAt.compareTo(a.createdAt);
+        }
+      });
+      state = state.copyWith(posts: updatedPosts);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  int pinnedPostCount() {
+    return state.posts.where((p) => p.isPinned).toList().length;
+  }
+
+  void updatePost(PostModel post) {
+    final indexOf = state.posts.indexWhere((p) => p.postId == post.postId);
+    List<PostModel> updatedPosts = List<PostModel>.from(state.posts);
+    updatedPosts[indexOf] = post;
+    state = state.copyWith(posts: updatedPosts);
+  }
+
+  void deletePost(String postId) {
+    state = state.copyWith(posts: state.posts.where((p) => p.postId != postId).toList());
   }
 }
 

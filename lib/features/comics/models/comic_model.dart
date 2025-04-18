@@ -1,7 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 
-import 'dart:developer';
-
 import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/features/characters/models/comic_characters_model.dart';
 import 'package:atlas_app/features/comics/models/comic_published_model.dart';
@@ -154,7 +152,7 @@ class ComicModel {
 
   factory ComicModel.fromMap(Map<String, dynamic> map) {
     List<GenresModel> genres = [];
-    log("genreses is ${map['genres']}");
+    // log("genreses is ${map['genres']}");
     if (map['genres'] != null) {
       if ((map['genres'] as List).isNotEmpty) {
         genres = List<GenresModel>.from(

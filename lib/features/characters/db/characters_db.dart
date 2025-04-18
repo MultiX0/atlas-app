@@ -52,11 +52,11 @@ class CharactersDb {
             .toList(),
       );
 
-      log("THERE IS ${characters.length} FOR THR COMIC (${comic.comicId})");
-      log("CHARACTERS FOR ${comic.englishTitle}:");
-      for (final char in characters) {
-        log(char.fullName);
-      }
+      // log("THERE IS ${characters.length} FOR THR COMIC (${comic.comicId})");
+      // log("CHARACTERS FOR ${comic.englishTitle}:");
+      // for (final char in characters) {
+      //   log(char.fullName);
+      // }
 
       final _translatedChars = await translateCharacterDescription(characters);
 

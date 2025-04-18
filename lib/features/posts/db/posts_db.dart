@@ -19,6 +19,9 @@ class PostsDb {
   SupabaseQueryBuilder get _postsTable => _client.from(TableNames.posts);
   SupabaseQueryBuilder get _postLikesTable => _client.from(TableNames.post_likes);
   SupabaseQueryBuilder get _mentionsTable => _client.from(TableNames.post_mentions);
+  SupabaseQueryBuilder get _pinnedPostsTable => _client.from(TableNames.pinned_posts);
+  SupabaseQueryBuilder get _savedPostsTable => _client.from(TableNames.saved_posts);
+
   HashtagsDb get hashtagDb => HashtagsDb();
 
   Future<List<PostModel>> getUserPosts({
@@ -30,6 +33,7 @@ class PostsDb {
       final _data = await _postsView
           .select("*")
           .eq(KeyNames.userId, userId)
+          .order(KeyNames.created_at, ascending: false)
           .range(startIndex, startIndex + pageSize - 1);
 
       return _data.map((post) => PostModel.fromMap(post)).toList();
@@ -63,6 +67,44 @@ class PostsDb {
       final mentions = extractSlashKeywords(post);
       await Future.wait([hashtagDb.insertNewHashTag(hashtags), insertMentions(mentions, postId)]);
       await hashtagDb.insertPostHashTag(hashtags, postId);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> handlePostPin(PostModel post) async {
+    try {
+      if (post.isPinned) {
+        await _pinnedPostsTable.delete().eq(KeyNames.post_id, post.postId);
+      } else {
+        await _pinnedPostsTable.insert({KeyNames.post_id: post.postId});
+      }
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> handlePostSave(PostModel post, String userId) async {
+    try {
+      if (post.isSaved) {
+        await _savedPostsTable
+            .delete()
+            .eq(KeyNames.post_id, post.postId)
+            .eq(KeyNames.userId, userId);
+      } else {
+        await _savedPostsTable.insert({KeyNames.post_id: post.postId, KeyNames.userId: userId});
+      }
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> deletePost(String postId) async {
+    try {
+      await _postsTable.delete().eq(KeyNames.id, postId);
     } catch (e) {
       log(e.toString());
       rethrow;

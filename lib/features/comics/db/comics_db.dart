@@ -11,6 +11,7 @@ import 'package:atlas_app/features/search/providers/manhwa_search_state.dart';
 import 'package:atlas_app/features/search/providers/providers.dart';
 import 'package:atlas_app/features/translate/translate_service.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
 
@@ -84,8 +85,18 @@ class ComicsDb {
 
   Future<void> insertComicsGenres(List<GenresModel> genress, String comicId) async {
     try {
+      final _alreadyFoundIds = await client.rpc(
+        FunctionNames.get_existing_genres,
+        params: {'p_comic_id': comicId, 'p_genre_ids': genress.map((g) => g.id).toList()},
+      );
+      final _ids = List.from(_alreadyFoundIds);
+      final _newGenrese = List<GenresModel>.from(genress);
+      if (_ids.isNotEmpty) {
+        _newGenrese.retainWhere((genres) => _ids.contains(genres.id));
+      }
+      if (_newGenrese.isEmpty) return;
       List<Map<String, dynamic>> _genress = [];
-      for (final genres in genress) {
+      for (final genres in _newGenrese) {
         final map = genres.toMap();
         map[KeyNames.comic_id] = comicId;
         final id = genres.id;
@@ -93,9 +104,11 @@ class ComicsDb {
         map.remove(KeyNames.type);
         map.remove(KeyNames.id);
         map.remove(KeyNames.name);
+        map.remove(KeyNames.name_arabic);
         _genress.add(map);
       }
-      await _comicsGenresTable.upsert(_genress);
+
+      await _comicsGenresTable.insert(_genress);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -199,6 +212,7 @@ class ComicsDb {
       await Future.wait([
         _comicsTable.update(map).eq(KeyNames.ani_id, comic.aniId),
         _ref.read(characterDbProvider).handleInsertCharacters(comic, characters),
+        insertComicsGenres(comic.genres, comic.comicId),
       ]);
     } catch (e) {
       log(e.toString());
@@ -275,11 +289,13 @@ class ComicsDb {
     }
 
     // Translate and save comics
-    List<ComicModel> finalComics = await translateComics(idsComics);
+    List<ComicModel> finalComics = idsComics;
     for (final c in availableComics) {
       finalComics.removeWhere((com) => com.aniId == c.aniId);
       idsComics.removeWhere((com) => com.aniId == c.aniId);
     }
+
+    finalComics = await translateComics(finalComics);
 
     finalComics.addAll(availableComics);
     _updateStateAfterApiSearch(finalComics);
@@ -381,15 +397,15 @@ class ComicsDb {
       }
 
       final comicData = await getComicById(comic.aniId);
-      log(comicData.toString());
       ComicModel comicModel = ComicModel.fromMap(comicData);
       final characters = extractCharactersFromProcessedComics([comicData]);
+      final extractGenres = extractGenresFromApi(comicData);
       comicModel = comicModel.copyWith(
         lastUpdateAt: DateTime.now().toUtc(),
         comicId: comic.comicId,
         ar_synopsis: comic.ar_synopsis,
         characters: comic.characters,
-        genres: comic.genres,
+        genres: extractGenres.map((genres) => GenresModel.fromMap(genres)).toList(),
         views: comic.views,
         is_viewed: comic.is_viewed,
         favorite_count: comic.favorite_count,
@@ -694,33 +710,59 @@ characters {
 
   List<Map<String, dynamic>> extractGenresFromApi(Map<dynamic, dynamic> comic) {
     try {
-      final genreMap = {
-        for (var genre in genres) genre["name"].toString().toLowerCase(): genre["id"],
-      };
-
-      final comicGenres = (comic["genres"] as List<dynamic>);
-      if (comicGenres.isEmpty) return [];
-
-      log(genreMap.toString());
-      log("=========================");
-      log(comicGenres.toString());
-      log("=========================");
-
-      List<Map<String, dynamic>> _enrichedGenres = [];
-      for (final g in (comic["genres"] as List<dynamic>)) {
-        final genreName = g.toString().toLowerCase();
-        final genreId = genreMap[genreName];
-        if (genreId == null || (g == null || g.toString().isEmpty)) continue;
-        final gen = {
-          "id": genreId,
-          "type": "manga",
-          "name": g,
-          "url": "https://myanimelist.net/manga/genre/0/$g",
-        };
-        _enrichedGenres.add(gen);
+      final comicGenres = (comic["genres"] as List<dynamic>?) ?? [];
+      if (comicGenres.isEmpty) {
+        log("No genres found in comic data", name: 'extractGenresFromApi');
+        return [];
       }
 
-      return _enrichedGenres;
+      log("API Genres: $comicGenres", name: 'extractGenresFromApi');
+
+      final List<Map<String, dynamic>> enrichedGenres = [];
+      for (final g in comicGenres) {
+        // Extract genre name, handling both string and object cases
+        String genreName;
+        if (g is String) {
+          genreName = g;
+        } else if (g is Map && g.containsKey('name')) {
+          genreName = g['name'].toString();
+        } else {
+          log("Invalid genre format: $g", name: 'extractGenresFromApi');
+          continue;
+        }
+
+        // Normalize genre name for matching
+        final normalizedGenreName = genreName.toLowerCase().trim();
+        log("Processing genre: $normalizedGenreName", name: 'extractGenresFromApi');
+
+        // Find matching genre in the global genres list
+        final genre = genres.firstWhereOrNull(
+          (ge) => ge['name'].toString().toLowerCase().trim() == normalizedGenreName,
+        );
+
+        if (genre == null) {
+          log("No match found for genre: $normalizedGenreName", name: 'extractGenresFromApi');
+          continue;
+        }
+
+        log(
+          "Matched Genre: ${genre['name']} -> Arabic: ${genre['name_arabic'] ?? 'N/A'}",
+          name: 'extractGenresFromApi',
+        );
+
+        // Build enriched genre map
+        final gen = {
+          "id": genre['id'],
+          "type": "manga",
+          "name": genreName, // Use original genreName to preserve case/formatting
+          "url": "https://myanimelist.net/manga/genre/${genre['id']}/$normalizedGenreName",
+          "name_arabic": genre['name_arabic'] ?? "",
+        };
+
+        enrichedGenres.add(gen);
+      }
+
+      return enrichedGenres;
     } catch (e) {
       log("Exception in extractGenresFrom Api $e");
       rethrow;

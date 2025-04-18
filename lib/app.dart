@@ -13,7 +13,7 @@ class App extends ConsumerWidget {
     return RepaintBoundary(
       child: Portal(
         child: GlobalLoaderOverlay(
-          overlayColor: AppColors.blackColor,
+          overlayColor: Colors.black54,
           overlayWidgetBuilder: (_) {
             return const Center(child: Loader());
           },

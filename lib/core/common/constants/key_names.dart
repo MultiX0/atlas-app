@@ -110,4 +110,6 @@ class KeyNames {
   static const reviewsCount = 'reviews_count';
   static const comic_title = 'comic_title';
   static const comments_open = 'comments_open';
+  static const is_pinned = 'is_pinned';
+  static const is_saved = 'is_saved';
 }

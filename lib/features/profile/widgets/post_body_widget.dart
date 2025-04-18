@@ -30,6 +30,7 @@ class PostBodyWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: hasArabic ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
+          if (post.updatedAt != null) ...[const SizedBox(height: 5), const Text("تم التعديل عليه")],
           const SizedBox(height: 10),
           PostContentWidget(post: post, hashtag: hashtag),
           if (post.images.isNotEmpty) ...[

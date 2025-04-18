@@ -1,5 +1,6 @@
 // Utility functions to extract different trigger queries
 
+import 'package:atlas_app/core/common/widgets/rich_text_view/util.dart';
 import 'package:atlas_app/core/common/widgets/slash_parser.dart';
 
 /// Extract mention query - gets the text after @ symbol being typed
@@ -14,9 +15,9 @@ String? extractMentionKeyword(String text) {
 
 /// Extract hashtag query - gets the text after # symbol being typed
 List<String> extractHashtagKeyword(String text) {
-  final match = RegExp(r'\B(\#[a-zA-Z\u0600-\u06FF]+\b)(?!;)').allMatches(text);
-  if (match.isNotEmpty && match.first.group(1) != null) {
-    return match.map((hash) => hash.group(1)!.replaceAll("#", '').trim()).toList();
+  final match = RegExp(RTUtils.hashPattern).allMatches(text);
+  if (match.isNotEmpty && match.first.group(0) != null) {
+    return match.map((hash) => hash.group(0)!.replaceAll("#", "").trim()).toList();
   }
   return [];
 }

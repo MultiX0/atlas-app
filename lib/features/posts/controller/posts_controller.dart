@@ -38,12 +38,12 @@ class PostsController extends StateNotifier<bool> {
     required bool canComment,
   }) async {
     try {
-      final userId = _ref.read(userState).user!.userId;
+      final user = _ref.read(userState).user!;
       final postId = uuid.v4();
       List<String>? links;
       context.loaderOverlay.show();
       if (images != null && images.isNotEmpty) {
-        links = await uploadImages(postId: postId, userId: userId, images);
+        links = await uploadImages(postId: postId, userId: user.userId, images);
       }
 
       String? parentId;
@@ -55,7 +55,7 @@ class PostsController extends StateNotifier<bool> {
       await db.insertPost(
         postId,
         postContent,
-        userId,
+        user.userId,
         links,
         canComment: canComment,
         canRepost: canRepost,
@@ -67,6 +67,7 @@ class PostsController extends StateNotifier<bool> {
         _ref.read(manhwaReviewsStateProvider(review.comicId).notifier).handleNewRepost(review);
       }
 
+      await _ref.read(profilePostsStateProvider(user.userId).notifier).fetchData(refresh: true);
       context.loaderOverlay.hide();
       CustomToast.success("تم النشر");
       context.pop();
@@ -119,6 +120,46 @@ class PostsController extends StateNotifier<bool> {
         case PostLikeEnum.GENERAL:
           break;
       }
+      rethrow;
+    }
+  }
+
+  Future<void> handlePostPin(PostModel post) async {
+    try {
+      final me = _ref.read(userState.select((user) => user.user!));
+      _ref.read(profilePostsStateProvider(me.userId).notifier).pinPost(post: post);
+      await db.handlePostPin(post);
+    } catch (e) {
+      CustomToast.error(e);
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> deletePost(String postId) async {
+    try {
+      final me = _ref.read(userState.select((user) => user.user!));
+      _ref.read(profilePostsStateProvider(me.userId).notifier).deletePost(postId);
+      await db.deletePost(postId);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> handlePostSave(PostModel post) async {
+    final me = _ref.read(userState.select((user) => user.user!));
+    try {
+      _ref
+          .read(profilePostsStateProvider(me.userId).notifier)
+          .updatePost(post.copyWith(isSaved: !post.isSaved));
+      await db.handlePostSave(post, me.userId);
+    } catch (e) {
+      log(e.toString());
+      _ref
+          .read(profilePostsStateProvider(me.userId).notifier)
+          .updatePost(post.copyWith(isSaved: post.isSaved));
+      CustomToast.error(errorMsg);
       rethrow;
     }
   }

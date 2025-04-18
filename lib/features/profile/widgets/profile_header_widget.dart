@@ -23,7 +23,7 @@ class ProfileHeader extends ConsumerWidget {
       ),
       pinned: false,
       floating: true,
-      snap: true,
+      snap: false,
     );
   }
 

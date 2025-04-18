@@ -23,11 +23,18 @@ class SingleImageViewer extends StatelessWidget {
       },
       child: ConstrainedBox(
         constraints: BoxConstraints(maxHeight: size.height * .5, minWidth: size.width),
-        child: CachedNetworkAvifImage(
-          provider.url,
-          fit: BoxFit.cover,
-          cacheHeight: min(size.width.toInt(), 500), // Cap at 500px
-          cacheWidth: min(size.width.toInt(), 500),
+        child: SizedBox(
+          width: 500,
+          height: 500,
+          child: Material(
+            color: AppColors.secondBlackColor,
+            child: CachedNetworkAvifImage(
+              provider.url,
+              fit: BoxFit.cover,
+              cacheHeight: min(size.width.toInt(), 500), // Cap at 500px
+              cacheWidth: min(size.width.toInt(), 500),
+            ),
+          ),
         ),
       ),
     );

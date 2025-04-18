@@ -31,7 +31,6 @@ class MyNavBar extends ConsumerWidget {
         RepaintBoundary(
           child: Scaffold(
             body: navigationShell,
-
             bottomNavigationBar: Padding(
               padding: const EdgeInsets.fromLTRB(15, 5, 15, 15),
               child: CupertinoTheme(

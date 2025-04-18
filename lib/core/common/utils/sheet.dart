@@ -10,6 +10,7 @@ void openSheet({
     context: context,
     isScrollControlled: scrollControlled,
     builder: (context) => child,
+    useRootNavigator: true,
     showDragHandle: true,
     useSafeArea: true,
   );
