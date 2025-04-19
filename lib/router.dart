@@ -8,8 +8,10 @@ import 'package:atlas_app/features/auth/pages/register_page.dart';
 import 'package:atlas_app/features/comics/pages/manhwa_page.dart';
 import 'package:atlas_app/features/explore/pages/explore_page.dart';
 import 'package:atlas_app/features/hashtags/pages/hashtag_page.dart';
+import 'package:atlas_app/features/library/pages/library_page.dart';
 import 'package:atlas_app/features/onboarding/pages/first_page.dart';
 import 'package:atlas_app/features/posts/pages/make_post_page.dart';
+import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/features/profile/pages/profile_page.dart';
 import 'package:atlas_app/features/reviews/pages/add_comic_review.dart';
 import 'package:atlas_app/features/search/pages/search_page.dart';
@@ -78,7 +80,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [buildRoute(path: Routes.scrolls, child: const SizedBox(), fade: true)],
           ),
           StatefulShellBranch(
-            routes: [buildRoute(path: Routes.library, child: const SizedBox(), fade: true)],
+            routes: [buildRoute(path: Routes.library, child: const LibraryPage(), fade: true)],
           ),
           StatefulShellBranch(
             routes: [buildRoute(path: Routes.user, child: const ProfilePage(), fade: true)],
@@ -154,8 +156,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: "${Routes.makePostPage}/:type/:defaultText",
         pageBuilder: (context, state) {
           final typeString = state.pathParameters["type"];
-          final defaultText = Uri.decodeComponent(state.pathParameters["defaultText"] ?? "");
           final type = stringToPostType(typeString ?? "normal");
+          final defaultText = ref.read(selectedPostProvider)!.content;
 
           return CustomTransitionPage(
             child: MakePostPage(

@@ -74,6 +74,19 @@ class _MakePostPageState extends ConsumerState<MakePostPage> {
                     return;
                   }
                   final data = ref.read(postInputProvider);
+                  if (widget.postType == PostType.edit) {
+                    final originalPost = ref.read(selectedPostProvider)!;
+                    ref
+                        .read(postsControllerProvider.notifier)
+                        .updatePost(
+                          originalPost: originalPost,
+                          postContent: data,
+                          context: context,
+                          canRepost: canRepost ?? true,
+                          canComment: canComment ?? true,
+                        );
+                    return;
+                  }
                   ref
                       .read(postsControllerProvider.notifier)
                       .insertPost(

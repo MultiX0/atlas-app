@@ -1,4 +1,4 @@
-enum PostType { normal, comic, character, novel, comic_review, repost }
+enum PostType { normal, comic, character, novel, comic_review, repost, edit }
 
 PostType stringToPostType(String type) {
   switch (type) {
@@ -14,6 +14,8 @@ PostType stringToPostType(String type) {
       return PostType.comic_review;
     case 'repost':
       return PostType.repost;
+    case 'edit':
+      return PostType.edit;
 
     default:
       return PostType.normal;

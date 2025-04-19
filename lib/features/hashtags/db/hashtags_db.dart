@@ -47,6 +47,17 @@ class HashtagsDb {
     }
   }
 
+  Future<void> removeHashtagsFromPost(List<String> hashtags, String postId) async {
+    try {
+      await _postsHashtags
+          .delete()
+          .eq(KeyNames.post_id, postId)
+          .inFilter(KeyNames.hashtag, hashtags);
+    } catch (e) {
+      log(e.toString());
+    }
+  }
+
   Future<HashtagModel> getHashtag(String hashtag) async {
     try {
       var data = await _hashTagsView.select("*").eq(KeyNames.hashtag, hashtag).maybeSingle();

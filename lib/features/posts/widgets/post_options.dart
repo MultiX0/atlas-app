@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/features/posts/controller/posts_controller.dart';
+import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/router.dart';
 import 'package:clipboard/clipboard.dart';
 import 'package:atlas_app/imports.dart';
@@ -62,11 +63,13 @@ class _PostOptionsSheetState extends State<PostOptions> {
                 },
               ),
               buildTile(
-                visible: isOwner,
+                visible: (isOwner && profile),
                 "تعديل",
                 TablerIcons.edit_circle,
                 onTap: () {
-                  log("comments clicked");
+                  context.pop();
+                  ref.read(selectedPostProvider.notifier).state = widget.post;
+                  context.push("${Routes.makePostPage}/${PostType.edit.name}/edit-post");
                 },
               ),
               buildTile(

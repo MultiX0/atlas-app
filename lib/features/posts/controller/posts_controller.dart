@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:atlas_app/core/common/enum/post_like_enum.dart';
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
+import 'package:atlas_app/core/common/utils/extract_key_words.dart';
 import 'package:atlas_app/core/common/utils/image_to_avif_convert.dart';
 import 'package:atlas_app/core/common/utils/upload_storage.dart';
 import 'package:atlas_app/core/common/widgets/slash_parser.dart';
@@ -71,6 +72,36 @@ class PostsController extends StateNotifier<bool> {
       context.loaderOverlay.hide();
       CustomToast.success("تم النشر");
       context.pop();
+    } catch (e) {
+      context.loaderOverlay.hide();
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> updatePost({
+    required PostModel originalPost,
+    required String postContent,
+    required BuildContext context,
+    required bool canRepost,
+    required bool canComment,
+  }) async {
+    try {
+      final hashtags = extractHashtagKeyword(originalPost.content);
+      final mentions = extractSlashKeywords(originalPost.content);
+
+      final user = _ref.read(userState).user!;
+      PostModel updatedPost = originalPost.copyWith(
+        content: postContent,
+        canReposted: canRepost,
+        comments_open: canComment,
+      );
+      _ref.read(profilePostsStateProvider(user.userId).notifier).updatePost(updatedPost);
+      context.loaderOverlay.show();
+      await db.updatePost(updatedPost, hashtags, mentions);
+      CustomToast.success("تم تحديث المنشور بنجاح");
+      context.pop();
+      context.loaderOverlay.hide();
     } catch (e) {
       context.loaderOverlay.hide();
       log(e.toString());

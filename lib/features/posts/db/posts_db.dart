@@ -63,8 +63,14 @@ class PostsDb {
         KeyNames.parent_post: parentId,
       });
 
-      final hashtags = extractHashtagKeyword(post);
-      final mentions = extractSlashKeywords(post);
+      final hashtags = extractHashtagKeyword(post).toSet().toList();
+      List<SlashEntity> mentions = [];
+      for (final m in extractSlashKeywords(post)) {
+        if (!mentions.any((_m) => m.id == _m.id)) {
+          mentions.add(m);
+        }
+      }
+
       await Future.wait([hashtagDb.insertNewHashTag(hashtags), insertMentions(mentions, postId)]);
       await hashtagDb.insertPostHashTag(hashtags, postId);
     } catch (e) {
@@ -102,6 +108,42 @@ class PostsDb {
     }
   }
 
+  Future<void> updatePost(
+    PostModel post,
+    List<String> ogHashtags,
+    List<SlashEntity> ogMentions,
+  ) async {
+    try {
+      final hashtags = extractHashtagKeyword(post.content);
+      final mentions = extractSlashKeywords(post.content);
+
+      final removedHashtags = ogHashtags.where((tag) => !hashtags.contains(tag)).toList();
+      final addedHashtags = hashtags.where((tag) => !ogHashtags.contains(tag)).toList();
+      final removedMentions =
+          ogMentions.where((mention) => !mentions.any((m) => m.id == mention.id)).toList();
+      List<String> removedMentionsIds = removedMentions.map((m) => m.id).toList();
+      final addedMentions =
+          mentions.where((mention) => !ogMentions.any((m) => m.id == mention.id)).toList();
+      await _postsTable
+          .update({
+            KeyNames.content: post.content,
+            KeyNames.can_reposted: post.canReposted,
+            KeyNames.comments_open: post.comments_open,
+          })
+          .eq(KeyNames.id, post.postId);
+      await Future.wait([
+        hashtagDb.removeHashtagsFromPost(removedHashtags, post.postId),
+        removeMentionFromPost(removedMentionsIds, post.postId),
+        hashtagDb.insertNewHashTag(addedHashtags),
+        insertMentions(addedMentions, post.postId),
+      ]);
+      await hashtagDb.insertPostHashTag(addedHashtags, post.postId);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
   Future<void> deletePost(String postId) async {
     try {
       await _postsTable.delete().eq(KeyNames.id, postId);
@@ -124,6 +166,15 @@ class PostsDb {
               )
               .toList();
       await _mentionsTable.upsert(data);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> removeMentionFromPost(List<String> ids, String postId) async {
+    try {
+      await _mentionsTable.delete().eq(KeyNames.post_id, postId).inFilter(KeyNames.entity_id, ids);
     } catch (e) {
       log(e.toString());
       rethrow;
