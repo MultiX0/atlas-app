@@ -1,4 +1,5 @@
 import 'package:atlas_app/core/common/widgets/cached_avatar.dart';
+import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/features/posts/widgets/post_options.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:atlas_app/router.dart';
@@ -93,6 +94,7 @@ class PostHeaderWidget extends StatelessWidget {
   }
 
   void postOptions(BuildContext context, UserModel user, WidgetRef ref) {
+    ref.read(selectedPostProvider.notifier).state = post;
     bool isOwner = post.userId == user.userId;
     openSheet(
       context: context,

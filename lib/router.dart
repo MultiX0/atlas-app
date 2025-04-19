@@ -8,6 +8,7 @@ import 'package:atlas_app/features/auth/pages/register_page.dart';
 import 'package:atlas_app/features/comics/pages/manhwa_page.dart';
 import 'package:atlas_app/features/explore/pages/explore_page.dart';
 import 'package:atlas_app/features/hashtags/pages/hashtag_page.dart';
+import 'package:atlas_app/features/library/pages/add_novel_page.dart';
 import 'package:atlas_app/features/library/pages/library_page.dart';
 import 'package:atlas_app/features/onboarding/pages/first_page.dart';
 import 'package:atlas_app/features/posts/pages/make_post_page.dart';
@@ -100,6 +101,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       buildRoute(path: Routes.forgotPasswordEmailPage, child: const EmailFieldPage(), fade: true),
       buildRoute(path: Routes.search, child: const SearchPage(), fade: true),
       buildRoute(path: Routes.manhwaPage, child: const ManhwaPage(), fade: true),
+      buildRoute(path: Routes.addNovelPost, child: const AddNovelPage(), fade: true),
       GoRoute(
         path: "${Routes.addComicReview}/:update",
         pageBuilder: (context, state) {

@@ -112,4 +112,7 @@ class KeyNames {
   static const comments_open = 'comments_open';
   static const is_pinned = 'is_pinned';
   static const is_saved = 'is_saved';
+  static const reason = 'reason';
+  static const name_ar = 'name_ar';
+  static const description_ar = 'description_ar';
 }

@@ -24,4 +24,6 @@ class TableNames {
   static const hashtags = 'hashtags';
   static const pinned_posts = 'pinned_posts';
   static const saved_posts = 'saved_posts';
+  static const post_reports = 'post_reports';
+  static const novels_genreses_data = 'novels_genreses_data';
 }

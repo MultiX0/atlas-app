@@ -17,4 +17,5 @@ class Routes {
   static const addComicReview = '/addComicReviewPage';
   static const makePostPage = '/makePostPage';
   static const hashtagsPage = '/hashtagsPage';
+  static const addNovelPost = '/addNovelPage';
 }

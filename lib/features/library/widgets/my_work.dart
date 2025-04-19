@@ -1,4 +1,5 @@
 import 'package:atlas_app/core/common/widgets/manhwa_poster.dart';
+import 'package:atlas_app/features/library/widgets/create_new_sheet.dart';
 import 'package:atlas_app/imports.dart';
 
 class MyWork extends ConsumerStatefulWidget {
@@ -13,7 +14,9 @@ class _MyWorkState extends ConsumerState<MyWork> {
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          openSheet(context: context, child: const CreateNewSheet());
+        },
         backgroundColor: AppColors.primary.withValues(alpha: .6),
         child: Icon(Icons.add, color: AppColors.whiteColor),
       ),

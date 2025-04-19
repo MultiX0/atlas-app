@@ -22,11 +22,13 @@ class CustomTextFormField extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final bool filled;
   final double raduis;
+  final int? maxLength;
 
   const CustomTextFormField({
     super.key,
     required this.hintText,
     this.prefixIcon,
+    this.maxLength,
     this.contentPadding,
     this.controller,
     this.obscureText = false,
@@ -50,6 +52,7 @@ class CustomTextFormField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      maxLength: maxLength,
       inputFormatters: inputFormatters,
       controller: controller,
       initialValue: initialValue,
@@ -66,12 +69,13 @@ class CustomTextFormField extends StatelessWidget {
       onFieldSubmitted: onFieldSubmitted,
       readOnly: readOnly,
       cursorColor: AppColors.primary,
-      style: const TextStyle(fontFamily: enPrimaryFont),
+      style: const TextStyle(fontFamily: arabicPrimaryFont),
       decoration: InputDecoration(
         hintText: hintText,
         // contentPadding: contentPadding ?? const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+        hintTextDirection: TextDirection.rtl,
         hintStyle: TextStyle(
-          fontFamily: accentFont,
+          fontFamily: arabicPrimaryFont,
           color: AppColors.mutedSilver.withValues(alpha: .65),
         ),
 
