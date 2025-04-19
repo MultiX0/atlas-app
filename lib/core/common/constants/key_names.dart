@@ -115,4 +115,6 @@ class KeyNames {
   static const reason = 'reason';
   static const name_ar = 'name_ar';
   static const description_ar = 'description_ar';
+  static const age_rating = 'age_rating';
+  static const src_lang = 'src_lang';
 }

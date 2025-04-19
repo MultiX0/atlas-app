@@ -18,7 +18,9 @@ class AuthController extends StateNotifier<bool> {
     try {
       state = true;
       await _db.login(email: email, password: password);
-      _ref.read(userState.notifier).initlizeUser();
+      final userId = Supabase.instance.client.auth.currentSession!.user.id;
+      UserModel user = await _db.getUserData(userId, withMetadata: true);
+      _ref.read(userState.notifier).updateState(user);
       state = false;
     } catch (e) {
       state = false;

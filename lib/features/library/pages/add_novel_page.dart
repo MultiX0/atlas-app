@@ -6,6 +6,7 @@ import 'package:atlas_app/core/common/utils/image_picker.dart';
 import 'package:atlas_app/features/library/widgets/age_selector_sheet.dart';
 import 'package:atlas_app/features/library/widgets/genres_novel.dart';
 import 'package:atlas_app/features/library/widgets/novel_genres_selection.dart';
+import 'package:atlas_app/features/novels/controller/novels_controller.dart';
 import 'package:atlas_app/features/novels/db/novels_db.dart';
 import 'package:atlas_app/features/novels/models/novels_genre_model.dart';
 import 'package:atlas_app/imports.dart';
@@ -84,7 +85,20 @@ class _AddNovelPageState extends ConsumerState<AddNovelPage> {
       CustomToast.error("الرجاء اختيار فئة عمرية");
       return;
     }
-    context.pop();
+    final me = ref.read(userState.select((state) => state.user!));
+    ref
+        .read(novelsControllerProvider.notifier)
+        .handleInsertNewNovel(
+          title: title,
+          story: story,
+          src_lang: 'ar',
+          age_rating: age ?? 16,
+          userId: me.userId,
+          poster: poster!,
+          genres: selectedGenres,
+          context: context,
+          banner: banner,
+        );
   }
 
   @override
@@ -119,48 +133,56 @@ class _AddNovelPageState extends ConsumerState<AddNovelPage> {
             ),
           ),
           const SizedBox(height: 15),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: GestureDetector(
-                  onTap: () => choseImage(poster: true),
-                  child: Container(
-                    width: 130,
-                    height: 180,
-                    decoration: BoxDecoration(
-                      color: AppColors.textFieldFillColor,
-                      borderRadius: BorderRadius.circular(15),
-                      image:
-                          poster == null
-                              ? null
-                              : DecorationImage(
-                                image: FileImage(poster!),
-                                fit: BoxFit.cover,
-                                opacity: .75,
-                              ),
+          Directionality(
+            textDirection: TextDirection.rtl,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: GestureDetector(
+                    onTap: () => choseImage(poster: true),
+                    child: Container(
+                      width: 130,
+                      height: 180,
+                      decoration: BoxDecoration(
+                        color: AppColors.textFieldFillColor,
+                        borderRadius: BorderRadius.circular(15),
+                        image:
+                            poster == null
+                                ? null
+                                : DecorationImage(
+                                  image: FileImage(poster!),
+                                  fit: BoxFit.cover,
+                                  opacity: .75,
+                                ),
+                      ),
+                      child: const Center(child: Icon(LucideIcons.image)),
                     ),
-                    child: const Center(child: Icon(LucideIcons.image)),
                   ),
                 ),
-              ),
-              const SizedBox(width: 15),
-              const Flexible(
-                child: Column(
-                  children: [
-                    CustomTextFormField(hintText: 'الاسم', maxLength: 100),
-                    SizedBox(height: 10),
-                    CustomTextFormField(
-                      hintText: 'ملخص أو القصة',
-                      minLines: 4,
-                      maxLines: 4,
-                      maxLength: 300,
-                    ),
-                  ],
+                const SizedBox(width: 15),
+                Flexible(
+                  child: Column(
+                    children: [
+                      CustomTextFormField(
+                        controller: _nameController,
+                        hintText: 'الاسم',
+                        maxLength: 100,
+                      ),
+                      const SizedBox(height: 10),
+                      CustomTextFormField(
+                        controller: _storyController,
+                        hintText: 'ملخص أو القصة',
+                        minLines: 4,
+                        maxLines: 4,
+                        maxLength: 300,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(height: 20),
           buildGenreses(context),

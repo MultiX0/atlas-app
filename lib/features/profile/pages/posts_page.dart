@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:atlas_app/core/common/enum/post_like_enum.dart';
 import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
-import 'package:atlas_app/core/common/utils/debouncer/throttler.dart';
 import 'package:atlas_app/core/common/widgets/app_refresh.dart';
 import 'package:atlas_app/features/profile/provider/profile_posts_state.dart';
 import 'package:atlas_app/features/profile/widgets/post_widget.dart';
@@ -19,7 +18,6 @@ class ProfilePostsPage extends ConsumerStatefulWidget {
 
 class _ProfilePostsPageState extends ConsumerState<ProfilePostsPage> {
   final Debouncer _debouncer = Debouncer();
-  final Throttler _throttle = Throttler();
   double _previousScroll = 0.0;
 
   @override
@@ -39,7 +37,6 @@ class _ProfilePostsPageState extends ConsumerState<ProfilePostsPage> {
   @override
   void dispose() {
     _debouncer.cancel();
-    _throttle.cancel();
     super.dispose();
   }
 
@@ -121,6 +118,22 @@ class _ProfilePostsPageState extends ConsumerState<ProfilePostsPage> {
                 addSemanticIndexes: true,
                 itemCount: posts.length + (loadingMore ? 1 : 0),
                 itemBuilder: (context, i) {
+                  if (posts.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset('assets/images/no_data_cry_.gif', height: 130),
+                          const SizedBox(height: 15),
+                          const Text(
+                            "ليس لديك أي منشور!",
+                            style: TextStyle(fontFamily: arabicAccentFont, fontSize: 18),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
                   if (loadingMore && i == posts.length) {
                     return const Padding(
                       padding: EdgeInsets.all(16.0),
