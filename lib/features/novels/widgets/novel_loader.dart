@@ -69,6 +69,10 @@ class _NovelLoaderState extends ConsumerState<NovelLoader> {
 
   @override
   Widget build(BuildContext context) {
-    return novel == null ? const NovelDetailShimmer() : const NovelPage();
+    if (novel == null) {
+      return const SafeArea(child: NovelDetailShimmer());
+    } else {
+      return const NovelPage();
+    }
   }
 }

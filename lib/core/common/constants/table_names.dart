@@ -29,4 +29,6 @@ class TableNames {
   static const original_webtoons = 'original_webtoons';
   static const users_favorite_novels = 'users_favorite_novels';
   static const novel_views = 'novel_views';
+  static const novel_chapters = 'novel_chapters';
+  static const novel_chapter_drafts = 'novel_chapter_drafts';
 }

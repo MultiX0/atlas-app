@@ -98,11 +98,12 @@ class _NovelHeaderState extends ConsumerState<NovelHeader> {
                                 Padding(
                                   padding: const EdgeInsets.only(right: 15),
                                   child: Text(
+                                    textDirection: TextDirection.rtl,
                                     novel.title,
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
-                                      fontFamily: enAccentFont,
+                                      fontFamily: arabicAccentFont,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 20,
                                     ),
@@ -111,11 +112,10 @@ class _NovelHeaderState extends ConsumerState<NovelHeader> {
                                 Text.rich(
                                   textDirection: TextDirection.rtl,
                                   TextSpan(
-                                    text: "تم تنشرها في: ",
+                                    text: novel.publishedAt == null ? '' : "تم تنشرها في: ",
                                     style: const TextStyle(fontFamily: arabicAccentFont),
                                     children: [
                                       TextSpan(
-                                        style: const TextStyle(fontFamily: enAccentFont),
                                         text:
                                             novel.publishedAt == null
                                                 ? "لم يتم النشر بشكل رسمي"
@@ -126,9 +126,20 @@ class _NovelHeaderState extends ConsumerState<NovelHeader> {
                                   style: const TextStyle(fontFamily: enPrimaryFont),
                                 ),
                                 Text(
+                                  textDirection: TextDirection.rtl,
+                                  "التصنيف العمري: ${novel.ageRating}+",
+                                  style: const TextStyle(
+                                    fontFamily: arabicAccentFont,
+                                    color: AppColors.mutedSilver,
+                                  ),
+                                ),
+                                Text(
                                   "الكاتب: @${novel.user.username}",
 
-                                  style: const TextStyle(fontFamily: arabicAccentFont),
+                                  style: const TextStyle(
+                                    fontFamily: arabicAccentFont,
+                                    color: AppColors.mutedSilver,
+                                  ),
                                 ),
                               ],
                             ),

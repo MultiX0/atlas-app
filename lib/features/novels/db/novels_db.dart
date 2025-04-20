@@ -2,11 +2,12 @@ import 'dart:developer';
 
 import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/core/common/constants/view_names.dart';
+import 'package:atlas_app/features/novels/models/chapter_model.dart';
 import 'package:atlas_app/features/novels/models/novel_model.dart';
 import 'package:atlas_app/features/novels/models/novels_genre_model.dart';
 import 'package:atlas_app/imports.dart';
 
-final novelDbProvider = Provider<NovelsDb>((ref) {
+final novelsDbProvider = Provider<NovelsDb>((ref) {
   return NovelsDb();
 });
 
@@ -16,12 +17,31 @@ class NovelsDb {
   SupabaseQueryBuilder get _novelsGenresTable => _client.from(TableNames.novel_genres);
   SupabaseQueryBuilder get _novelsTable => _client.from(TableNames.novels);
   SupabaseQueryBuilder get _novelsView => _client.from(ViewNames.novels_details);
+  SupabaseQueryBuilder get _novelChaptersTable => _client.from(TableNames.novel_chapters);
 
   Future<NovelModel?> getNovel(String id) async {
     try {
       final data = await _novelsView.select("*").eq(KeyNames.id, id).maybeSingle();
       if (data == null) return null;
       return NovelModel.fromMap(data);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<List<ChapterModel>> getChapters({
+    required String novelId,
+    required int startIndex,
+    required int pageSize,
+  }) async {
+    try {
+      final data = await _novelChaptersTable
+          .select("*")
+          .order(KeyNames.number, ascending: false)
+          .range(startIndex, (startIndex + pageSize - 1));
+
+      return data.map((c) => ChapterModel.fromMap(c)).toList();
     } catch (e) {
       log(e.toString());
       rethrow;

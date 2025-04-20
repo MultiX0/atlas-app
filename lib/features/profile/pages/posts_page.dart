@@ -66,25 +66,6 @@ class _ProfilePostsPageState extends ConsumerState<ProfilePostsPage> {
             );
             if (isLoading) return child!;
 
-            if (posts.isEmpty && !loadingMore) {
-              return Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset('assets/images/no_data_cry_.gif', height: 130),
-                      const SizedBox(height: 15),
-                      const Text(
-                        "لايوجد أي مناشير",
-                        style: TextStyle(fontFamily: arabicAccentFont, fontSize: 18),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-
             return NotificationListener<ScrollNotification>(
               onNotification: (scrollNotification) {
                 if (scrollNotification is ScrollUpdateNotification) {

@@ -22,7 +22,7 @@ class NovelsController extends StateNotifier<bool> {
   final Ref _ref;
   NovelsController({required Ref ref}) : _ref = ref, super(false);
 
-  NovelsDb get db => _ref.watch(novelDbProvider);
+  NovelsDb get db => _ref.watch(novelsDbProvider);
   final uuid = const Uuid();
 
   Future<NovelModel?> getNovel(String id) async {

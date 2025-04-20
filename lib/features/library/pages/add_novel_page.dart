@@ -44,7 +44,7 @@ class _AddNovelPageState extends ConsumerState<AddNovelPage> {
 
   Future<void> fetchGenreses() async {
     await Future.microtask(() async {
-      final list = await ref.read(novelDbProvider).getNovelsGenreses();
+      final list = await ref.read(novelsDbProvider).getNovelsGenreses();
       setState(() {
         genreses = list;
       });
@@ -176,7 +176,7 @@ class _AddNovelPageState extends ConsumerState<AddNovelPage> {
                         hintText: 'ملخص أو القصة',
                         minLines: 4,
                         maxLines: 4,
-                        maxLength: 300,
+                        maxLength: 500,
                       ),
                     ],
                   ),

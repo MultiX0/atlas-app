@@ -1,3 +1,5 @@
+import 'package:atlas_app/features/novels/providers/providers.dart';
+import 'package:atlas_app/features/novels/widgets/novel_chapters.dart';
 import 'package:atlas_app/features/novels/widgets/novel_header.dart';
 import 'package:atlas_app/features/novels/widgets/novel_info.dart';
 import 'package:atlas_app/features/novels/widgets/novel_tabs.dart';
@@ -34,10 +36,11 @@ class _NovelPageState extends ConsumerState<NovelPage> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: buildBody());
+    final novelId = ref.watch(selectedNovelProvider.select((s) => s!.id));
+    return Scaffold(body: buildBody(novelId));
   }
 
-  Widget buildBody() {
+  Widget buildBody(novelId) {
     return SafeArea(
       child: NestedScrollView(
         headerSliverBuilder: ((context, innerBoxIsScrolled) {
@@ -54,7 +57,12 @@ class _NovelPageState extends ConsumerState<NovelPage> with SingleTickerProvider
         }),
         body: TabBarView(
           controller: _controller,
-          children: const [NovelInfo(), SizedBox(), SizedBox(), SizedBox()],
+          children: [
+            const NovelInfo(),
+            NovelChapters(novelId: novelId),
+            const SizedBox(),
+            const SizedBox(),
+          ],
         ),
       ),
     );

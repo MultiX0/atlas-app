@@ -101,7 +101,7 @@ class NovelModel {
       banner: map[KeyNames.banner] != null ? map[KeyNames.banner] ?? "" : null,
       publishedAt:
           map[KeyNames.published_at] == null ? null : DateTime.parse(map[KeyNames.published_at]),
-      ageRating: map['ageRating'] ?? -1,
+      ageRating: map[KeyNames.age_rating] ?? -1,
       genrese:
           map[TableNames.genres] == null
               ? []
