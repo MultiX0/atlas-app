@@ -95,7 +95,11 @@ class NovelsDb {
   }) async {
     try {
       await _draftChaptersTable
-          .update({KeyNames.content: content, KeyNames.title: title})
+          .update({
+            KeyNames.content: content,
+            KeyNames.title: title,
+            KeyNames.updated_at: DateTime.now().toIso8601String(),
+          })
           .eq(KeyNames.id, id);
     } catch (e) {
       log(e.toString());

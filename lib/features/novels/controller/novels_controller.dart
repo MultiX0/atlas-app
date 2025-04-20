@@ -137,7 +137,9 @@ class NovelsController extends StateNotifier<bool> {
       ChapterDraftModel draft = _ref.read(selectedDraft)!;
       _ref
           .read(novelChapterDraftsProvider(novelId).notifier)
-          .updateDraft(draft.copyWith(title: _title, content: jsonContent));
+          .updateDraft(
+            draft.copyWith(title: _title, content: jsonContent, updatedAt: DateTime.now()),
+          );
     } catch (e) {
       log(e.toString());
       rethrow;
