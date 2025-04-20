@@ -1,12 +1,10 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
-import 'package:atlas_app/core/common/utils/delta_parser.dart';
 import 'package:atlas_app/core/common/widgets/app_refresh.dart';
-import 'package:atlas_app/features/novels/models/chapter_draft_model.dart';
 import 'package:atlas_app/features/novels/providers/drafts_state.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
+import 'package:atlas_app/features/novels/widgets/draft_tile.dart';
 import 'package:atlas_app/features/novels/widgets/empty_chapters.dart';
 import 'package:atlas_app/imports.dart';
 
@@ -66,6 +64,7 @@ class _ChapterDraftsPageState extends ConsumerState<ChapterDraftsPage> {
                       child: Icon(Icons.add, color: AppColors.whiteColor),
 
                       onPressed: () {
+                        ref.read(selectedDraft.notifier).state = null;
                         context.push(Routes.addNovelChapterPage);
                       },
                     )
@@ -157,38 +156,6 @@ class _ChapterDraftsPageState extends ConsumerState<ChapterDraftsPage> {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-class DraftTile extends StatelessWidget {
-  const DraftTile({super.key, required this.draft});
-
-  final ChapterDraftModel draft;
-
-  @override
-  Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Column(
-        children: [
-          Divider(height: 0.25, color: AppColors.mutedSilver.withValues(alpha: .15)),
-          ListTile(
-            title: Text(
-              extractLastLineFromQuillDelta(jsonEncode(draft.content)),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            subtitle: Text("أخر تحديث في: ${appDateTimeFormat(draft.updatedAt)}"),
-            titleTextStyle: const TextStyle(fontFamily: arabicAccentFont, fontSize: 18),
-            subtitleTextStyle: const TextStyle(
-              fontFamily: arabicAccentFont,
-              fontSize: 14,
-              color: AppColors.mutedSilver,
-            ),
-          ),
-        ],
       ),
     );
   }

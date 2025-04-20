@@ -63,6 +63,7 @@ class _NovelChaptersState extends ConsumerState<NovelChapters> {
                       child: Icon(Icons.add, color: AppColors.whiteColor),
 
                       onPressed: () {
+                        ref.read(selectedDraft.notifier).state = null;
                         context.push(Routes.addNovelChapterPage);
                       },
                     )

@@ -4,6 +4,7 @@ import 'dart:developer';
 
 import 'package:atlas_app/core/common/widgets/overlay_boundry.dart';
 import 'package:atlas_app/features/novels/controller/novels_controller.dart';
+import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 
@@ -26,7 +27,10 @@ class _AddChapterState extends ConsumerState<AddChapterPage> {
   @override
   void initState() {
     _controller = QuillController.basic();
-    WidgetsBinding.instance.addPostFrameCallback((_) => handleSave());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loadPrevious();
+      handleSave();
+    });
     super.initState();
   }
 
@@ -42,6 +46,18 @@ class _AddChapterState extends ConsumerState<AddChapterPage> {
 
   List<Map<String, dynamic>>? lastSave;
   String? draftId;
+
+  void loadPrevious() {
+    final draft = ref.read(selectedDraft);
+    if (draft != null) {
+      draftId = draft.id;
+      lastSave = draft.content;
+      setState(() {
+        _controller.document = Document.fromJson(draft.content);
+      });
+    }
+  }
+
   void handleSave() async {
     _timer = Timer.periodic(const Duration(seconds: 10), (_) async {
       final json = _controller.document.toDelta().toJson();
