@@ -1,6 +1,8 @@
 import 'dart:developer';
 
 import 'package:atlas_app/core/common/constants/table_names.dart';
+import 'package:atlas_app/core/common/constants/view_names.dart';
+import 'package:atlas_app/features/novels/models/novel_model.dart';
 import 'package:atlas_app/features/novels/models/novels_genre_model.dart';
 import 'package:atlas_app/imports.dart';
 
@@ -13,6 +15,18 @@ class NovelsDb {
   SupabaseQueryBuilder get _novelsGenresesData => _client.from(TableNames.novels_genreses_data);
   SupabaseQueryBuilder get _novelsGenresTable => _client.from(TableNames.novel_genres);
   SupabaseQueryBuilder get _novelsTable => _client.from(TableNames.novels);
+  SupabaseQueryBuilder get _novelsView => _client.from(ViewNames.novels_details);
+
+  Future<NovelModel?> getNovel(String id) async {
+    try {
+      final data = await _novelsView.select("*").eq(KeyNames.id, id).maybeSingle();
+      if (data == null) return null;
+      return NovelModel.fromMap(data);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
 
   Future<List<NovelsGenreModel>> getNovelsGenreses() async {
     try {

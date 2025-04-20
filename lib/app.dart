@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 import 'package:atlas_app/router.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 
 import 'imports.dart';
@@ -19,6 +21,12 @@ class App extends ConsumerWidget {
           },
           child: ToastificationWrapper(
             child: MaterialApp.router(
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                FlutterQuillLocalizations.delegate,
+              ],
               debugShowCheckedModeBanner: false,
               theme: AppTheme.darkModeAppTheme,
               routeInformationParser: router.routeInformationParser,

@@ -10,7 +10,11 @@ class WorkPoster extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        if (work.type.startsWith("n")) {
+          context.push("${Routes.novelPage}/${work.id}");
+        }
+      },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [

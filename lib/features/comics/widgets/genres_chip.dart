@@ -3,7 +3,7 @@ import 'package:atlas_app/imports.dart';
 class GenreChip extends StatelessWidget {
   const GenreChip({super.key, required this.genre, required this.color, required this.textColor});
 
-  final dynamic genre; // Using dynamic to match original code type
+  final String genre;
   final Color color;
   final Color textColor;
 
@@ -15,7 +15,7 @@ class GenreChip extends StatelessWidget {
       child: Text(
         textAlign: TextAlign.end,
         textDirection: TextDirection.rtl,
-        genre.ar_name,
+        genre,
         style: TextStyle(
           fontFamily: arabicPrimaryFont,
           fontSize: 13,

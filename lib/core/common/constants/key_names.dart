@@ -117,4 +117,5 @@ class KeyNames {
   static const description_ar = 'description_ar';
   static const age_rating = 'age_rating';
   static const src_lang = 'src_lang';
+  static const published_at = 'published_at';
 }

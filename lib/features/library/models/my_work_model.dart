@@ -5,7 +5,8 @@ class MyWorkModel {
   final String title;
   final String type;
   final String poster;
-  MyWorkModel({required this.title, required this.type, required this.poster});
+  final String id;
+  MyWorkModel({required this.title, required this.type, required this.poster, required this.id});
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{'title': title, 'type': type, 'poster': poster};
@@ -16,14 +17,16 @@ class MyWorkModel {
       title: map[KeyNames.title] ?? "",
       type: map[KeyNames.type] ?? "",
       poster: map[KeyNames.poster] ?? "",
+      id: map[KeyNames.id] ?? "",
     );
   }
 
-  MyWorkModel copyWith({String? title, String? type, String? poster}) {
+  MyWorkModel copyWith({String? title, String? type, String? poster, String? id}) {
     return MyWorkModel(
       title: title ?? this.title,
       type: type ?? this.type,
       poster: poster ?? this.poster,
+      id: id ?? this.id,
     );
   }
 }

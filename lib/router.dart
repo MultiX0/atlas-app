@@ -10,6 +10,7 @@ import 'package:atlas_app/features/explore/pages/explore_page.dart';
 import 'package:atlas_app/features/hashtags/pages/hashtag_page.dart';
 import 'package:atlas_app/features/library/pages/add_novel_page.dart';
 import 'package:atlas_app/features/library/pages/library_page.dart';
+import 'package:atlas_app/features/novels/widgets/novel_loader.dart';
 import 'package:atlas_app/features/onboarding/pages/first_page.dart';
 import 'package:atlas_app/features/posts/pages/make_post_page.dart';
 import 'package:atlas_app/features/posts/providers/providers.dart';
@@ -180,6 +181,19 @@ final routerProvider = Provider<GoRouter>((ref) {
 
           return CustomTransitionPage(
             child: MakePostPage(postType: type),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+          );
+        },
+      ),
+      GoRoute(
+        path: "${Routes.novelPage}/:id",
+        pageBuilder: (context, state) {
+          final id = state.pathParameters["id"] ?? "";
+
+          return CustomTransitionPage(
+            child: NovelLoader(novelId: id),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);
             },

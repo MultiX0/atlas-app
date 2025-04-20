@@ -18,4 +18,5 @@ class Routes {
   static const makePostPage = '/makePostPage';
   static const hashtagsPage = '/hashtagsPage';
   static const addNovelPost = '/addNovelPage';
+  static const novelPage = '/novelPage';
 }

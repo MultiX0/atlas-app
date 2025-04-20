@@ -18,7 +18,6 @@ class ManhwaPage extends ConsumerStatefulWidget {
 
 class _ManhwaPageState extends ConsumerState<ManhwaPage> with SingleTickerProviderStateMixin {
   late TabController _controller;
-  bool reviewsFetched = false;
 
   @override
   void initState() {

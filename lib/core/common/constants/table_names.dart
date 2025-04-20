@@ -27,4 +27,6 @@ class TableNames {
   static const post_reports = 'post_reports';
   static const novels_genreses_data = 'novels_genreses_data';
   static const original_webtoons = 'original_webtoons';
+  static const users_favorite_novels = 'users_favorite_novels';
+  static const novel_views = 'novel_views';
 }

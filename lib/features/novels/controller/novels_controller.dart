@@ -8,6 +8,7 @@ import 'package:atlas_app/core/common/utils/upload_storage.dart';
 import 'package:atlas_app/features/library/models/my_work_model.dart';
 import 'package:atlas_app/features/library/providers/my_work_state.dart';
 import 'package:atlas_app/features/novels/db/novels_db.dart';
+import 'package:atlas_app/features/novels/models/novel_model.dart';
 import 'package:atlas_app/features/novels/models/novels_genre_model.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:loader_overlay/loader_overlay.dart';
@@ -23,6 +24,19 @@ class NovelsController extends StateNotifier<bool> {
 
   NovelsDb get db => _ref.watch(novelDbProvider);
   final uuid = const Uuid();
+
+  Future<NovelModel?> getNovel(String id) async {
+    try {
+      state = true;
+      final data = await db.getNovel(id);
+      state = false;
+      return data;
+    } catch (e) {
+      state = false;
+      log(e.toString());
+      rethrow;
+    }
+  }
 
   Future<void> handleInsertNewNovel({
     required String title,
@@ -61,7 +75,7 @@ class NovelsController extends StateNotifier<bool> {
         genres: genres,
         banner: bannerLink,
       );
-      _addToState(poster: posterLink, title: title, userId: userId);
+      _addToState(poster: posterLink, title: title, userId: userId, novelId: id);
       context.loaderOverlay.hide();
       state = false;
       context.pop();
@@ -75,8 +89,13 @@ class NovelsController extends StateNotifier<bool> {
     }
   }
 
-  void _addToState({required String title, required String poster, required String userId}) {
-    final work = MyWorkModel(title: title, type: 'novel', poster: poster);
+  void _addToState({
+    required String title,
+    required String poster,
+    required String userId,
+    required String novelId,
+  }) {
+    final work = MyWorkModel(title: title, type: 'novel', poster: poster, id: novelId);
     _ref.read(myWorksStateProvider(userId).notifier).addWork(work);
   }
 
