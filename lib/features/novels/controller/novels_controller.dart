@@ -8,8 +8,13 @@ import 'package:atlas_app/core/common/utils/upload_storage.dart';
 import 'package:atlas_app/features/library/models/my_work_model.dart';
 import 'package:atlas_app/features/library/providers/my_work_state.dart';
 import 'package:atlas_app/features/novels/db/novels_db.dart';
+import 'package:atlas_app/features/novels/models/chapter_draft_model.dart';
+import 'package:atlas_app/features/novels/models/chapter_model.dart';
 import 'package:atlas_app/features/novels/models/novel_model.dart';
 import 'package:atlas_app/features/novels/models/novels_genre_model.dart';
+import 'package:atlas_app/features/novels/providers/chapters_state.dart';
+import 'package:atlas_app/features/novels/providers/drafts_state.dart';
+import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:uuid/uuid.dart';
@@ -85,6 +90,77 @@ class NovelsController extends StateNotifier<bool> {
       state = false;
       CustomToast.error(errorMsg);
       log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<String> newDraft({
+    required List<Map<String, dynamic>> jsonContent,
+    required String title,
+  }) async {
+    try {
+      final id = uuid.v4();
+      final novelId = _ref.read(selectedNovelProvider)!.id;
+      final nextChapterNumber = await db.getNextChapterNumber(novelId);
+      final user = _ref.read(userState).user!;
+      final draft = ChapterDraftModel(
+        id: id,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        novelId: novelId,
+        number: nextChapterNumber.toDouble(),
+        title: title.isEmpty ? null : title,
+        content: jsonContent,
+        userId: user.userId,
+      );
+
+      await db.insertNewDraft(draft);
+      _ref.read(novelChapterDraftsProvider(novelId).notifier).addDraft(draft);
+      _ref.read(selectedDraft.notifier).state = draft;
+      return id;
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> updateDraft({
+    required List<Map<String, dynamic>> jsonContent,
+    required String title,
+    required String draftId,
+  }) async {
+    try {
+      final novelId = _ref.read(selectedNovelProvider)!.id;
+      final _title = title.isEmpty ? null : title;
+
+      await db.updateDraft(content: jsonContent, title: _title, id: draftId);
+      ChapterDraftModel draft = _ref.read(selectedDraft)!;
+      _ref
+          .read(novelChapterDraftsProvider(novelId).notifier)
+          .updateDraft(draft.copyWith(title: _title, content: jsonContent));
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> publishChapter(ChapterDraftModel draft) async {
+    try {
+      final id = uuid.v4();
+      final nextChapterNumber = await db.getNextChapterNumber(draft.novelId);
+      final chapter = ChapterModel(
+        id: id,
+        created_at: DateTime.now(),
+        number: nextChapterNumber.toDouble(),
+        novelId: draft.novelId,
+        content: draft.content,
+      );
+      await db.publishChapter(draft, chapter);
+      _ref.read(chaptersStateProvider(draft.novelId).notifier).addChapter(chapter);
+      CustomToast.success("تم نشر الفصل $nextChapterNumber بنجاح");
+    } catch (e) {
+      log(e.toString());
+      CustomToast.error(e);
       rethrow;
     }
   }

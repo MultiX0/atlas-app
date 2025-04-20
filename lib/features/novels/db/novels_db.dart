@@ -1,7 +1,9 @@
 import 'dart:developer';
 
+import 'package:atlas_app/core/common/constants/function_names.dart';
 import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/core/common/constants/view_names.dart';
+import 'package:atlas_app/features/novels/models/chapter_draft_model.dart';
 import 'package:atlas_app/features/novels/models/chapter_model.dart';
 import 'package:atlas_app/features/novels/models/novel_model.dart';
 import 'package:atlas_app/features/novels/models/novels_genre_model.dart';
@@ -18,6 +20,7 @@ class NovelsDb {
   SupabaseQueryBuilder get _novelsTable => _client.from(TableNames.novels);
   SupabaseQueryBuilder get _novelsView => _client.from(ViewNames.novels_details);
   SupabaseQueryBuilder get _novelChaptersTable => _client.from(TableNames.novel_chapters);
+  SupabaseQueryBuilder get _draftChaptersTable => _client.from(TableNames.novel_chapter_drafts);
 
   Future<NovelModel?> getNovel(String id) async {
     try {
@@ -42,6 +45,89 @@ class NovelsDb {
           .range(startIndex, (startIndex + pageSize - 1));
 
       return data.map((c) => ChapterModel.fromMap(c)).toList();
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> insertNewDraft(ChapterDraftModel draft) async {
+    try {
+      await _draftChaptersTable.insert(draft.toMap());
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> insertNewChapter(ChapterModel chapter) async {
+    try {
+      await _draftChaptersTable.insert(chapter.toMap());
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<List<ChapterDraftModel>> getDrafts({
+    required String novelId,
+    required int startIndex,
+    required int pageSize,
+  }) async {
+    try {
+      final data = await _draftChaptersTable
+          .select("*")
+          .eq(KeyNames.novel_id, novelId)
+          .order(KeyNames.updated_at, ascending: false)
+          .range(startIndex, (startIndex + pageSize - 1));
+
+      return data.map((dC) => ChapterDraftModel.fromMap(dC)).toList();
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> updateDraft({
+    required List<Map<String, dynamic>> content,
+    required String? title,
+    required String id,
+  }) async {
+    try {
+      await _draftChaptersTable
+          .update({KeyNames.content: content, KeyNames.title: title})
+          .eq(KeyNames.id, id);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> deleteDraft(ChapterDraftModel draft) async {
+    try {
+      await _draftChaptersTable.delete().eq(KeyNames.id, draft.id);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<int> getNextChapterNumber(String novelId) async {
+    try {
+      final data = await _client.rpc(
+        FunctionNames.get_next_chapter_number,
+        params: {'novel_id_input': novelId},
+      );
+      return data;
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> publishChapter(ChapterDraftModel draft, ChapterModel chapter) async {
+    try {
+      await Future.wait([deleteDraft(draft), insertNewChapter(chapter)]);
     } catch (e) {
       log(e.toString());
       rethrow;

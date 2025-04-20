@@ -6,7 +6,7 @@ class ChapterModel {
   final double number;
   final String novelId;
   final String? title;
-  final Map<String, dynamic> content;
+  final List<Map<String, dynamic>> content;
   ChapterModel({
     required this.id,
     required this.created_at,
@@ -22,7 +22,7 @@ class ChapterModel {
     double? number,
     String? novelId,
     String? title,
-    Map<String, dynamic>? content,
+    List<Map<String, dynamic>>? content,
   }) {
     return ChapterModel(
       id: id ?? this.id,
@@ -36,12 +36,12 @@ class ChapterModel {
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
-      'id': id,
-      'created_at': created_at.millisecondsSinceEpoch,
-      'number': number,
-      'novelId': novelId,
-      'title': title,
-      'content': content,
+      KeyNames.id: id,
+      KeyNames.created_at: created_at.toIso8601String(),
+      KeyNames.number: number,
+      KeyNames.novel_id: novelId,
+      KeyNames.title: title,
+      KeyNames.content: content,
     };
   }
 
@@ -52,7 +52,7 @@ class ChapterModel {
       number: map[KeyNames.number].toDouble(),
       novelId: map[KeyNames.novel_id] ?? "",
       title: map[KeyNames.title],
-      content: Map<String, dynamic>.from((map[KeyNames.content])),
+      content: List<Map<String, dynamic>>.from(map[KeyNames.content] ?? []),
     );
   }
 }

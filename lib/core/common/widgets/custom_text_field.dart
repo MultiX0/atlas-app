@@ -89,26 +89,41 @@ class CustomTextFormField extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 15),
                   child: Icon(prefixIcon, color: AppColors.mutedSilver.withValues(alpha: .65)),
                 ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(raduis),
-          // borderSide: BorderSide(color: AppColors.primary, width: .5),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(raduis),
-          borderSide: const BorderSide(color: AppColors.primary, width: .5),
-        ),
-        disabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(raduis),
-          // borderSide: BorderSide(color: AppColors.primary, width: .5),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(raduis),
-          borderSide: BorderSide(color: AppColors.errorColor, width: .5),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(raduis),
-          borderSide: BorderSide(color: AppColors.errorColor, width: .5),
-        ),
+        enabledBorder:
+            !filled
+                ? null
+                : OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(raduis),
+                  // borderSide: BorderSide(color: AppColors.primary, width: .5),
+                ),
+        focusedBorder:
+            !filled
+                ? null
+                : OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(raduis),
+                  borderSide: const BorderSide(color: AppColors.primary, width: .5),
+                ),
+        disabledBorder:
+            !filled
+                ? null
+                : OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(raduis),
+                  // borderSide: BorderSide(color: AppColors.primary, width: .5),
+                ),
+        errorBorder:
+            !filled
+                ? null
+                : OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(raduis),
+                  borderSide: BorderSide(color: AppColors.errorColor, width: .5),
+                ),
+        focusedErrorBorder:
+            !filled
+                ? null
+                : OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(raduis),
+                  borderSide: BorderSide(color: AppColors.errorColor, width: .5),
+                ),
       ),
     );
   }

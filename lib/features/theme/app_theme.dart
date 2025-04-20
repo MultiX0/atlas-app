@@ -14,6 +14,7 @@ class AppTheme {
     scaffoldBackgroundColor: AppColors.scaffoldBackground,
     cardColor: greyColor,
     textSelectionTheme: TextSelectionThemeData(
+      cursorColor: AppColors.primary,
       selectionColor: AppColors.primary.withValues(alpha: .75),
       selectionHandleColor: AppColors.primary,
     ),

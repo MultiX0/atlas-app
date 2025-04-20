@@ -11,4 +11,5 @@ class FunctionNames {
   static const search_all = 'search_all';
   static const get_existing_genres = 'get_existing_genres';
   static const get_user_works = 'get_user_works';
+  static const get_next_chapter_number = 'get_next_chapter_number';
 }

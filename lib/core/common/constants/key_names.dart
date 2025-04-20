@@ -55,6 +55,7 @@ class KeyNames {
   static const is_favorite = 'is_favorite';
   static const chapters_read = 'chapters_read';
   static const url = 'url';
+  static const original_chapter_id = 'original_chapter_id';
   static const site = 'site';
   static const theme_color = 'theme_color';
   static const writing_quality = 'writing_quality';

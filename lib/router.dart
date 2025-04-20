@@ -10,6 +10,8 @@ import 'package:atlas_app/features/explore/pages/explore_page.dart';
 import 'package:atlas_app/features/hashtags/pages/hashtag_page.dart';
 import 'package:atlas_app/features/library/pages/add_novel_page.dart';
 import 'package:atlas_app/features/library/pages/library_page.dart';
+import 'package:atlas_app/features/novels/pages/chapter_drafts_page.dart';
+import 'package:atlas_app/features/novels/pages/new_chapter_page.dart';
 import 'package:atlas_app/features/novels/widgets/novel_loader.dart';
 import 'package:atlas_app/features/onboarding/pages/first_page.dart';
 import 'package:atlas_app/features/posts/pages/make_post_page.dart';
@@ -103,6 +105,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       buildRoute(path: Routes.search, child: const SearchPage(), fade: true),
       buildRoute(path: Routes.manhwaPage, child: const ManhwaPage(), fade: true),
       buildRoute(path: Routes.addNovelPost, child: const AddNovelPage(), fade: true),
+      buildRoute(path: Routes.addNovelChapterPage, child: const AddChapterPage(), fade: true),
+      buildRoute(path: Routes.novelChapterDrafts, child: const ChapterDraftsPage(), fade: true),
+
       GoRoute(
         path: "${Routes.addComicReview}/:update",
         pageBuilder: (context, state) {
@@ -200,6 +205,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           );
         },
       ),
+
       // Catch-all for invalid links
       GoRoute(
         path: '/:path(.*)',

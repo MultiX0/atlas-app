@@ -19,4 +19,6 @@ class Routes {
   static const hashtagsPage = '/hashtagsPage';
   static const addNovelPost = '/addNovelPage';
   static const novelPage = '/novelPage';
+  static const addNovelChapterPage = '/addChapterPage';
+  static const novelChapterDrafts = '/chapterDraftsPage';
 }

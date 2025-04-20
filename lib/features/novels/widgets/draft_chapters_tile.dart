@@ -9,7 +9,7 @@ class ChaptersDraftTile extends StatelessWidget {
       textDirection: TextDirection.rtl,
       child: ListTile(
         tileColor: AppColors.primaryAccent,
-        onTap: () {},
+        onTap: () => context.push(Routes.novelChapterDrafts),
         leading: Icon(LucideIcons.book_key, color: AppColors.whiteColor),
         title: const Text("المسودة"),
         subtitle: const Text("هنا يمكنك التعديل على محتويات الفصول واسترجاع أي نسخ سابقة"),

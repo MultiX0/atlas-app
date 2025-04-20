@@ -1,23 +1,23 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
+import 'package:atlas_app/core/common/utils/delta_parser.dart';
 import 'package:atlas_app/core/common/widgets/app_refresh.dart';
-import 'package:atlas_app/features/novels/providers/chapters_state.dart';
+import 'package:atlas_app/features/novels/models/chapter_draft_model.dart';
+import 'package:atlas_app/features/novels/providers/drafts_state.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
-import 'package:atlas_app/features/novels/widgets/chapter_tile.dart';
-import 'package:atlas_app/features/novels/widgets/draft_chapters_tile.dart';
 import 'package:atlas_app/features/novels/widgets/empty_chapters.dart';
 import 'package:atlas_app/imports.dart';
 
-class NovelChapters extends ConsumerStatefulWidget {
-  const NovelChapters({super.key, required this.novelId});
-  final String novelId;
+class ChapterDraftsPage extends ConsumerStatefulWidget {
+  const ChapterDraftsPage({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _NovelChaptersState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _ChapterDraftsPageState();
 }
 
-class _NovelChaptersState extends ConsumerState<NovelChapters> {
+class _ChapterDraftsPageState extends ConsumerState<ChapterDraftsPage> {
   final Debouncer _debouncer = Debouncer();
   double _previousScroll = 0.0;
 
@@ -32,7 +32,8 @@ class _NovelChaptersState extends ConsumerState<NovelChapters> {
   }
 
   void fetch() {
-    ref.read(chaptersStateProvider(widget.novelId).notifier).fetchData();
+    final novelId = ref.read(selectedNovelProvider)!.id;
+    ref.read(novelChapterDraftsProvider(novelId).notifier).fetchData();
   }
 
   @override
@@ -42,7 +43,8 @@ class _NovelChaptersState extends ConsumerState<NovelChapters> {
   }
 
   void refresh() async {
-    ref.read(chaptersStateProvider(widget.novelId).notifier).fetchData(refresh: true);
+    final novelId = ref.read(selectedNovelProvider)!.id;
+    ref.read(novelChapterDraftsProvider(novelId).notifier).fetchData(refresh: true);
   }
 
   @override
@@ -52,10 +54,11 @@ class _NovelChaptersState extends ConsumerState<NovelChapters> {
         builder: (context, ref, _) {
           final novelCreator = ref.read(selectedNovelProvider.select((s) => s!.userId));
           final novelColor = ref.read(selectedNovelProvider.select((s) => s!.color));
+          final novelId = ref.read(selectedNovelProvider.select((s) => s!.id));
           final me = ref.read(userState.select((s) => s.user!.userId));
           bool isCreator = me == novelCreator;
           return Scaffold(
-            backgroundColor: Colors.transparent,
+            appBar: AppBar(title: const Text("المسودات")),
             floatingActionButton:
                 isCreator
                     ? FloatingActionButton(
@@ -73,16 +76,16 @@ class _NovelChaptersState extends ConsumerState<NovelChapters> {
               },
               child: Consumer(
                 builder: (context, ref, child) {
-                  final chapters = ref.watch(
-                    chaptersStateProvider(widget.novelId).select((state) => state.chapters),
+                  final drafts = ref.watch(
+                    novelChapterDraftsProvider(novelId).select((state) => state.drafts),
                   );
 
                   final loadingMore = ref.watch(
-                    chaptersStateProvider(widget.novelId).select((state) => state.isLoading),
+                    novelChapterDraftsProvider(novelId).select((state) => state.isLoading),
                   );
 
                   final isLoading = ref.watch(
-                    chaptersStateProvider(widget.novelId).select((state) => state.isLoading),
+                    novelChapterDraftsProvider(novelId).select((state) => state.isLoading),
                   );
                   if (isLoading) return child!;
 
@@ -102,8 +105,8 @@ class _NovelChaptersState extends ConsumerState<NovelChapters> {
                             duration: duration,
                             onDebounce: () {
                               final hasReachedEnd = ref.read(
-                                chaptersStateProvider(
-                                  widget.novelId,
+                                novelChapterDraftsProvider(
+                                  novelId,
                                 ).select((state) => state.hasReachedEnd),
                               );
                               if (!hasReachedEnd) {
@@ -118,50 +121,34 @@ class _NovelChaptersState extends ConsumerState<NovelChapters> {
                       }
                       return false;
                     },
-                    child: CustomScrollView(
+                    child: ListView.builder(
                       cacheExtent: MediaQuery.sizeOf(context).height * 1.5,
-                      slivers: [
-                        SliverOverlapInjector(
-                          handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-                        ),
-                        SliverList.builder(
-                          addAutomaticKeepAlives: true,
-                          addRepaintBoundaries: true,
-                          addSemanticIndexes: true,
-                          itemCount:
-                              chapters.isEmpty
-                                  ? (isCreator ? 2 : 1)
-                                  : chapters.length + (loadingMore ? 1 : 0) + (isCreator ? 1 : 0),
-                          itemBuilder: (context, i) {
-                            if (isCreator && i == 0) {
-                              return const ChaptersDraftTile();
-                            }
+                      addAutomaticKeepAlives: true,
+                      addRepaintBoundaries: true,
+                      addSemanticIndexes: true,
+                      itemCount: drafts.isEmpty ? 1 : drafts.length + (loadingMore ? 1 : 0),
+                      itemBuilder: (context, i) {
+                        if (drafts.isEmpty) {
+                          if (i == 0) {
+                            return const EmptyChapters(text: "لايوجد أي مسودات حاليا");
+                          }
+                          return const SizedBox.shrink();
+                        }
 
-                            final adjustedIndex = isCreator ? i - 1 : i;
+                        if (i < drafts.length) {
+                          final draft = drafts[i];
+                          return DraftTile(key: ValueKey(draft.id), draft: draft);
+                        }
 
-                            if (chapters.isEmpty) {
-                              if (adjustedIndex == 0) {
-                                return const EmptyChapters(text: "لايوجد أي فصول حاليا");
-                              }
-                              return const SizedBox.shrink();
-                            }
+                        if (loadingMore && i == drafts.length) {
+                          return const Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: Center(child: Loader()),
+                          );
+                        }
 
-                            if (adjustedIndex < chapters.length) {
-                              final chapter = chapters[adjustedIndex];
-                              return ChapterTile(key: ValueKey(chapter.id), chapter: chapter);
-                            }
-
-                            if (loadingMore && adjustedIndex == chapters.length) {
-                              return const Padding(
-                                padding: EdgeInsets.all(16.0),
-                                child: Center(child: Loader()),
-                              );
-                            }
-
-                            return const SizedBox.shrink();
-                          },
-                        ),
-                      ],
+                        return const SizedBox.shrink();
+                      },
                     ),
                   );
                 },
@@ -170,6 +157,38 @@ class _NovelChaptersState extends ConsumerState<NovelChapters> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class DraftTile extends StatelessWidget {
+  const DraftTile({super.key, required this.draft});
+
+  final ChapterDraftModel draft;
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Column(
+        children: [
+          Divider(height: 0.25, color: AppColors.mutedSilver.withValues(alpha: .15)),
+          ListTile(
+            title: Text(
+              extractLastLineFromQuillDelta(jsonEncode(draft.content)),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            subtitle: Text("أخر تحديث في: ${appDateTimeFormat(draft.updatedAt)}"),
+            titleTextStyle: const TextStyle(fontFamily: arabicAccentFont, fontSize: 18),
+            subtitleTextStyle: const TextStyle(
+              fontFamily: arabicAccentFont,
+              fontSize: 14,
+              color: AppColors.mutedSilver,
+            ),
+          ),
+        ],
       ),
     );
   }
