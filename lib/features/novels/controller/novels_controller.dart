@@ -135,19 +135,22 @@ class NovelsController extends StateNotifier<bool> {
 
       await db.updateDraft(content: jsonContent, title: _title, id: draftId);
       ChapterDraftModel draft = _ref.read(selectedDraft)!;
-      _ref
-          .read(novelChapterDraftsProvider(novelId).notifier)
-          .updateDraft(
-            draft.copyWith(title: _title, content: jsonContent, updatedAt: DateTime.now()),
-          );
+      final _newDraft = draft.copyWith(
+        title: _title,
+        content: jsonContent,
+        updatedAt: DateTime.now(),
+      );
+      _ref.read(novelChapterDraftsProvider(novelId).notifier).updateDraft(_newDraft);
+      _ref.read(selectedDraft.notifier).state = _newDraft;
     } catch (e) {
       log(e.toString());
       rethrow;
     }
   }
 
-  Future<void> publishChapter(ChapterDraftModel draft) async {
+  Future<void> publishChapter(ChapterDraftModel draft, BuildContext context) async {
     try {
+      context.loaderOverlay.show();
       final id = uuid.v4();
       final nextChapterNumber = await db.getNextChapterNumber(draft.novelId);
       final chapter = ChapterModel(
@@ -156,11 +159,17 @@ class NovelsController extends StateNotifier<bool> {
         number: nextChapterNumber.toDouble(),
         novelId: draft.novelId,
         content: draft.content,
+        title: draft.title,
       );
       await db.publishChapter(draft, chapter);
       _ref.read(chaptersStateProvider(draft.novelId).notifier).addChapter(chapter);
+      _ref.read(novelChapterDraftsProvider(draft.novelId).notifier).removeDraft(draft);
+      context.loaderOverlay.hide();
       CustomToast.success("تم نشر الفصل $nextChapterNumber بنجاح");
+      context.pop();
+      context.pop();
     } catch (e) {
+      context.loaderOverlay.hide();
       log(e.toString());
       CustomToast.error(e);
       rethrow;

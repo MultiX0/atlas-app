@@ -2,9 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:atlas_app/core/common/utils/delta_parser.dart';
 import 'package:atlas_app/core/common/widgets/overlay_boundry.dart';
 import 'package:atlas_app/features/novels/controller/novels_controller.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
+import 'package:atlas_app/features/novels/widgets/save_sheet.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 
@@ -23,11 +25,14 @@ class _AddChapterState extends ConsumerState<AddChapterPage> {
   final _editorScrollController = ScrollController();
   final _editorFocusNode = FocusNode();
   late Timer _timer;
+  int count = 0;
 
   @override
   void initState() {
     _controller = QuillController.basic();
+    _controller.addListener(_trackCount);
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _trackCount();
       loadPrevious();
       handleSave();
     });
@@ -37,11 +42,18 @@ class _AddChapterState extends ConsumerState<AddChapterPage> {
   @override
   void dispose() {
     text_title_controller.dispose();
+    _controller.removeListener(_trackCount);
     _controller.dispose();
     _editorFocusNode.dispose();
     _editorScrollController.dispose();
     _timer.cancel();
     super.dispose();
+  }
+
+  void _trackCount() {
+    setState(() {
+      count = countDeltaCharacters(_controller.document.toDelta().toJson());
+    });
   }
 
   List<Map<String, dynamic>>? lastSave;
@@ -55,6 +67,13 @@ class _AddChapterState extends ConsumerState<AddChapterPage> {
       setState(() {
         _controller.document = Document.fromJson(draft.content);
       });
+    } else {
+      ref
+          .read(novelsControllerProvider.notifier)
+          .newDraft(
+            jsonContent: _controller.document.toDelta().toJson(),
+            title: text_title_controller.text.trim(),
+          );
     }
   }
 
@@ -159,7 +178,19 @@ class _AddChapterState extends ConsumerState<AddChapterPage> {
         appBar: AppBar(
           title: const Text("مسودة"),
           centerTitle: true,
-          actions: [IconButton(onPressed: () {}, icon: const Icon(Icons.done))],
+          actions: [
+            IconButton(
+              onPressed:
+                  () => openSheet(
+                    context: context,
+                    child: ChapterSaveSheet(
+                      jsonContent: _controller.document.toDelta().toJson(),
+                      title: text_title_controller.text.trim(),
+                    ),
+                  ),
+              icon: const Icon(Icons.done),
+            ),
+          ],
         ),
         body: OverlayBoundary(
           child: SafeArea(
@@ -172,6 +203,7 @@ class _AddChapterState extends ConsumerState<AddChapterPage> {
                     CustomTextFormField(
                       controller: text_title_controller,
                       hintText: "عنوان الفصل (اختياري)",
+                      maxLength: 100,
                       filled: false,
                     ),
                     Padding(
@@ -196,6 +228,11 @@ class _AddChapterState extends ConsumerState<AddChapterPage> {
                           ),
                         ),
                       ),
+                    ),
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: Text("$count حرف", textAlign: TextAlign.end),
                     ),
                     const SizedBox(height: 8),
                     SingleChildScrollView(

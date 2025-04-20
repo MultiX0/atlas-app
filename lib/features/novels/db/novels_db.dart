@@ -62,7 +62,7 @@ class NovelsDb {
 
   Future<void> insertNewChapter(ChapterModel chapter) async {
     try {
-      await _draftChaptersTable.insert(chapter.toMap());
+      await _novelChaptersTable.insert(chapter.toMap());
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -122,7 +122,7 @@ class NovelsDb {
         FunctionNames.get_next_chapter_number,
         params: {'novel_id_input': novelId},
       );
-      return data;
+      return data.toInt();
     } catch (e) {
       log(e.toString());
       rethrow;

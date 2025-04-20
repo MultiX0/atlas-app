@@ -106,8 +106,10 @@ class NovelChapterDrafts extends StateNotifier<_HelperClass> {
     updateState(drafts: [draft, ...state.drafts]);
   }
 
-  void removeDraft(String id) {
-    updateState(drafts: state.drafts.where((d) => d.id != id).toList());
+  void removeDraft(ChapterDraftModel draft) {
+    List<ChapterDraftModel> updatedDrafts = List.from(state.drafts);
+    updatedDrafts.removeWhere((d) => d.id == draft.id);
+    updateState(drafts: updatedDrafts);
   }
 
   void updateDraft(ChapterDraftModel draft) {

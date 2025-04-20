@@ -31,4 +31,5 @@ class TableNames {
   static const novel_views = 'novel_views';
   static const novel_chapters = 'novel_chapters';
   static const novel_chapter_drafts = 'novel_chapter_drafts';
+  static const novel_chapter_views = 'novel_chapter_views';
 }

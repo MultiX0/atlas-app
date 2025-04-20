@@ -11,6 +11,7 @@ import 'package:atlas_app/features/hashtags/pages/hashtag_page.dart';
 import 'package:atlas_app/features/library/pages/add_novel_page.dart';
 import 'package:atlas_app/features/library/pages/library_page.dart';
 import 'package:atlas_app/features/novels/pages/chapter_drafts_page.dart';
+import 'package:atlas_app/features/novels/pages/chapter_reading_page.dart';
 import 'package:atlas_app/features/novels/pages/new_chapter_page.dart';
 import 'package:atlas_app/features/novels/widgets/novel_loader.dart';
 import 'package:atlas_app/features/onboarding/pages/first_page.dart';
@@ -107,6 +108,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       buildRoute(path: Routes.addNovelPost, child: const AddNovelPage(), fade: true),
       buildRoute(path: Routes.addNovelChapterPage, child: const AddChapterPage(), fade: true),
       buildRoute(path: Routes.novelChapterDrafts, child: const ChapterDraftsPage(), fade: true),
+      buildRoute(path: Routes.novelReadChapter, child: const ChapterReadingPage(), fade: true),
 
       GoRoute(
         path: "${Routes.addComicReview}/:update",
