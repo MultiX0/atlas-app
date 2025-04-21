@@ -1,10 +1,15 @@
+import 'package:atlas_app/core/common/utils/custom_action_sheet.dart';
+import 'package:atlas_app/core/common/utils/format_number.dart';
+import 'package:atlas_app/features/novels/models/chapter_draft_model.dart';
 import 'package:atlas_app/features/novels/models/chapter_model.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:uuid/uuid.dart';
 
 class ChapterTile extends StatelessWidget {
-  const ChapterTile({super.key, required this.chapter});
+  const ChapterTile({super.key, required this.chapter, required this.isCreator});
   final ChapterModel chapter;
+  final bool isCreator;
 
   @override
   Widget build(BuildContext context) {
@@ -21,19 +26,37 @@ class ChapterTile extends StatelessWidget {
                   ref.read(selectedChapterProvider.notifier).state = chapter;
                   context.push(Routes.novelReadChapter);
                 },
-                leading:
-                    chapter.title == null
-                        ? null
-                        : Text(
-                          '${haveDecimal ? chapter.number : chapter.number.toInt()} - ',
-                          style: const TextStyle(fontSize: 16, color: AppColors.mutedSilver),
-                        ),
-                title:
-                    chapter.title != null
-                        ? Text(chapter.title!)
-                        : Text(
-                          "الفصل رقم : ${haveDecimal ? chapter.number : chapter.number.toInt()}",
-                        ),
+
+                title: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        chapter.title != null
+                            ? "${chapter.number.toInt()} : ${chapter.title!}"
+                            : "الفصل رقم : ${haveDecimal ? chapter.number : chapter.number.toInt()}",
+                      ),
+                    ),
+                    Text(
+                      formatNumber(chapter.views),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w200,
+                        color: AppColors.mutedSilver,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    const Icon(TablerIcons.eye, color: AppColors.mutedSilver, size: 18),
+                    const SizedBox(width: 15),
+                    if (isCreator)
+                      GestureDetector(
+                        onTap: () => buildActionList(context, ref),
+                        child: const Icon(TablerIcons.dots_vertical, color: AppColors.mutedSilver),
+                      ),
+                  ],
+                ),
+
                 titleTextStyle: const TextStyle(fontFamily: arabicAccentFont, fontSize: 20),
                 subtitle: Text('تاريخ النشر: ${appDateTimeFormat(chapter.created_at)}'),
                 subtitleTextStyle: const TextStyle(
@@ -43,6 +66,47 @@ class ChapterTile extends StatelessWidget {
                 ),
               );
             },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void buildActionList(BuildContext context, WidgetRef ref) {
+    openSheet(
+      context: context,
+      child: CustomActionSheet(
+        title: "خيارات",
+        children: [
+          ListTile(
+            title: const Text('تعديل'),
+            leading: const Icon(TablerIcons.edit, color: AppColors.mutedSilver),
+            titleTextStyle: const TextStyle(fontFamily: arabicPrimaryFont, fontSize: 16),
+            onTap: () {
+              final id = const Uuid().v4();
+              final now = DateTime.now();
+              final me = ref.read(userState.select((s) => s.user!));
+              final draft = ChapterDraftModel(
+                id: id,
+                createdAt: now,
+                updatedAt: now,
+                novelId: chapter.novelId,
+                content: chapter.content,
+                userId: me.userId,
+                title: chapter.title,
+                number: chapter.number,
+                originalChapterId: chapter.id,
+              );
+              ref.read(selectedDraft.notifier).state = draft;
+              context.pop();
+              context.push(Routes.addNovelChapterPage);
+            },
+          ),
+          ListTile(
+            title: const Text('حذف'),
+            leading: const Icon(TablerIcons.trash, color: AppColors.mutedSilver),
+            titleTextStyle: const TextStyle(fontFamily: arabicPrimaryFont, fontSize: 16),
+            onTap: () {},
           ),
         ],
       ),

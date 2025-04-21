@@ -1093,6 +1093,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
+  no_screenshot:
+    dependency: "direct main"
+    description:
+      name: no_screenshot
+      sha256: ec3d86d7ee89a09c3a3939c1003012536ba4b3fcb4f8cbd23d87ada595c99258
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.1"
   octo_image:
     dependency: transitive
     description:
@@ -1229,6 +1237,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.9.1"
+  popup_menu_plus:
+    dependency: "direct main"
+    description:
+      name: popup_menu_plus
+      sha256: "80c53b32daebb7480a14688fdafb16ff767ba8c6163e5a51918a1302ba53dd14"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.6"
   posix:
     dependency: transitive
     description:
@@ -1373,6 +1389,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.28.0"
+  screenshot:
+    dependency: "direct main"
+    description:
+      name: screenshot
+      sha256: "63817697a7835e6ce82add4228e15d233b74d42975c143ad8cfe07009fab866b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0"
   shared_preferences:
     dependency: "direct main"
     description:
@@ -1442,6 +1466,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  social_sharing_plus:
+    dependency: "direct main"
+    description:
+      name: social_sharing_plus
+      sha256: d0bd9dc3358cf66a3aac7cce549902360f30bccf44cf6090a708d97cc54ca854
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.3"
   source_span:
     dependency: transitive
     description:

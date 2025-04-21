@@ -57,6 +57,7 @@ class KeyNames {
   static const url = 'url';
   static const original_chapter_id = 'original_chapter_id';
   static const site = 'site';
+  static const has_viewed_recently = 'has_viewed_recently';
   static const theme_color = 'theme_color';
   static const writing_quality = 'writing_quality';
   static const story_development = 'story_development';

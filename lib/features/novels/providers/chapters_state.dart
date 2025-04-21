@@ -117,6 +117,17 @@ class ChaptersState extends StateNotifier<_HelperClass> {
     updatedState.sort((a, b) => b.number.compareTo(a.number));
     updateState(chapters: updatedState);
   }
+
+  void updateChapter(ChapterModel chapter) {
+    final indexOf = state.chapters.indexWhere((c) => c.id == chapter.id);
+    if (indexOf == -1) {
+      addChapter(chapter);
+      return;
+    }
+    List<ChapterModel> updatedChapters = List.from(state.chapters);
+    updatedChapters[indexOf] = chapter;
+    updateState(chapters: updatedChapters);
+  }
 }
 
 final chaptersStateProvider = StateNotifierProvider.family<ChaptersState, _HelperClass, String>((

@@ -22,6 +22,24 @@
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+    <queries>
+        <!-- Query for Facebook -->
+        <package android:name="com.facebook.katana" />
+        <!-- Query for Twitter -->
+        <package android:name="com.twitter.android" />
+        <!-- Query for LinkedIn -->
+        <package android:name="com.linkedin.android" />
+        <!-- Query for Reddit -->
+        <package android:name="com.reddit.frontpage" />
+        <!-- Query for WhatsApp -->
+        <package android:name="com.whatsapp" />
+        <!-- Query for Telegram -->
+        <package android:name="org.telegram.messenger" />
+        <!-- Query for Instagram -->
+        <package android:name="com.instagram.android" />
+    </queries>
+
    
     <application
         android:label="Atlas"
@@ -90,7 +108,6 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-
 
 
     </application>

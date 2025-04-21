@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:atlas_app/core/common/utils/delta_parser.dart';
+import 'package:atlas_app/core/common/utils/delta_translate.dart';
 import 'package:atlas_app/core/common/widgets/overlay_boundry.dart';
 import 'package:atlas_app/features/novels/controller/novels_controller.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
@@ -26,6 +26,7 @@ class _AddChapterState extends ConsumerState<AddChapterPage> {
   final _editorFocusNode = FocusNode();
   late Timer _timer;
   int count = 0;
+  bool showTitleField = true;
 
   @override
   void initState() {
@@ -53,19 +54,25 @@ class _AddChapterState extends ConsumerState<AddChapterPage> {
   void _trackCount() {
     setState(() {
       count = countDeltaCharacters(_controller.document.toDelta().toJson());
+      if (showTitleField) {
+        showTitleField = false;
+      }
     });
   }
 
   List<Map<String, dynamic>>? lastSave;
   String? draftId;
+  String lastTitleSave = '';
 
   void loadPrevious() {
     final draft = ref.read(selectedDraft);
     if (draft != null) {
       draftId = draft.id;
       lastSave = draft.content;
+      lastTitleSave = draft.title ?? text_title_controller.text.trim();
       setState(() {
         _controller.document = Document.fromJson(draft.content);
+        text_title_controller.text = lastTitleSave;
       });
     } else {
       ref
@@ -90,7 +97,8 @@ class _AddChapterState extends ConsumerState<AddChapterPage> {
         draftId = id;
       }
 
-      if (jsonEncode(json).trim() == jsonEncode(lastSave).trim()) {
+      if (jsonEncode(json).trim() == jsonEncode(lastSave).trim() &&
+          text_title_controller.text.trim() == lastTitleSave.trim()) {
         log("no changes");
       } else {
         log("there's a change");
@@ -104,10 +112,12 @@ class _AddChapterState extends ConsumerState<AddChapterPage> {
       }
 
       lastSave = json;
+      lastTitleSave = text_title_controller.text.trim();
     });
   }
 
   void save() async {
+    log(text_title_controller.text.trim());
     final json = _controller.document.toDelta().toJson();
     await ref
         .read(novelsControllerProvider.notifier)
@@ -180,6 +190,15 @@ class _AddChapterState extends ConsumerState<AddChapterPage> {
           centerTitle: true,
           actions: [
             IconButton(
+              onPressed: () {
+                setState(() {
+                  showTitleField = !showTitleField;
+                });
+              },
+              icon: Icon(showTitleField ? TablerIcons.eye : TablerIcons.eye_closed),
+            ),
+
+            IconButton(
               onPressed:
                   () => openSheet(
                     context: context,
@@ -200,16 +219,19 @@ class _AddChapterState extends ConsumerState<AddChapterPage> {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    CustomTextFormField(
-                      controller: text_title_controller,
-                      hintText: "عنوان الفصل (اختياري)",
-                      maxLength: 100,
-                      filled: false,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 5),
-                      child: Divider(color: Colors.grey[800]),
-                    ),
+                    if (showTitleField) ...[
+                      CustomTextFormField(
+                        controller: text_title_controller,
+                        hintText: "عنوان الفصل (اختياري)",
+                        maxLength: 100,
+                        filled: false,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 5),
+                        child: Divider(color: Colors.grey[800]),
+                      ),
+                    ],
+
                     Expanded(
                       child: QuillEditor.basic(
                         controller: _controller,

@@ -12,4 +12,5 @@ class FunctionNames {
   static const get_existing_genres = 'get_existing_genres';
   static const get_user_works = 'get_user_works';
   static const get_next_chapter_number = 'get_next_chapter_number';
+  static const log_novel_chapter_view = 'log_novel_chapter_view';
 }

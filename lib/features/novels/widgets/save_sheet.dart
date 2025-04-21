@@ -1,8 +1,9 @@
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
-import 'package:atlas_app/core/common/utils/delta_parser.dart';
+import 'package:atlas_app/core/common/utils/delta_translate.dart';
 import 'package:atlas_app/features/novels/controller/novels_controller.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:flutter/foundation.dart';
 
 class ChapterSaveSheet extends StatelessWidget {
   const ChapterSaveSheet({super.key, required this.title, required this.jsonContent});
@@ -60,13 +61,13 @@ class ChapterSaveSheet extends StatelessWidget {
                     "نشر الفصل",
                     onTap: () {
                       final count = countDeltaCharacters(jsonContent);
-                      // if (count < 1000) {
-                      //   CustomToast.error(
-                      //     "على الفصل أن يحتوي على 1000 حرف على الأقل و 5000 حرف كحد أقصى",
-                      //   );
-                      //   context.pop();
-                      //   return;
-                      // }
+                      if (count < 1000 && !kDebugMode) {
+                        CustomToast.error(
+                          "على الفصل أن يحتوي على 1000 حرف على الأقل و 5000 حرف كحد أقصى",
+                        );
+                        context.pop();
+                        return;
+                      }
                       if (draft == null) {
                         CustomToast.error("المسودة الحالية فارغة, الرجاء المحاولة لاحقا");
                         context.pop();

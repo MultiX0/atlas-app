@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:atlas_app/core/common/utils/delta_parser.dart';
+import 'package:atlas_app/core/common/utils/delta_translate.dart';
 import 'package:atlas_app/features/novels/models/chapter_draft_model.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/imports.dart';

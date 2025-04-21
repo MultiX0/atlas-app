@@ -149,7 +149,11 @@ class _NovelChaptersState extends ConsumerState<NovelChapters> {
 
                             if (adjustedIndex < chapters.length) {
                               final chapter = chapters[adjustedIndex];
-                              return ChapterTile(key: ValueKey(chapter.id), chapter: chapter);
+                              return ChapterTile(
+                                key: ValueKey(chapter.id),
+                                chapter: chapter,
+                                isCreator: isCreator,
+                              );
                             }
 
                             if (loadingMore && adjustedIndex == chapters.length) {

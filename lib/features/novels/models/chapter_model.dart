@@ -6,13 +6,17 @@ class ChapterModel {
   final double number;
   final String novelId;
   final String? title;
+  final int views;
   final List<Map<String, dynamic>> content;
+  final bool has_viewed_recently;
   ChapterModel({
     required this.id,
     required this.created_at,
     required this.number,
     required this.novelId,
     this.title,
+    this.views = 0,
+    this.has_viewed_recently = false,
     required this.content,
   });
 
@@ -23,6 +27,8 @@ class ChapterModel {
     String? novelId,
     String? title,
     List<Map<String, dynamic>>? content,
+    int? views,
+    bool? has_viewed_recently,
   }) {
     return ChapterModel(
       id: id ?? this.id,
@@ -31,6 +37,8 @@ class ChapterModel {
       novelId: novelId ?? this.novelId,
       title: title ?? this.title,
       content: content ?? this.content,
+      has_viewed_recently: has_viewed_recently ?? this.has_viewed_recently,
+      views: views ?? this.views,
     );
   }
 
@@ -53,6 +61,8 @@ class ChapterModel {
       novelId: map[KeyNames.novel_id] ?? "",
       title: map[KeyNames.title],
       content: List<Map<String, dynamic>>.from(map[KeyNames.content] ?? []),
+      views: map[KeyNames.view_count] ?? 0,
+      has_viewed_recently: map[KeyNames.has_viewed_recently] ?? false,
     );
   }
 }

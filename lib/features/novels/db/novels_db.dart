@@ -21,6 +21,7 @@ class NovelsDb {
   SupabaseQueryBuilder get _novelsView => _client.from(ViewNames.novels_details);
   SupabaseQueryBuilder get _novelChaptersTable => _client.from(TableNames.novel_chapters);
   SupabaseQueryBuilder get _draftChaptersTable => _client.from(TableNames.novel_chapter_drafts);
+  SupabaseQueryBuilder get _chaptersView => _client.from(ViewNames.novel_chapters_with_views);
 
   Future<NovelModel?> getNovel(String id) async {
     try {
@@ -39,12 +40,21 @@ class NovelsDb {
     required int pageSize,
   }) async {
     try {
-      final data = await _novelChaptersTable
+      final data = await _chaptersView
           .select("*")
           .order(KeyNames.number, ascending: false)
           .range(startIndex, (startIndex + pageSize - 1));
 
       return data.map((c) => ChapterModel.fromMap(c)).toList();
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> handleChapterView(String chapterId) async {
+    try {
+      await _client.rpc(FunctionNames.log_novel_chapter_view, params: {'p_chapter_id': chapterId});
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -129,8 +139,24 @@ class NovelsDb {
     }
   }
 
+  Future<void> updateChapter(ChapterModel chapter) async {
+    try {
+      await _novelChaptersTable
+          .update({KeyNames.title: chapter.title, KeyNames.content: chapter.content})
+          .eq(KeyNames.id, chapter.id);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
   Future<void> publishChapter(ChapterDraftModel draft, ChapterModel chapter) async {
     try {
+      if (draft.originalChapterId != null && draft.originalChapterId!.isNotEmpty) {
+        await updateChapter(chapter.copyWith(id: draft.originalChapterId));
+        await deleteDraft(draft);
+        return;
+      }
       await Future.wait([deleteDraft(draft), insertNewChapter(chapter)]);
     } catch (e) {
       log(e.toString());

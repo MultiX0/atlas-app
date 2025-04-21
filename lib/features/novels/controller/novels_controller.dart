@@ -97,6 +97,7 @@ class NovelsController extends StateNotifier<bool> {
   Future<String> newDraft({
     required List<Map<String, dynamic>> jsonContent,
     required String title,
+    String? originalChapterId,
   }) async {
     try {
       final id = uuid.v4();
@@ -112,6 +113,7 @@ class NovelsController extends StateNotifier<bool> {
         title: title.isEmpty ? null : title,
         content: jsonContent,
         userId: user.userId,
+        originalChapterId: originalChapterId,
       );
 
       await db.insertNewDraft(draft);
@@ -140,7 +142,9 @@ class NovelsController extends StateNotifier<bool> {
         content: jsonContent,
         updatedAt: DateTime.now(),
       );
-      _ref.read(novelChapterDraftsProvider(novelId).notifier).updateDraft(_newDraft);
+      _ref
+          .read(novelChapterDraftsProvider(novelId).notifier)
+          .updateDraft(_newDraft.copyWith(title: _title));
       _ref.read(selectedDraft.notifier).state = _newDraft;
     } catch (e) {
       log(e.toString());
@@ -162,16 +166,37 @@ class NovelsController extends StateNotifier<bool> {
         title: draft.title,
       );
       await db.publishChapter(draft, chapter);
-      _ref.read(chaptersStateProvider(draft.novelId).notifier).addChapter(chapter);
+      if (draft.originalChapterId != null && draft.originalChapterId!.isNotEmpty) {
+        _ref
+            .read(chaptersStateProvider(draft.novelId).notifier)
+            .updateChapter(chapter.copyWith(id: draft.originalChapterId, number: draft.number));
+        CustomToast.success("تم تحديث الفصل بنجاح");
+      } else {
+        _ref.read(chaptersStateProvider(draft.novelId).notifier).addChapter(chapter);
+        CustomToast.success("تم نشر الفصل $nextChapterNumber بنجاح");
+      }
       _ref.read(novelChapterDraftsProvider(draft.novelId).notifier).removeDraft(draft);
       context.loaderOverlay.hide();
-      CustomToast.success("تم نشر الفصل $nextChapterNumber بنجاح");
       context.pop();
       context.pop();
     } catch (e) {
       context.loaderOverlay.hide();
       log(e.toString());
       CustomToast.error(e);
+      rethrow;
+    }
+  }
+
+  Future<void> handleChapterView() async {
+    try {
+      final chapter = _ref.read(selectedChapterProvider)!;
+      if (chapter.has_viewed_recently) return;
+      await db.handleChapterView(chapter.id);
+      _ref
+          .read(chaptersStateProvider(chapter.novelId).notifier)
+          .updateChapter(chapter.copyWith(has_viewed_recently: true, views: chapter.views + 1));
+    } catch (e) {
+      log(e.toString());
       rethrow;
     }
   }

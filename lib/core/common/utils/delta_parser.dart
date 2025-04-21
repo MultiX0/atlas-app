@@ -1,26 +1,5 @@
-import 'dart:convert';
 import 'package:atlas_app/imports.dart';
 import 'package:flutter/gestures.dart';
-
-String extractLastLineFromQuillDelta(String deltaJson) {
-  // Parse the JSON string into a List<dynamic>
-  final List<dynamic> operations = jsonDecode(deltaJson);
-
-  // Collect all inserted text
-  StringBuffer fullText = StringBuffer();
-  for (var op in operations) {
-    if (op is Map && op.containsKey('insert') && op['insert'] is String) {
-      fullText.write(op['insert']);
-    }
-  }
-
-  // Split by newlines and filter out empty lines
-  List<String> lines =
-      fullText.toString().split('\n').where((line) => line.trim().isNotEmpty).toList();
-
-  // Return the last non-empty line, or empty string if none
-  return lines.isNotEmpty ? lines.last : '';
-}
 
 // Assuming Line class is defined as before:
 class Line {
@@ -147,32 +126,29 @@ TextStyle getInlineStyle(Map<String, dynamic>? attributes) {
   return style;
 }
 
-// Convert segments to clickable TextSpans
-// Convert segments to clickable TextSpans
+// Restructure segmentsToTextSpans to make each segment clickable as a whole block
 List<TextSpan> segmentsToTextSpans(List<List<Line>> segments, void Function(String) onTap) {
   List<TextSpan> allSpans = [];
 
   for (int i = 0; i < segments.length; i++) {
     var segment = segments[i];
     String segmentText = segment.map((line) => line.parts.map((part) => part.$1).join()).join('\n');
-    List<TextSpan> segmentSpans = [];
+
+    // Create spans for each line in the segment, preserving styling
+    List<TextSpan> segmentContentSpans = [];
 
     for (int j = 0; j < segment.length; j++) {
       var line = segment[j];
       TextStyle headerStyle = getHeaderStyle(line.blockAttributes);
 
+      // Create spans for each part in the line
       List<TextSpan> partSpans = [];
-
       for (var part in line.parts) {
         TextStyle inlineStyle = getInlineStyle(part.$2);
 
-        // Modified style combination logic:
-        // If this is a header (has block attributes), preserve header styles and only apply
-        // complementary inline styles that don't override the header's core properties
+        // Blend styles as before
         TextStyle partStyle;
-
         if (line.blockAttributes != null && line.blockAttributes!.isNotEmpty) {
-          // This is a header line, prioritize header styles
           partStyle = TextStyle(
             fontSize: headerStyle.fontSize ?? inlineStyle.fontSize ?? 16,
             fontWeight: headerStyle.fontWeight ?? inlineStyle.fontWeight ?? FontWeight.normal,
@@ -180,7 +156,6 @@ List<TextSpan> segmentsToTextSpans(List<List<Line>> segments, void Function(Stri
             color: headerStyle.color ?? inlineStyle.color ?? AppColors.whiteColor,
           );
         } else {
-          // Regular line, use inline styles with fallback to defaults
           partStyle = TextStyle(
             fontSize: inlineStyle.fontSize ?? 16,
             fontWeight: inlineStyle.fontWeight ?? FontWeight.normal,
@@ -192,19 +167,24 @@ List<TextSpan> segmentsToTextSpans(List<List<Line>> segments, void Function(Stri
         partSpans.add(TextSpan(text: part.$1, style: partStyle));
       }
 
-      segmentSpans.add(TextSpan(children: partSpans));
+      // Add this line's parts
+      segmentContentSpans.add(TextSpan(children: partSpans));
+
+      // Add newline between lines (but not after the last line)
       if (j < segment.length - 1) {
-        segmentSpans.add(const TextSpan(text: '\n'));
+        segmentContentSpans.add(const TextSpan(text: '\n'));
       }
     }
 
+    // Create a single TextSpan for the entire segment with one recognizer
     allSpans.add(
       TextSpan(
-        children: segmentSpans,
+        children: segmentContentSpans,
         recognizer: TapGestureRecognizer()..onTap = () => onTap(segmentText),
       ),
     );
 
+    // Add paragraph spacing between segments
     if (i < segments.length - 1) {
       allSpans.add(const TextSpan(text: '\n\n'));
     }
@@ -256,14 +236,3 @@ Widget buildRichText(List<dynamic> deltaOperations, void Function(String) onTap)
 }
 
 // Usage example with additional debugging
-
-int countDeltaCharacters(List<Map<String, dynamic>> deltaJson) {
-  int totalChars = 0;
-  for (var op in deltaJson) {
-    if (op.containsKey('insert') && op['insert'] is String) {
-      totalChars += op['insert'].toString().length;
-    }
-  }
-
-  return totalChars;
-}
