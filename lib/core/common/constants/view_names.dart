@@ -5,4 +5,7 @@ class ViewNames {
   static const hashtag_post_counts = 'hashtag_post_counts';
   static const novels_details = 'novels_details';
   static const novel_chapters_with_views = 'novel_chapters_with_views';
+  static const novel_chapter_comment_replies_with_likes =
+      'novel_chapter_comment_replies_with_likes';
+  static const novel_chapter_comments_with_meta = 'novel_chapter_comments_with_meta';
 }

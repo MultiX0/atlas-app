@@ -344,6 +344,8 @@ class EnhancedFlutterMentionsState extends State<EnhancedFlutterMentions> {
         builder: (BuildContext context, bool show, Widget? child) {
           return show && !widget.hideSuggestionList
               ? Container(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                width: double.infinity,
                 constraints: BoxConstraints(maxHeight: widget.suggestionListHeight),
                 child: OptionList(
                   suggestionListHeight: widget.suggestionListHeight,

@@ -122,4 +122,13 @@ class KeyNames {
   static const src_lang = 'src_lang';
   static const published_at = 'published_at';
   static const number = 'number';
+  static const likes_count = 'likes_count';
+  static const is_liked = 'is_liked';
+  static const comment_count = 'comment_count';
+  static const comment_id = 'comment_id';
+  static const parent_comment_author_id = 'parent_comment_author_id';
+  static const is_edited = 'is_edited';
+  static const is_deleted = 'is_deleted';
+  static const chapter_id = 'chapter_id';
+  static const replies_count = 'replies_count';
 }

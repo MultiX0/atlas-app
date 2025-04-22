@@ -5,6 +5,8 @@ import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/core/common/constants/view_names.dart';
 import 'package:atlas_app/features/novels/models/chapter_draft_model.dart';
 import 'package:atlas_app/features/novels/models/chapter_model.dart';
+import 'package:atlas_app/features/novels/models/novel_chapter_comment_model.dart';
+import 'package:atlas_app/features/novels/models/novel_chapter_comment_reply_model.dart';
 import 'package:atlas_app/features/novels/models/novel_model.dart';
 import 'package:atlas_app/features/novels/models/novels_genre_model.dart';
 import 'package:atlas_app/imports.dart';
@@ -23,6 +25,12 @@ class NovelsDb {
   SupabaseQueryBuilder get _novelChaptersTable => _client.from(TableNames.novel_chapters);
   SupabaseQueryBuilder get _draftChaptersTable => _client.from(TableNames.novel_chapter_drafts);
   SupabaseQueryBuilder get _chaptersView => _client.from(ViewNames.novel_chapters_with_views);
+  SupabaseQueryBuilder get _chapterCommetnsView =>
+      _client.from(ViewNames.novel_chapter_comments_with_meta);
+
+  SupabaseQueryBuilder get _chapterCommetnRepliesView =>
+      _client.from(ViewNames.novel_chapter_comment_replies_with_likes);
+
   // SupabaseQueryBuilder get _novelsFavoriteTable => _client.from(TableNames.users_favorite_novels);
 
   Future<NovelModel?> getNovel(String id) async {
@@ -48,6 +56,44 @@ class NovelsDb {
           .range(startIndex, (startIndex + pageSize - 1));
 
       return data.map((c) => ChapterModel.fromMap(c)).toList();
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<List<NovelChapterCommentWithMeta>> getChapterComments({
+    required String chapterId,
+    required int startIndex,
+    required int pageSize,
+  }) async {
+    try {
+      final data = await _chapterCommetnsView
+          .select("*")
+          .eq(KeyNames.chapter_id, chapterId)
+          .order(KeyNames.created_at, ascending: false)
+          .range(startIndex, startIndex + pageSize - 1);
+
+      return data.map((c) => NovelChapterCommentWithMeta.fromMap(c)).toList();
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<List<NovelChapterCommentReplyWithLikes>> getChapterCommentsReplies({
+    required String commentId,
+    required int startIndex,
+    required int pageSize,
+  }) async {
+    try {
+      final data = await _chapterCommetnRepliesView
+          .select("*")
+          .eq(KeyNames.comment_id, commentId)
+          .order(KeyNames.created_at, ascending: false)
+          .range(startIndex, startIndex + pageSize - 1);
+
+      return data.map((r) => NovelChapterCommentReplyWithLikes.fromMap(r)).toList();
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -84,6 +130,15 @@ class NovelsDb {
   Future<void> handleNovelView(String novelId) async {
     try {
       await _client.rpc(FunctionNames.log_novel_view, params: {'p_novel_id': novelId});
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> handleChapterLike(ChapterModel chapter) async {
+    try {
+      await _client.rpc(FunctionNames.toggle_chapter_like, params: {'p_chapter_id': chapter.id});
     } catch (e) {
       log(e.toString());
       rethrow;

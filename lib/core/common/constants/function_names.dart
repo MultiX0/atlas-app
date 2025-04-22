@@ -15,4 +15,9 @@ class FunctionNames {
   static const log_novel_chapter_view = 'log_novel_chapter_view';
   static const log_novel_view = 'log_novel_view';
   static const toggle_favorite_novel = 'toggle_favorite_novel';
+  static const toggle_chapter_like = 'toggle_chapter_like';
+  static const toggle_chapter_comment_like = 'toggle_chapter_comment_like';
+  static const toggle_chapter_comment_reply_like = 'toggle_chapter_comment_reply_like';
+  static const delete_chapter_comment = 'delete_chapter_comment';
+  static const delete_chapter_comment_reply = 'delete_chapter_comment_reply';
 }

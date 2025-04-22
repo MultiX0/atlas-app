@@ -1,3 +1,4 @@
+import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/features/novels/controller/novels_controller.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
@@ -11,6 +12,13 @@ class NovelHeader extends ConsumerStatefulWidget {
 }
 
 class _NovelHeaderState extends ConsumerState<NovelHeader> {
+  final Debouncer _debouncer = Debouncer();
+  @override
+  void dispose() {
+    _debouncer.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
@@ -170,8 +178,14 @@ class _NovelHeaderState extends ConsumerState<NovelHeader> {
                       backgroundColor: AppColors.scaffoldBackground,
                       child: IconButton(
                         color: novel.isFavorite ? AppColors.primary : AppColors.whiteColor,
-                        onPressed:
-                            () => ref.read(novelsControllerProvider.notifier).handleFavorite(novel),
+                        onPressed: () {
+                          _debouncer.debounce(
+                            duration: const Duration(milliseconds: 300),
+                            onDebounce: () {
+                              ref.read(novelsControllerProvider.notifier).handleFavorite(novel);
+                            },
+                          );
+                        },
                         icon: Icon(
                           novel.isFavorite ? TablerIcons.heart_minus : TablerIcons.heart_plus,
                         ),

@@ -174,6 +174,11 @@ class NovelsController extends StateNotifier<bool> {
         novelId: draft.novelId,
         content: draft.content,
         title: draft.title,
+        commentsCount: 0,
+        isLiked: false,
+        likeCount: 0,
+        has_viewed_recently: false,
+        views: 0,
       );
       await db.publishChapter(novel, draft, chapter);
       if (draft.originalChapterId != null && draft.originalChapterId!.isNotEmpty) {
@@ -206,6 +211,24 @@ class NovelsController extends StateNotifier<bool> {
           .read(chaptersStateProvider(chapter.novelId).notifier)
           .updateChapter(chapter.copyWith(has_viewed_recently: true, views: chapter.views + 1));
     } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> handleChapterLike(ChapterModel chapter) async {
+    try {
+      final newChapter = chapter.copyWith(
+        isLiked: !chapter.isLiked,
+        likeCount: chapter.isLiked ? chapter.likeCount - 1 : chapter.likeCount + 1,
+      );
+      _ref.read(selectedChapterProvider.notifier).state = newChapter;
+      _ref.read(chaptersStateProvider(chapter.novelId).notifier).updateChapter(newChapter);
+      await db.handleChapterLike(chapter);
+    } catch (e) {
+      _ref.read(selectedChapterProvider.notifier).state = chapter;
+      _ref.read(chaptersStateProvider(chapter.novelId).notifier).updateChapter(chapter);
+      CustomToast.error(errorMsg);
       log(e.toString());
       rethrow;
     }
