@@ -37,7 +37,7 @@ class _HelperClass {
 }
 
 class ChapterCommentsState extends StateNotifier<_HelperClass> {
-  final Map<int, int> _commentIdToIndex = {};
+  final Map<String, int> _commentIdToIndex = {};
   static _HelperClass empty = _HelperClass(
     comments: [],
     isLoading: false,

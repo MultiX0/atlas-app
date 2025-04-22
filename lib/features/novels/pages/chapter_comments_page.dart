@@ -2,9 +2,11 @@ import 'dart:developer';
 
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
-import 'package:atlas_app/core/common/widgets/markdown_field.dart';
+import 'package:atlas_app/core/common/widgets/app_refresh.dart';
 import 'package:atlas_app/features/novels/providers/chapter_comments_state.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
+import 'package:atlas_app/features/novels/widgets/chapter_comment_input.dart';
+import 'package:atlas_app/features/novels/widgets/chapter_comment_tile.dart';
 import 'package:atlas_app/features/novels/widgets/empty_chapters.dart';
 import 'package:atlas_app/imports.dart';
 
@@ -74,8 +76,8 @@ class _ChapterCommentsPageState extends ConsumerState<ChapterCommentsPage> {
 
   Future<void> refresh() async {
     try {
-      await Future.delayed(const Duration(milliseconds: 400), () {
-        fetchData();
+      await Future.delayed(const Duration(milliseconds: 400), () async {
+        await fetchData(refresh: true);
       });
     } catch (e) {
       log(e.toString());
@@ -86,73 +88,65 @@ class _ChapterCommentsPageState extends ConsumerState<ChapterCommentsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return RepaintBoundary(
-      child: Scaffold(
-        appBar: AppBar(
-          title: Consumer(
-            builder: (context, ref, _) {
-              final chapter = ref.read(selectedChapterProvider)!;
-              final text = chapter.title ?? "فصل رقم: ${chapter.number.toInt()}";
-              return Text(text);
-            },
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Consumer(
+          builder: (context, ref, _) {
+            final chapter = ref.read(selectedChapterProvider)!;
+            final text = chapter.title ?? "فصل رقم: ${chapter.number.toInt()}";
+            return Text(text);
+          },
         ),
-        body: Column(
-          children: [
-            Expanded(
-              child: Consumer(
-                builder: (context, ref, _) {
-                  final chapter = ref.read(selectedChapterProvider)!;
-                  final notifier = novelChapterCommentsStateProvider(chapter.id);
-                  final comments = ref.watch(notifier.select((s) => s.comments));
-                  final isLoading = ref.watch(notifier.select((s) => s.isLoading));
-                  final loadingMore = ref.watch(notifier.select((s) => s.loadingMore));
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: Consumer(
+              builder: (context, ref, _) {
+                final chapter = ref.read(selectedChapterProvider)!;
+                final notifier = novelChapterCommentsStateProvider(chapter.id);
+                final comments = ref.watch(notifier.select((s) => s.comments));
+                final isLoading = ref.watch(notifier.select((s) => s.isLoading));
+                final loadingMore = ref.watch(notifier.select((s) => s.loadingMore));
 
-                  if (isLoading) return const Loader();
+                if (isLoading) return const Loader();
 
-                  return ListView.builder(
-                    itemCount: comments.isEmpty ? 1 : comments.length + (loadingMore ? 1 : 0),
-                    itemBuilder: (context, i) {
-                      if (comments.isEmpty) {
-                        if (i == 0) {
-                          return const EmptyChapters(text: "لايوجد أي تعليقات حاليا");
+                return AppRefresh(
+                  onRefresh: refresh,
+                  child: Align(
+                    child: ListView.builder(
+                      shrinkWrap: comments.isEmpty,
+                      addRepaintBoundaries: true,
+                      cacheExtent: MediaQuery.sizeOf(context).height * 1.5,
+                      controller: _scrollController,
+                      physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+                      itemCount: comments.isEmpty ? 1 : comments.length + (loadingMore ? 1 : 0),
+                      itemBuilder: (context, i) {
+                        if (comments.isEmpty) {
+                          if (i == 0) {
+                            return const EmptyChapters(text: "لايوجد أي تعليقات حاليا");
+                          }
+                          return const SizedBox.shrink();
                         }
-                        return const SizedBox.shrink();
-                      }
-                      if (loadingMore && i == comments.length) {
-                        return const Padding(
-                          padding: EdgeInsets.all(16.0),
-                          child: Center(child: Loader()),
-                        );
-                      }
-
-                      return const ListTile();
-                    },
-                  );
-                },
-              ),
-            ),
-
-            Divider(height: 0.35, color: AppColors.mutedSilver.withValues(alpha: .15)),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 15),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ReusablePostFieldWidget(
-                      showUserData: false,
-                      onMarkupChanged: (text) {},
-                      minLines: 1,
-                      maxLines: 2,
+                        if (loadingMore && i == comments.length) {
+                          return const Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: Center(child: Loader()),
+                          );
+                        }
+                        final comment = comments[i];
+                        return ChapterCommentTile(comment: comment);
+                      },
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  IconButton(onPressed: () {}, icon: const Icon(TablerIcons.send_2)),
-                ],
-              ),
+                );
+              },
             ),
-          ],
-        ),
+          ),
+
+          Divider(height: 0.35, color: AppColors.mutedSilver.withValues(alpha: .15)),
+          const ChaptersCommentInput(),
+        ],
       ),
     );
   }

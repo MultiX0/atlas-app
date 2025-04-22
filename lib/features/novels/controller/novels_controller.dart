@@ -10,8 +10,10 @@ import 'package:atlas_app/features/library/providers/my_work_state.dart';
 import 'package:atlas_app/features/novels/db/novels_db.dart';
 import 'package:atlas_app/features/novels/models/chapter_draft_model.dart';
 import 'package:atlas_app/features/novels/models/chapter_model.dart';
+import 'package:atlas_app/features/novels/models/novel_chapter_comment_model.dart';
 import 'package:atlas_app/features/novels/models/novel_model.dart';
 import 'package:atlas_app/features/novels/models/novels_genre_model.dart';
+import 'package:atlas_app/features/novels/providers/chapter_comments_state.dart';
 import 'package:atlas_app/features/novels/providers/chapters_state.dart';
 import 'package:atlas_app/features/novels/providers/drafts_state.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
@@ -280,6 +282,63 @@ class NovelsController extends StateNotifier<bool> {
     } catch (e) {
       context.loaderOverlay.hide();
       CustomToast.error(e);
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> addChapterComment(String content) async {
+    final chapter = _ref.read(selectedChapterProvider.select((s) => s!));
+    final me = _ref.read(userState.select((s) => s.user!));
+    final id = uuid.v4();
+    final comment = NovelChapterCommentWithMeta(
+      id: id,
+      chapterId: chapter.id,
+      content: content,
+      createdAt: DateTime.now(),
+      userId: me.userId,
+      isDeleted: false,
+      isEdited: false,
+      likesCount: 0,
+      isLiked: false,
+      repliesCount: 0,
+      user: me,
+    );
+    try {
+      _ref.read(novelChapterCommentsStateProvider(chapter.id).notifier).addComment(comment);
+      await db.insertNewChapterComment(
+        chapterId: chapter.id,
+        commentId: comment.id,
+        content: content,
+        userId: comment.userId,
+      );
+      final newChapter = chapter.copyWith(commentsCount: chapter.commentsCount + 1);
+      _ref.read(chaptersStateProvider(chapter.novelId).notifier).updateChapter(newChapter);
+      _ref.read(selectedChapterProvider.notifier).state = newChapter;
+    } catch (e) {
+      _ref.read(novelChapterCommentsStateProvider(chapter.id).notifier).deleteComment(comment);
+      CustomToast.error(errorMsg);
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> handleChapterCommentLike(NovelChapterCommentWithMeta comment) async {
+    try {
+      _ref
+          .read(novelChapterCommentsStateProvider(comment.chapterId).notifier)
+          .updateComment(
+            comment.copyWith(
+              likesCount: comment.isLiked ? comment.likesCount - 1 : comment.likesCount + 1,
+              isLiked: !comment.isLiked,
+            ),
+          );
+      await db.handleChapterCommentLike(comment.id);
+    } catch (e) {
+      _ref
+          .read(novelChapterCommentsStateProvider(comment.chapterId).notifier)
+          .updateComment(comment);
+      CustomToast.error(errorMsg);
       log(e.toString());
       rethrow;
     }

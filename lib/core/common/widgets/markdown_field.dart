@@ -31,10 +31,10 @@ class ReusablePostFieldWidget extends ConsumerStatefulWidget {
   final bool adaptiveSuggestions;
 
   @override
-  ConsumerState<ReusablePostFieldWidget> createState() => _ReusablePostFieldWidgetState();
+  ConsumerState<ReusablePostFieldWidget> createState() => ReusablePostFieldWidgetState();
 }
 
-class _ReusablePostFieldWidgetState extends ConsumerState<ReusablePostFieldWidget> {
+class ReusablePostFieldWidgetState extends ConsumerState<ReusablePostFieldWidget> {
   Timer? _mentionDebounce;
   Timer? _hashtagDebounce;
   Timer? _slashDebounce;
@@ -45,6 +45,29 @@ class _ReusablePostFieldWidgetState extends ConsumerState<ReusablePostFieldWidge
   final List<Map<String, dynamic>> confirmedSlashMentions = [];
   final List<Map<String, dynamic>> confirmedMentions = [];
   final List<Map<String, dynamic>> confirmedHashtags = [];
+
+  // GlobalKey to access EnhancedFlutterMentionsState
+  final GlobalKey<EnhancedFlutterMentionsState> _mentionsKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  // Method to clear the text
+  void clearText() {
+    log('ReusablePostFieldWidget: Clearing text');
+    _mentionsKey.currentState?.clearText();
+    setState(() {
+      confirmedMentions.clear();
+      confirmedHashtags.clear();
+      confirmedSlashMentions.clear();
+      mentionSuggestions.clear();
+      hashTagsSuggestions.clear();
+      slashSuggestions.clear();
+    });
+    widget.onMarkupChanged('');
+  }
 
   void onMentionSearchChanged(String query) {
     _mentionDebounce?.cancel();
@@ -95,7 +118,6 @@ class _ReusablePostFieldWidgetState extends ConsumerState<ReusablePostFieldWidge
               )
               .toList();
 
-      // Merge confirmed hashtags to the new suggestions
       for (var item in confirmedHashtags) {
         if (!newData.any((e) => e['id'] == item['id'])) {
           newData.add(item as Map<String, Object>);
@@ -108,7 +130,6 @@ class _ReusablePostFieldWidgetState extends ConsumerState<ReusablePostFieldWidge
     });
   }
 
-  // Handler for / slash commands
   void onSlashCommandSearchChanged(String query) {
     _slashDebounce?.cancel();
     _slashDebounce = Timer(const Duration(milliseconds: 150), () async {
@@ -126,7 +147,6 @@ class _ReusablePostFieldWidgetState extends ConsumerState<ReusablePostFieldWidge
             };
           }).toList();
 
-      // Preserve previously added slash mentions
       for (var item in confirmedSlashMentions) {
         if (!newSuggestions.any((e) => e['id'] == item['id'])) {
           newSuggestions.add(item);
@@ -170,11 +190,9 @@ class _ReusablePostFieldWidgetState extends ConsumerState<ReusablePostFieldWidge
         children: [
           if (widget.showUserData) UserDataWidget(me: me),
           EnhancedFlutterMentions(
+            key: _mentionsKey, // Assign GlobalKey
             defaultText: widget.defaultText,
-            onMarkupChanged: (val) {
-              log(val);
-              widget.onMarkupChanged(val.trim());
-            },
+            onMarkupChanged: widget.onMarkupChanged,
             onMentionAdd: onMentionAdded,
             suggestionPosition: SuggestionPosition.Top,
             suggestionListHeight: 200,
@@ -224,7 +242,6 @@ class _ReusablePostFieldWidgetState extends ConsumerState<ReusablePostFieldWidge
                 style: const TextStyle(color: AppColors.primary),
                 data: hashTagsSuggestions,
                 matchAll: true,
-
                 suggestionBuilder:
                     (data) => Material(
                       color: AppColors.blackColor,
@@ -252,7 +269,6 @@ class _ReusablePostFieldWidgetState extends ConsumerState<ReusablePostFieldWidge
                     orElse: () => {"type": "novel", "display": display},
                   );
                   final type = item['type'] ?? 'novel';
-
                   return '/$type[$id]:$display/';
                 },
                 style: const TextStyle(color: AppColors.primary),
@@ -273,6 +289,7 @@ class _ReusablePostFieldWidgetState extends ConsumerState<ReusablePostFieldWidge
               ),
             ],
           ),
+          // Temporary button to test clearing
         ],
       ),
     );

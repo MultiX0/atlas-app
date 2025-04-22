@@ -2,7 +2,7 @@ import 'package:atlas_app/core/common/constants/key_names.dart';
 import 'package:atlas_app/features/auth/models/user_model.dart';
 
 class NovelChapterCommentWithMeta {
-  final int id;
+  final String id;
   final String chapterId;
   final String content;
   final DateTime createdAt;
@@ -32,7 +32,7 @@ class NovelChapterCommentWithMeta {
 
   factory NovelChapterCommentWithMeta.fromMap(Map<String, dynamic> map) {
     return NovelChapterCommentWithMeta(
-      id: map[KeyNames.id] ?? -1,
+      id: map[KeyNames.id] ?? "",
       chapterId: map[KeyNames.chapter_id] ?? "",
       content: map[KeyNames.content] ?? "",
       createdAt: DateTime.parse(map[KeyNames.created_at]),
@@ -48,7 +48,7 @@ class NovelChapterCommentWithMeta {
   }
 
   NovelChapterCommentWithMeta copyWith({
-    int? id,
+    String? id,
     String? chapterId,
     String? content,
     DateTime? createdAt,

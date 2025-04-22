@@ -1,4 +1,3 @@
-import 'package:atlas_app/core/common/utils/format_number.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:like_button/like_button.dart';
 
