@@ -36,6 +36,7 @@ class _AddChapterState extends ConsumerState<AddChapterPage> {
       _trackCount();
       loadPrevious();
       handleSave();
+      _controller.addListener(_trackTyping);
     });
     super.initState();
   }
@@ -44,6 +45,7 @@ class _AddChapterState extends ConsumerState<AddChapterPage> {
   void dispose() {
     text_title_controller.dispose();
     _controller.removeListener(_trackCount);
+    _controller.removeListener(_trackTyping);
     _controller.dispose();
     _editorFocusNode.dispose();
     _editorScrollController.dispose();
@@ -51,12 +53,17 @@ class _AddChapterState extends ConsumerState<AddChapterPage> {
     super.dispose();
   }
 
+  void _trackTyping() {
+    if (showTitleField) {
+      setState(() {
+        showTitleField = false;
+      });
+    }
+  }
+
   void _trackCount() {
     setState(() {
       count = countDeltaCharacters(_controller.document.toDelta().toJson());
-      if (showTitleField) {
-        showTitleField = false;
-      }
     });
   }
 

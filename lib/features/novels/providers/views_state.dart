@@ -22,6 +22,14 @@ class NovelViewsState extends StateNotifier<List<NovelModel>> {
     if (state.isEmpty) return null;
     return state.firstWhereOrNull((n) => n.id == id);
   }
+
+  void updateNovel(NovelModel novel) {
+    final indexOf = state.indexWhere((n) => n.id == novel.id);
+    if (indexOf == -1) return;
+    final newState = List<NovelModel>.from(state);
+    newState[indexOf] = novel;
+    state = newState;
+  }
 }
 
 final novelViewsStateProvider = StateNotifierProvider<NovelViewsState, List<NovelModel>>((ref) {

@@ -1,6 +1,7 @@
-import 'package:atlas_app/core/common/utils/custom_toast.dart';
+import 'package:atlas_app/features/novels/controller/novels_controller.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:share_plus/share_plus.dart';
 
 class NovelHeader extends ConsumerStatefulWidget {
   const NovelHeader({super.key});
@@ -168,9 +169,12 @@ class _NovelHeaderState extends ConsumerState<NovelHeader> {
                     CircleAvatar(
                       backgroundColor: AppColors.scaffoldBackground,
                       child: IconButton(
-                        color: AppColors.whiteColor,
-                        onPressed: () => CustomToast.soon(),
-                        icon: const Icon(TablerIcons.heart_plus),
+                        color: novel.isFavorite ? AppColors.primary : AppColors.whiteColor,
+                        onPressed:
+                            () => ref.read(novelsControllerProvider.notifier).handleFavorite(novel),
+                        icon: Icon(
+                          novel.isFavorite ? TablerIcons.heart_minus : TablerIcons.heart_plus,
+                        ),
                         tooltip: "Back",
                       ),
                     ),
@@ -179,7 +183,12 @@ class _NovelHeaderState extends ConsumerState<NovelHeader> {
                       backgroundColor: AppColors.scaffoldBackground,
                       child: IconButton(
                         color: AppColors.whiteColor,
-                        onPressed: () => CustomToast.soon(),
+                        onPressed: () async {
+                          final _url = 'app.atlasapp.app${Routes.novelPage}/${novel.id}';
+                          final text =
+                              'اكتشفت رواية رائعة على تطبيق أطلس! جرّب تقرأها من هنا 👉 $_url';
+                          await Share.share(text);
+                        },
                         icon: const Icon(TablerIcons.share_2),
                         tooltip: "Back",
                       ),

@@ -37,6 +37,7 @@ class _HelperClass {
 }
 
 class ChaptersState extends StateNotifier<_HelperClass> {
+  final Map<String, int> _chapterIdToIndex = {};
   static _HelperClass empty = _HelperClass(
     chapters: [],
     isLoading: false,
@@ -66,6 +67,12 @@ class ChaptersState extends StateNotifier<_HelperClass> {
       error: error ?? state.error,
       hasReachedEnd: hasReachedEnd ?? state.hasReachedEnd,
     );
+    if (chapters != null) {
+      _chapterIdToIndex.clear();
+      for (int i = 0; i < chapters.length; i++) {
+        _chapterIdToIndex[chapters[i].id] = i;
+      }
+    }
   }
 
   Future<void> fetchData({bool refresh = false}) async {
@@ -127,6 +134,34 @@ class ChaptersState extends StateNotifier<_HelperClass> {
     List<ChapterModel> updatedChapters = List.from(state.chapters);
     updatedChapters[indexOf] = chapter;
     updateState(chapters: updatedChapters);
+  }
+
+  bool isLast(String id) {
+    if (state.chapters.isEmpty) return false;
+    final index = _chapterIdToIndex[id];
+    if (index == null) return false;
+    return index == 0;
+  }
+
+  bool isFirst(String id) {
+    if (state.chapters.isEmpty) return false;
+    final index = _chapterIdToIndex[id];
+    if (index == null) return false;
+    return index == state.chapters.length - 1;
+  }
+
+  ChapterModel? getNext(String id) {
+    if (isLast(id)) return null;
+    final index = _chapterIdToIndex[id] ?? 1;
+    final nextIndex = index - 1;
+    return state.chapters[nextIndex];
+  }
+
+  ChapterModel? getPrev(String id) {
+    if (isFirst(id)) return null;
+    final index = _chapterIdToIndex[id] ?? 0;
+    final prevIndex = index + 1;
+    return state.chapters[prevIndex];
   }
 }
 

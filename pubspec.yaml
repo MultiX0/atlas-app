@@ -102,6 +102,7 @@ dependencies:
   screenshot: ^3.0.0
   no_screenshot: ^0.3.1
   popup_menu_plus: ^0.0.6
+  share_plus: ^10.1.4
 
 dev_dependencies:
   flutter_test:

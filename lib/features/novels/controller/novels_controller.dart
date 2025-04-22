@@ -15,6 +15,7 @@ import 'package:atlas_app/features/novels/models/novels_genre_model.dart';
 import 'package:atlas_app/features/novels/providers/chapters_state.dart';
 import 'package:atlas_app/features/novels/providers/drafts_state.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
+import 'package:atlas_app/features/novels/providers/views_state.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:uuid/uuid.dart';
@@ -98,6 +99,7 @@ class NovelsController extends StateNotifier<bool> {
     required List<Map<String, dynamic>> jsonContent,
     required String title,
     String? originalChapterId,
+    double? number,
   }) async {
     try {
       final id = uuid.v4();
@@ -109,7 +111,7 @@ class NovelsController extends StateNotifier<bool> {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         novelId: novelId,
-        number: nextChapterNumber.toDouble(),
+        number: number ?? nextChapterNumber.toDouble(),
         title: title.isEmpty ? null : title,
         content: jsonContent,
         userId: user.userId,
@@ -135,6 +137,13 @@ class NovelsController extends StateNotifier<bool> {
       final novelId = _ref.read(selectedNovelProvider)!.id;
       final _title = title.isEmpty ? null : title;
 
+      final draftState = _ref.read(novelChapterDraftsProvider(novelId).notifier).exists(draftId);
+      if (!draftState) {
+        final _number = _ref.read(selectedChapterProvider.select((s) => s!.number));
+        await newDraft(jsonContent: jsonContent, title: title, number: _number);
+        return;
+      }
+
       await db.updateDraft(content: jsonContent, title: _title, id: draftId);
       ChapterDraftModel draft = _ref.read(selectedDraft)!;
       final _newDraft = draft.copyWith(
@@ -156,6 +165,7 @@ class NovelsController extends StateNotifier<bool> {
     try {
       context.loaderOverlay.show();
       final id = uuid.v4();
+      final novel = _ref.read(selectedNovelProvider)!;
       final nextChapterNumber = await db.getNextChapterNumber(draft.novelId);
       final chapter = ChapterModel(
         id: id,
@@ -165,7 +175,7 @@ class NovelsController extends StateNotifier<bool> {
         content: draft.content,
         title: draft.title,
       );
-      await db.publishChapter(draft, chapter);
+      await db.publishChapter(novel, draft, chapter);
       if (draft.originalChapterId != null && draft.originalChapterId!.isNotEmpty) {
         _ref
             .read(chaptersStateProvider(draft.novelId).notifier)
@@ -196,6 +206,57 @@ class NovelsController extends StateNotifier<bool> {
           .read(chaptersStateProvider(chapter.novelId).notifier)
           .updateChapter(chapter.copyWith(has_viewed_recently: true, views: chapter.views + 1));
     } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> handleNovelView() async {
+    try {
+      final novel = _ref.read(selectedNovelProvider)!;
+      if (novel.isViewed) return;
+      final _newNovel = novel.copyWith(viewsCount: novel.viewsCount + 1, isViewed: true);
+      await db.handleNovelView(novel.id);
+      _ref.read(novelViewsStateProvider.notifier).updateNovel(_newNovel);
+      _ref.read(selectedNovelProvider.notifier).state = _newNovel;
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> handleFavorite(NovelModel novel) async {
+    try {
+      final newNovel = novel.copyWith(
+        isFavorite: !novel.isFavorite,
+        favoriteCount: novel.isFavorite ? novel.favoriteCount - 1 : novel.favoriteCount + 1,
+      );
+      _ref.read(novelViewsStateProvider.notifier).updateNovel(newNovel);
+      _ref.read(selectedNovelProvider.notifier).state = newNovel;
+      await db.handleFavorite(novel);
+      CustomToast.success(
+        "تمت ${novel.isFavorite ? "ازالة" : "اضافة"} الرواية ${novel.isFavorite ? "من" : "الى"} المفضلة بنجاح",
+      );
+    } catch (e) {
+      CustomToast.error(errorMsg);
+      _ref.read(novelViewsStateProvider.notifier).updateNovel(novel);
+      _ref.read(selectedNovelProvider.notifier).state = novel;
+
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> deleteChapter(BuildContext context, ChapterModel chapter) async {
+    try {
+      context.loaderOverlay.show();
+      await db.deleteChapter(chapter.id);
+      context.loaderOverlay.hide();
+      _ref.read(chaptersStateProvider(chapter.novelId).notifier).deleteChapter(chapter.id);
+      CustomToast.success("تم حذف الفصل بنجاح");
+    } catch (e) {
+      context.loaderOverlay.hide();
+      CustomToast.error(e);
       log(e.toString());
       rethrow;
     }

@@ -74,7 +74,7 @@ class CustomButton extends StatelessWidget {
                     Text(
                       text,
                       style: TextStyle(
-                        fontFamily: accentFont,
+                        fontFamily: arabicAccentFont,
                         fontWeight: fontWeight,
                         fontSize: fontSize,
                       ),

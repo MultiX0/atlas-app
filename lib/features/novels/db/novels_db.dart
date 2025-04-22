@@ -19,9 +19,11 @@ class NovelsDb {
   SupabaseQueryBuilder get _novelsGenresTable => _client.from(TableNames.novel_genres);
   SupabaseQueryBuilder get _novelsTable => _client.from(TableNames.novels);
   SupabaseQueryBuilder get _novelsView => _client.from(ViewNames.novels_details);
+  // SupabaseQueryBuilder get _novelViewsTable => _client.from(TableNames.novel_views);
   SupabaseQueryBuilder get _novelChaptersTable => _client.from(TableNames.novel_chapters);
   SupabaseQueryBuilder get _draftChaptersTable => _client.from(TableNames.novel_chapter_drafts);
   SupabaseQueryBuilder get _chaptersView => _client.from(ViewNames.novel_chapters_with_views);
+  // SupabaseQueryBuilder get _novelsFavoriteTable => _client.from(TableNames.users_favorite_novels);
 
   Future<NovelModel?> getNovel(String id) async {
     try {
@@ -52,9 +54,36 @@ class NovelsDb {
     }
   }
 
+  Future<void> deleteChapter(String chapterId) async {
+    try {
+      await _novelChaptersTable.delete().eq(KeyNames.id, chapterId);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
   Future<void> handleChapterView(String chapterId) async {
     try {
       await _client.rpc(FunctionNames.log_novel_chapter_view, params: {'p_chapter_id': chapterId});
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> handleFavorite(NovelModel novel) async {
+    try {
+      await _client.rpc(FunctionNames.toggle_favorite_novel, params: {'p_novel_id': novel.id});
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> handleNovelView(String novelId) async {
+    try {
+      await _client.rpc(FunctionNames.log_novel_view, params: {'p_novel_id': novelId});
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -150,7 +179,11 @@ class NovelsDb {
     }
   }
 
-  Future<void> publishChapter(ChapterDraftModel draft, ChapterModel chapter) async {
+  Future<void> publishChapter(
+    NovelModel novel,
+    ChapterDraftModel draft,
+    ChapterModel chapter,
+  ) async {
     try {
       if (draft.originalChapterId != null && draft.originalChapterId!.isNotEmpty) {
         await updateChapter(chapter.copyWith(id: draft.originalChapterId));

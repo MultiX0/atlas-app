@@ -1,3 +1,4 @@
+import 'package:atlas_app/core/common/utils/format_number.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:like_button/like_button.dart';
 
@@ -28,7 +29,7 @@ class CustomLikeButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return LikeButton(
       countDecoration: (count, likeCount) {
-        return Text((likeCount ?? 0).toString(), style: counterStyle);
+        return Text(formatNumber(likeCount ?? 0), style: counterStyle);
       },
       isLiked: isLiked,
       size: size,

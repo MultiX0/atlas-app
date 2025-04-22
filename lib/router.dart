@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:atlas_app/features/assistant/pages/chat_page.dart';
 import 'package:atlas_app/features/auth/pages/forget_password/confirm_email_page.dart';
 import 'package:atlas_app/features/auth/pages/forget_password/email_field_page.dart';
 import 'package:atlas_app/features/auth/pages/forget_password/update_password.dart';
@@ -19,6 +20,7 @@ import 'package:atlas_app/features/posts/pages/make_post_page.dart';
 import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/features/profile/pages/profile_page.dart';
 import 'package:atlas_app/features/reviews/pages/add_comic_review.dart';
+import 'package:atlas_app/features/scrolls/pages/scrolls_page.dart';
 import 'package:atlas_app/features/search/pages/search_page.dart';
 import 'package:atlas_app/features/splash/splash_page.dart';
 import 'package:atlas_app/nav_bar.dart';
@@ -73,7 +75,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [buildRoute(path: Routes.home, child: const SizedBox(), fade: true)],
           ),
           StatefulShellBranch(
-            routes: [buildRoute(path: Routes.aiPage, child: const SizedBox(), fade: true)],
+            routes: [buildRoute(path: Routes.aiPage, child: const AssistantChatPage(), fade: true)],
           ),
           StatefulShellBranch(
             routes: [buildRoute(path: Routes.explore, child: const ExplorePage(), fade: true)],
@@ -82,7 +84,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [buildRoute(path: Routes.makePostPage, child: const SizedBox(), fade: true)],
           ),
           StatefulShellBranch(
-            routes: [buildRoute(path: Routes.scrolls, child: const SizedBox(), fade: true)],
+            routes: [buildRoute(path: Routes.scrolls, child: const ScrollsPage(), fade: true)],
           ),
           StatefulShellBranch(
             routes: [buildRoute(path: Routes.library, child: const LibraryPage(), fade: true)],

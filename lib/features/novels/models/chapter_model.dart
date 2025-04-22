@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:atlas_app/imports.dart';
 
 class ChapterModel {
@@ -64,5 +65,10 @@ class ChapterModel {
       views: map[KeyNames.view_count] ?? 0,
       has_viewed_recently: map[KeyNames.has_viewed_recently] ?? false,
     );
+  }
+
+  @override
+  String toString() {
+    return 'ChapterModel(id: $id, created_at: $created_at, number: $number, novelId: $novelId, title: $title, views: $views, has_viewed_recently: $has_viewed_recently)';
   }
 }

@@ -1,4 +1,5 @@
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
+import 'package:atlas_app/core/common/utils/format_number.dart';
 import 'package:atlas_app/imports.dart';
 
 class InteractionBar extends StatelessWidget {
@@ -119,7 +120,7 @@ class _InteractionButton extends StatelessWidget {
           children: [
             Icon(icon, size: 20, color: iconColor),
             const SizedBox(width: 4),
-            Text('$count', style: countStyle),
+            Text(formatNumber(count), style: countStyle),
           ],
         ),
       ),

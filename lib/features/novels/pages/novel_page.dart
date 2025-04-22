@@ -1,3 +1,5 @@
+import 'package:atlas_app/features/novels/controller/novels_controller.dart';
+import 'package:atlas_app/features/novels/pages/characters_page.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/features/novels/widgets/novel_chapters.dart';
 import 'package:atlas_app/features/novels/widgets/novel_header.dart';
@@ -26,7 +28,9 @@ class _NovelPageState extends ConsumerState<NovelPage> with SingleTickerProvider
     super.initState();
   }
 
-  void handleView() {}
+  void handleView() {
+    ref.read(novelsControllerProvider.notifier).handleNovelView();
+  }
 
   @override
   void dispose() {
@@ -61,7 +65,7 @@ class _NovelPageState extends ConsumerState<NovelPage> with SingleTickerProvider
             const NovelInfo(),
             NovelChapters(novelId: novelId),
             const SizedBox(),
-            const SizedBox(),
+            const CharactersPage(),
           ],
         ),
       ),

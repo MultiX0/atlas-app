@@ -1,11 +1,15 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:atlas_app/core/services/gal_service.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/features/novels/widgets/share_card.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:screenshot/screenshot.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:social_sharing_plus/social_sharing_plus.dart';
 import 'package:uuid/uuid.dart';
 
@@ -29,13 +33,21 @@ class _TestWidgetState extends ConsumerState<ShareWidget> {
   ];
 
   int selected = 0;
-  static const SocialPlatform platform = SocialPlatform.whatsapp;
   bool isMultipleShare = true;
   final ScreenshotController screenshotController = ScreenshotController();
   @override
   void dispose() {
     super.dispose();
   }
+
+  final List<Map<String, dynamic>> socialMediaShare = [
+    {'icon': TablerIcons.brand_instagram},
+    {'icon': TablerIcons.brand_facebook, 'platform': SocialPlatform.facebook},
+    {'icon': TablerIcons.brand_whatsapp, 'platform': SocialPlatform.whatsapp},
+    {'icon': TablerIcons.brand_telegram, 'platform': SocialPlatform.telegram},
+    {'icon': TablerIcons.brand_reddit, 'platform': SocialPlatform.reddit},
+    {'icon': TablerIcons.brand_x, 'platform': SocialPlatform.twitter},
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +82,7 @@ class _TestWidgetState extends ConsumerState<ShareWidget> {
                 ),
               ),
               const Padding(
-                padding: EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(20.0),
                 child: LanguageText(
                   "أختر الشكل اللذي تفضله",
                   style: TextStyle(color: AppColors.mutedSilver, fontSize: 18),
@@ -102,21 +114,73 @@ class _TestWidgetState extends ConsumerState<ShareWidget> {
                   },
                 ),
               ),
-              // const SizedBox(height: 15),
-              // IconButton(
-              //   onPressed: () async {
-              //     final _mediaPath = await captureWidget();
-              //     if (_mediaPath == null) return;
-              //     await SocialSharingPlus.shareToSocialMedia(
-              //       platform,
-              //       'test',
-              //       media: _mediaPath.absolute.path,
-              //       isOpenBrowser: true,
-              //       onAppNotInstalled: () {},
-              //     );
-              //   },
-              //   icon: const Icon(Icons.shape_line),
-              // ),
+
+              const Padding(
+                padding: EdgeInsets.all(20.0),
+                child: LanguageText(
+                  "مشاركة في",
+                  style: TextStyle(color: AppColors.mutedSilver, fontSize: 18),
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 3),
+                child: SizedBox(
+                  height: 50,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children:
+                          socialMediaShare.map((data) {
+                            return GestureDetector(
+                              onTap: () async {
+                                final _mediaPath = await captureWidget();
+                                if (_mediaPath == null) return;
+                                if (data['platform'] == null) {
+                                  await Share.shareXFiles([
+                                    XFile(_mediaPath.path),
+                                  ], text: "اقتباس رائع من تطبيق أطلس 📚✨");
+                                  return;
+                                }
+                                await SocialSharingPlus.shareToSocialMedia(
+                                  data['platform'],
+                                  """
+                                  "${widget.content}"\n
+                                  من رواية $novelName على تطبيق أطلس 📚✨\n
+                                  اكتشف المزيد: $appDomain
+                                  """,
+                                  media: _mediaPath.absolute.path,
+                                  isOpenBrowser: true,
+                                  onAppNotInstalled: () {},
+                                );
+                              },
+                              child: CircleAvatar(
+                                radius: 35,
+                                backgroundColor: AppColors.scaffoldBackground,
+                                child: Icon(data['icon'], color: AppColors.primary),
+                              ),
+                            );
+                          }).toList(),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 15),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: CustomButton(
+                  text: "حفظ في الجهاز",
+                  onPressed: () async {
+                    final _mediaPath = await captureWidget();
+                    if (_mediaPath == null) return;
+
+                    await saveLocalFile(_mediaPath);
+                    if (!mounted) return;
+                    context.pop();
+                  },
+                  fontSize: 16,
+                ),
+              ),
             ],
           ),
         ),

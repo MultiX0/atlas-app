@@ -7,13 +7,13 @@ import 'package:dio/dio.dart';
 import 'package:gal/gal.dart';
 import 'package:uuid/uuid.dart';
 
+const _uuid = Uuid();
 Future<void> downloadImage(String url) async {
   try {
     await _checkAccess();
-    const uuid = Uuid();
 
     // Download to a temporary file first
-    final tempPath = '${Directory.systemTemp.path}/${uuid.v4()}';
+    final tempPath = '${Directory.systemTemp.path}/${_uuid.v4()}';
 
     CustomToast.get(
       text: "جاري التحميل",
@@ -35,7 +35,7 @@ Future<void> downloadImage(String url) async {
     }
 
     // Create the final path with the correct extension
-    final finalPath = '${Directory.systemTemp.path}/${uuid.v4()}.$extension';
+    final finalPath = '${Directory.systemTemp.path}/${_uuid.v4()}.$extension';
 
     await File(tempPath).copy(finalPath);
     await File(tempPath).delete(); // Clean up temp file
@@ -44,8 +44,18 @@ Future<void> downloadImage(String url) async {
     await Gal.putImage(finalPath, album: 'Atlas');
     CustomToast.success("تم حفظ الصورة بنجاح");
   } catch (e) {
-    CustomToast.error(e);
     log(e.toString());
+  }
+}
+
+Future<void> saveLocalFile(File file) async {
+  try {
+    await _checkAccess();
+    Gal.putImage(file.absolute.path, album: 'Atlas');
+    CustomToast.success("تم حفظ الصورة بنجاح");
+  } catch (e) {
+    log(e.toString());
+    CustomToast.error(e);
   }
 }
 

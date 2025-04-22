@@ -122,6 +122,10 @@ class NovelChapterDrafts extends StateNotifier<_HelperClass> {
     updatedDrafts[indexOf] = draft;
     updateState(drafts: updatedDrafts);
   }
+
+  bool exists(String id) {
+    return state.drafts.any((d) => d.id == id);
+  }
 }
 
 final novelChapterDraftsProvider =
