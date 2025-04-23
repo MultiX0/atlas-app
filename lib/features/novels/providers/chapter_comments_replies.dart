@@ -2,11 +2,11 @@
 import 'dart:developer';
 
 import 'package:atlas_app/features/novels/db/novels_db.dart';
-import 'package:atlas_app/features/novels/models/novel_chapter_comment_model.dart';
+import 'package:atlas_app/features/novels/models/novel_chapter_comment_reply_model.dart';
 import 'package:atlas_app/imports.dart';
 
 class _HelperClass {
-  final List<NovelChapterCommentWithMeta> comments;
+  final List<NovelChapterCommentReplyWithLikes> comments;
   final String? error;
   final bool isLoading;
   final bool loadingMore;
@@ -20,7 +20,7 @@ class _HelperClass {
   });
 
   _HelperClass copyWith({
-    List<NovelChapterCommentWithMeta>? comments,
+    List<NovelChapterCommentReplyWithLikes>? comments,
     String? error,
     bool? isLoading,
     bool? loadingMore,
@@ -36,7 +36,7 @@ class _HelperClass {
   }
 }
 
-class ChapterCommentsState extends StateNotifier<_HelperClass> {
+class ChapterCommentsRepliesState extends StateNotifier<_HelperClass> {
   final Map<String, int> _commentIdToIndex = {};
   static _HelperClass empty = _HelperClass(
     comments: [],
@@ -44,17 +44,17 @@ class ChapterCommentsState extends StateNotifier<_HelperClass> {
     loadingMore: false,
     hasReachedEnd: false,
   );
-  final String _chapterId;
+  final String _commentId;
   final Ref _ref;
 
-  ChapterCommentsState({required Ref ref, required String chapterId})
-    : _chapterId = chapterId,
+  ChapterCommentsRepliesState({required Ref ref, required String commentId})
+    : _commentId = commentId,
       _ref = ref,
       super(empty);
 
   NovelsDb get _db => _ref.watch(novelsDbProvider);
   void updateState({
-    List<NovelChapterCommentWithMeta>? comments,
+    List<NovelChapterCommentReplyWithLikes>? comments,
     bool? isLoading,
     bool? loadingMore,
     String? error,
@@ -88,11 +88,11 @@ class ChapterCommentsState extends StateNotifier<_HelperClass> {
         updateState(error: null, loadingMore: true, isLoading: false);
       }
 
-      const _pageSize = 20;
+      const _pageSize = 5;
       final startIndex = refresh ? 0 : state.comments.length;
 
-      final comments = await _db.getChapterComments(
-        chapterId: _chapterId,
+      final comments = await _db.getChapterCommentsReplies(
+        commentId: _commentId,
         startIndex: startIndex,
         pageSize: _pageSize,
       );
@@ -113,34 +113,30 @@ class ChapterCommentsState extends StateNotifier<_HelperClass> {
     }
   }
 
-  void updateComment(NovelChapterCommentWithMeta comment) {
+  void updateComment(NovelChapterCommentReplyWithLikes comment) {
     int? indexOf = _commentIdToIndex[comment.id];
     if (indexOf == null) {
       indexOf = state.comments.indexWhere((c) => c.id == comment.id);
       if (indexOf == -1) return;
     }
 
-    List<NovelChapterCommentWithMeta> updatedState = List.from(state.comments);
+    List<NovelChapterCommentReplyWithLikes> updatedState = List.from(state.comments);
     updatedState[indexOf] = comment;
     updateState(comments: updatedState);
   }
 
-  void addComment(NovelChapterCommentWithMeta comment) {
-    List<NovelChapterCommentWithMeta> updatedState = List.from(state.comments);
+  void addComment(NovelChapterCommentReplyWithLikes comment) {
+    List<NovelChapterCommentReplyWithLikes> updatedState = List.from(state.comments);
     updatedState.insert(0, comment);
     updateState(comments: updatedState);
   }
 
-  void deleteComment(NovelChapterCommentWithMeta comment) {
-    updateState(comments: state.comments.where((c) => c.id != comment.id).toList());
-  }
-
-  NovelChapterCommentWithMeta getById(String id) {
-    return state.comments.firstWhere((c) => c.id == id);
+  void deleteComment(String id) {
+    updateState(comments: state.comments.where((c) => c.id != id).toList());
   }
 }
 
-final novelChapterCommentsStateProvider = StateNotifierProvider.family
-    .autoDispose<ChapterCommentsState, _HelperClass, String>((ref, chapterId) {
-      return ChapterCommentsState(ref: ref, chapterId: chapterId);
+final novelChapterCommentRepliesState = StateNotifierProvider.family
+    .autoDispose<ChapterCommentsRepliesState, _HelperClass, String>((ref, commentId) {
+      return ChapterCommentsRepliesState(ref: ref, commentId: commentId);
     });

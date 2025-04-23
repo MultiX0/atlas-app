@@ -20,6 +20,7 @@ class ReusablePostFieldWidget extends ConsumerStatefulWidget {
     this.showUserData = true,
     required this.onMarkupChanged,
     this.adaptiveSuggestions = true,
+    this.padding = const EdgeInsets.all(16.0),
   });
 
   final String? defaultText;
@@ -29,6 +30,7 @@ class ReusablePostFieldWidget extends ConsumerStatefulWidget {
   final bool showUserData;
   final Function(String) onMarkupChanged;
   final bool adaptiveSuggestions;
+  final EdgeInsets padding;
 
   @override
   ConsumerState<ReusablePostFieldWidget> createState() => ReusablePostFieldWidgetState();
@@ -55,9 +57,9 @@ class ReusablePostFieldWidgetState extends ConsumerState<ReusablePostFieldWidget
   }
 
   // Method to clear the text
-  void clearText() {
+  void clearText({String? text}) {
     log('ReusablePostFieldWidget: Clearing text');
-    _mentionsKey.currentState?.clearText();
+    _mentionsKey.currentState?.clearText(text: text);
     setState(() {
       confirmedMentions.clear();
       confirmedHashtags.clear();
@@ -66,7 +68,7 @@ class ReusablePostFieldWidgetState extends ConsumerState<ReusablePostFieldWidget
       hashTagsSuggestions.clear();
       slashSuggestions.clear();
     });
-    widget.onMarkupChanged('');
+    widget.onMarkupChanged(text ?? '');
   }
 
   void onMentionSearchChanged(String query) {
@@ -185,7 +187,7 @@ class ReusablePostFieldWidgetState extends ConsumerState<ReusablePostFieldWidget
   Widget build(BuildContext context) {
     final me = ref.watch(userState).user!;
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: widget.padding,
       child: Column(
         children: [
           if (widget.showUserData) UserDataWidget(me: me),

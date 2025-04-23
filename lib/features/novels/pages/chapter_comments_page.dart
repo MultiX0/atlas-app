@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/core/common/widgets/app_refresh.dart';
+import 'package:atlas_app/core/common/widgets/reuseable_comment_widget.dart';
 import 'package:atlas_app/features/novels/providers/chapter_comments_state.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/features/novels/widgets/chapter_comment_input.dart';
@@ -135,7 +136,7 @@ class _ChapterCommentsPageState extends ConsumerState<ChapterCommentsPage> {
                           );
                         }
                         final comment = comments[i];
-                        return ChapterCommentTile(comment: comment);
+                        return ChapterCommentTile(key: ValueKey(comment.id), comment: comment);
                       },
                     ),
                   ),
@@ -145,8 +146,67 @@ class _ChapterCommentsPageState extends ConsumerState<ChapterCommentsPage> {
           ),
 
           Divider(height: 0.35, color: AppColors.mutedSilver.withValues(alpha: .15)),
+          const ReplyStatusWidget(),
           const ChaptersCommentInput(),
         ],
+      ),
+    );
+  }
+}
+
+class ReplyStatusWidget extends StatelessWidget {
+  const ReplyStatusWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return RepaintBoundary(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Directionality(
+          textDirection: TextDirection.rtl,
+          child: Consumer(
+            builder: (context, ref, _) {
+              final replitedTo = ref.watch(repliedToProvider);
+              if (replitedTo == null || replitedTo.isEmpty) return const SizedBox.shrink();
+              final username = replitedTo[KeyNames.username];
+              final content = replitedTo[KeyNames.content];
+
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Flexible(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "رد على $username",
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontFamily: arabicAccentFont,
+                          ),
+                        ),
+                        CommentRichTextView(
+                          text: content,
+                          style: const TextStyle(
+                            color: AppColors.mutedSilver,
+                            fontFamily: arabicAccentFont,
+                          ),
+                          maxLines: 1,
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      ref.read(repliedToProvider.notifier).state = null;
+                    },
+                    icon: Icon(Icons.close, color: AppColors.whiteColor),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
       ),
     );
   }

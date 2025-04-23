@@ -13,6 +13,7 @@ class NovelChapterCommentReplyWithLikes {
   final int likesCount;
   final bool isLiked;
   final UserModel user;
+  final UserModel parent_user;
 
   NovelChapterCommentReplyWithLikes({
     required this.id,
@@ -27,6 +28,7 @@ class NovelChapterCommentReplyWithLikes {
     required this.isDeleted,
     required this.likesCount,
     required this.isLiked,
+    required this.parent_user,
   });
 
   factory NovelChapterCommentReplyWithLikes.fromMap(Map<String, dynamic> map) {
@@ -43,6 +45,7 @@ class NovelChapterCommentReplyWithLikes {
       likesCount: map[KeyNames.likes_count] ?? 0,
       isLiked: map[KeyNames.is_liked] ?? false,
       user: UserModel.fromMap(map[KeyNames.user]),
+      parent_user: UserModel.fromMap(map[KeyNames.parent_user]),
     );
   }
 
@@ -59,6 +62,7 @@ class NovelChapterCommentReplyWithLikes {
     int? likesCount,
     bool? isLiked,
     UserModel? user,
+    UserModel? parent_user,
   }) {
     return NovelChapterCommentReplyWithLikes(
       id: id ?? this.id,
@@ -73,6 +77,7 @@ class NovelChapterCommentReplyWithLikes {
       likesCount: likesCount ?? this.likesCount,
       isLiked: isLiked ?? this.isLiked,
       user: user ?? this.user,
+      parent_user: parent_user ?? this.parent_user,
     );
   }
 }

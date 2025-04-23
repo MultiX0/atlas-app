@@ -11,8 +11,10 @@ import 'package:atlas_app/features/novels/db/novels_db.dart';
 import 'package:atlas_app/features/novels/models/chapter_draft_model.dart';
 import 'package:atlas_app/features/novels/models/chapter_model.dart';
 import 'package:atlas_app/features/novels/models/novel_chapter_comment_model.dart';
+import 'package:atlas_app/features/novels/models/novel_chapter_comment_reply_model.dart';
 import 'package:atlas_app/features/novels/models/novel_model.dart';
 import 'package:atlas_app/features/novels/models/novels_genre_model.dart';
+import 'package:atlas_app/features/novels/providers/chapter_comments_replies.dart';
 import 'package:atlas_app/features/novels/providers/chapter_comments_state.dart';
 import 'package:atlas_app/features/novels/providers/chapters_state.dart';
 import 'package:atlas_app/features/novels/providers/drafts_state.dart';
@@ -339,6 +341,67 @@ class NovelsController extends StateNotifier<bool> {
           .read(novelChapterCommentsStateProvider(comment.chapterId).notifier)
           .updateComment(comment);
       CustomToast.error(errorMsg);
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> handleChapterCommentReplyLike(NovelChapterCommentReplyWithLikes reply) async {
+    try {
+      _ref
+          .read(novelChapterCommentRepliesState(reply.commentId).notifier)
+          .updateComment(
+            reply.copyWith(
+              likesCount: reply.isLiked ? reply.likesCount - 1 : reply.likesCount + 1,
+              isLiked: !reply.isLiked,
+            ),
+          );
+      await db.handleChapterCommentReplyLike(reply.id);
+    } catch (e) {
+      _ref.read(novelChapterCommentRepliesState(reply.commentId).notifier).updateComment(reply);
+      CustomToast.error(errorMsg);
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> replyToComment({required String commentId, required String replyContent}) async {
+    final id = uuid.v4();
+    final _chapter = _ref.read(selectedChapterProvider)!;
+    final comment = _ref
+        .read(novelChapterCommentsStateProvider(_chapter.id).notifier)
+        .getById(commentId);
+    try {
+      final _map = _ref.read(repliedToProvider)!;
+      final parentCommentUserId = _map[KeyNames.parent_comment_author_id];
+      final me = _ref.read(userState.select((s) => s.user!));
+      final replyModel = NovelChapterCommentReplyWithLikes(
+        parent_user: _map[KeyNames.parent_user],
+        id: id,
+        commentId: commentId,
+        content: replyContent,
+        userId: me.userId,
+        parentCommentAuthorId: parentCommentUserId,
+        createdAt: DateTime.now(),
+        user: me,
+        isEdited: false,
+        isDeleted: false,
+        likesCount: 0,
+        isLiked: false,
+      );
+
+      _ref.read(novelChapterCommentRepliesState(commentId).notifier).addComment(replyModel);
+      _ref
+          .read(novelChapterCommentsStateProvider(commentId).notifier)
+          .updateComment(comment.copyWith(repliesCount: comment.repliesCount + 1));
+      await db.handleAddNewChapterCommentReply(replyModel);
+    } catch (e) {
+      CustomToast.error(errorMsg);
+      _ref.read(novelChapterCommentRepliesState(comment.id).notifier).deleteComment(id);
+      _ref
+          .read(novelChapterCommentsStateProvider(comment.chapterId).notifier)
+          .updateComment(comment);
+
       log(e.toString());
       rethrow;
     }

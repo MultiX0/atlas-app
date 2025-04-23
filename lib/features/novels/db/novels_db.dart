@@ -34,6 +34,9 @@ class NovelsDb {
   SupabaseQueryBuilder get _novelChapterCommentsTable =>
       _client.from(TableNames.novel_chapter_comments);
 
+  SupabaseQueryBuilder get _novelChapterCommentRepliesTable =>
+      _client.from(TableNames.novel_chapter_comment_replies);
+
   // SupabaseQueryBuilder get _novelsFavoriteTable => _client.from(TableNames.users_favorite_novels);
 
   Future<NovelModel?> getNovel(String id) async {
@@ -112,6 +115,21 @@ class NovelsDb {
     }
   }
 
+  Future<void> handleAddNewChapterCommentReply(NovelChapterCommentReplyWithLikes reply) async {
+    try {
+      await _novelChapterCommentRepliesTable.insert({
+        KeyNames.id: reply.id,
+        KeyNames.userId: reply.userId,
+        KeyNames.content: reply.content,
+        KeyNames.parent_comment_author_id: reply.parentCommentAuthorId,
+        KeyNames.comment_id: reply.commentId,
+      });
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
   Future<void> handleChapterView(String chapterId) async {
     try {
       await _client.rpc(FunctionNames.log_novel_chapter_view, params: {'p_chapter_id': chapterId});
@@ -181,6 +199,18 @@ class NovelsDb {
       await _client.rpc(
         FunctionNames.toggle_chapter_comment_like,
         params: {'p_comment_id': commentId},
+      );
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> handleChapterCommentReplyLike(String replyId) async {
+    try {
+      await _client.rpc(
+        FunctionNames.toggle_chapter_comment_reply_like,
+        params: {'p_reply_id': replyId},
       );
     } catch (e) {
       log(e.toString());

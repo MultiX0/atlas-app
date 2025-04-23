@@ -131,4 +131,5 @@ class KeyNames {
   static const is_deleted = 'is_deleted';
   static const chapter_id = 'chapter_id';
   static const replies_count = 'replies_count';
+  static const parent_user = 'parent_user';
 }

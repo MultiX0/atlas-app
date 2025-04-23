@@ -121,16 +121,19 @@ class EnhancedFlutterMentionsState extends State<EnhancedFlutterMentions> {
   String? _currentTrigger;
 
   // Method to clear the text
-  void clearText() {
+  void clearText({String? text}) {
     if (controller != null) {
       controller!.clear(); // Clear the text in the controller
       setState(() {
         _selectedMention = null;
         _currentTrigger = null;
         showSuggestions.value = false;
+        if (text != null) {
+          controller!.text = text;
+        }
       });
       if (widget.onMarkupChanged != null) {
-        widget.onMarkupChanged!(''); // Notify listeners of cleared text
+        widget.onMarkupChanged!(text ?? ''); // Notify listeners of cleared text
       }
       if (widget.onSuggestionVisibleChanged != null) {
         widget.onSuggestionVisibleChanged!(false); // Hide suggestions

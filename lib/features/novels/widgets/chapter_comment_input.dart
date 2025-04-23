@@ -1,5 +1,6 @@
 import 'package:atlas_app/core/common/widgets/markdown_field.dart';
 import 'package:atlas_app/features/novels/controller/novels_controller.dart';
+import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
 
 class ChaptersCommentInput extends StatefulWidget {
@@ -15,11 +16,12 @@ class _ChaptersCommentInputState extends State<ChaptersCommentInput> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 15),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 25),
       child: Row(
         children: [
           Expanded(
             child: ReusablePostFieldWidget(
+              padding: EdgeInsets.zero,
               key: _postFieldKey,
               showUserData: false,
               onMarkupChanged: (text) {
@@ -38,7 +40,21 @@ class _ChaptersCommentInputState extends State<ChaptersCommentInput> {
                 style: IconButton.styleFrom(backgroundColor: AppColors.primary),
                 onPressed: () {
                   if (input.trim().isEmpty) return;
-                  ref.read(novelsControllerProvider.notifier).addChapterComment(input);
+                  final replitedTo = ref.read(repliedToProvider);
+                  if (replitedTo == null || replitedTo.isEmpty) {
+                    ref.read(novelsControllerProvider.notifier).addChapterComment(input);
+                    _postFieldKey.currentState?.clearText();
+                    return;
+                  }
+
+                  ref
+                      .read(novelsControllerProvider.notifier)
+                      .replyToComment(
+                        commentId: replitedTo[KeyNames.comment_id],
+                        replyContent: input,
+                      );
+
+                  ref.read(repliedToProvider.notifier).state = null;
                   _postFieldKey.currentState?.clearText();
                 },
                 icon: const Icon(TablerIcons.send_2),
