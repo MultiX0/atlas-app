@@ -1,3 +1,4 @@
+import 'package:atlas_app/features/profile/widgets/profile_options.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 
@@ -141,13 +142,16 @@ class ProfileHeader extends ConsumerWidget {
                     ],
 
                     const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-                      decoration: BoxDecoration(
-                        color: AppColors.scaffoldForeground,
-                        borderRadius: BorderRadius.circular(8),
+                    InkWell(
+                      onTap: () => openMoreSheet(context),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+                        decoration: BoxDecoration(
+                          color: AppColors.scaffoldForeground,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Center(child: Icon(Icons.more_vert, size: 20)),
                       ),
-                      child: const Center(child: Icon(Icons.more_vert, size: 20)),
                     ),
                   ],
                 ),
@@ -156,6 +160,19 @@ class ProfileHeader extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+
+  void openMoreSheet(BuildContext context) {
+    openSheet(
+      context: context,
+      child: Consumer(
+        builder: (context, ref, _) {
+          final me = ref.read(userState).user!;
+          final isMe = me.userId == user.userId;
+          return UserProfileOptions(user: user, isMe: isMe);
+        },
+      ),
     );
   }
 

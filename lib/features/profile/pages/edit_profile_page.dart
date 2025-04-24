@@ -1,7 +1,10 @@
+import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/image_picker.dart';
 import 'package:atlas_app/features/profile/controller/profile_controller.dart';
 import 'package:atlas_app/imports.dart';
 import 'dart:io';
+
+import 'package:flutter/services.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -40,6 +43,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   void _submit() {
+    if (_usernameController.text.trim().length < 3) {
+      CustomToast.error('اسم المستخدم يجب أن يكون أكثر من 3 حروف');
+      return;
+    }
     ref
         .read(profileControllerProvider.notifier)
         .updateProfile(
@@ -98,7 +105,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: _submit,
         backgroundColor: AppColors.primary.withValues(alpha: .5),
-        child: const Icon(Icons.done),
+        child: Icon(Icons.done, color: AppColors.whiteColor),
       ),
     );
   }
@@ -256,6 +263,11 @@ class EditBody extends StatelessWidget {
               controller: fullNameController,
               decoration: InputDecoration(
                 labelText: "الاسم الكامل",
+                labelStyle: const TextStyle(
+                  fontFamily: arabicAccentFont,
+                  color: AppColors.primary,
+                  fontSize: 16,
+                ),
                 hintText: "أدخل اسمك هنا",
                 hintStyle: const TextStyle(fontFamily: arabicAccentFont),
                 floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -273,12 +285,18 @@ class EditBody extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(6),
             child: TextField(
+              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^[a-z0-9_.]*$'))],
               controller: usernameController,
               decoration: InputDecoration(
                 labelText: "اسم المستخدم",
+                labelStyle: const TextStyle(
+                  fontFamily: arabicAccentFont,
+                  color: AppColors.primary,
+                  fontSize: 16,
+                ),
                 hintText: "أدخل اسم المستخدم الخاص بك",
                 hintStyle: const TextStyle(fontFamily: arabicAccentFont),
-                prefixIcon: const Icon(LucideIcons.at_sign),
+                prefixIcon: const Icon(LucideIcons.at_sign, color: AppColors.mutedSilver),
                 floatingLabelBehavior: FloatingLabelBehavior.always,
                 filled: true,
                 fillColor: AppColors.textFieldFillColor,
@@ -305,6 +323,11 @@ class EditBody extends StatelessWidget {
               maxLines: null,
               decoration: InputDecoration(
                 labelText: "البايو",
+                labelStyle: const TextStyle(
+                  fontFamily: arabicAccentFont,
+                  color: AppColors.primary,
+                  fontSize: 16,
+                ),
                 hintStyle: const TextStyle(fontFamily: arabicAccentFont),
                 floatingLabelBehavior: FloatingLabelBehavior.always,
                 filled: true,

@@ -6,6 +6,18 @@ import 'package:atlas_app/core/common/utils/hashing.dart';
 import 'package:atlas_app/features/auth/models/user_metadata.dart';
 import 'package:atlas_app/imports.dart';
 
+class IsLoggedState extends StateNotifier<bool> {
+  IsLoggedState() : super(false);
+
+  void updateState(bool isLogged) {
+    state = isLogged;
+  }
+}
+
+final isLoggedProvider = StateNotifierProvider<IsLoggedState, bool>((ref) {
+  return IsLoggedState();
+});
+
 class AuthDb {
   final client = Supabase.instance.client;
   SupabaseQueryBuilder get _usersTable => client.from(TableNames.users);
@@ -98,12 +110,21 @@ class AuthDb {
         throw Exception("the user metadata is null");
       }
 
-      final data = await _usersTable.select("*").eq(KeyNames.userId, userId).maybeSingle();
+      final data = await _usersTable.select("*").eq(KeyNames.id, userId).maybeSingle();
       if (data != null) {
         return UserModel.fromMap(data);
       }
 
       throw Exception("the user is not found");
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> logout() async {
+    try {
+      await client.auth.signOut();
     } catch (e) {
       log(e.toString());
       rethrow;

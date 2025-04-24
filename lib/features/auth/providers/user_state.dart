@@ -54,6 +54,7 @@ class UserState extends StateNotifier<UserStateHelper> {
       if (_client.auth.currentSession == null) {
         await Future.delayed(const Duration(milliseconds: 100));
         state = state.copyWith(isLoading: false);
+        _ref.read(isLoggedProvider.notifier).updateState(false);
         return null;
       }
       if (state.isInitlized) {
@@ -66,6 +67,7 @@ class UserState extends StateNotifier<UserStateHelper> {
       log("user data: $user");
       await Future.delayed(const Duration(milliseconds: 100));
       state = UserStateHelper(user: user, isLoading: false, hasError: false, isInitlized: true);
+      _ref.read(isLoggedProvider.notifier).updateState(true);
       return user;
     } catch (e) {
       await Future.delayed(const Duration(milliseconds: 100));

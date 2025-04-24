@@ -136,4 +136,6 @@ class KeyNames {
   static const reported_id = 'reported_id';
   static const comic_review_mentioned = 'comic_review_mentioned';
   static const novel_review_mentioned = 'novel_review_mentioned';
+  static const reported_user_id = 'reported_user_id';
+  static const details = 'details';
 }

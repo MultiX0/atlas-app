@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:atlas_app/core/common/enum/reviews_enum.dart';
 import 'package:atlas_app/features/assistant/pages/chat_page.dart';
+import 'package:atlas_app/features/auth/db/auth_db.dart';
 import 'package:atlas_app/features/auth/pages/forget_password/confirm_email_page.dart';
 import 'package:atlas_app/features/auth/pages/forget_password/email_field_page.dart';
 import 'package:atlas_app/features/auth/pages/forget_password/update_password.dart';
@@ -36,8 +37,16 @@ final navigationShellProvider = Provider<StatefulNavigationShell>((ref) {
 });
 
 final routerProvider = Provider<GoRouter>((ref) {
+  final authState = ValueNotifier<bool>(ref.read(isLoggedProvider));
+
+  // Subscribe to auth state changes
+  ref.listen<bool>(isLoggedProvider, (_, isLoggedIn) {
+    authState.value = isLoggedIn;
+  });
+
   return GoRouter(
     initialLocation: Routes.splashPage,
+    refreshListenable: authState, // This makes the router rebuild when auth state changes
 
     redirect: (context, state) {
       final splashRoute = state.uri.toString() == Routes.splashPage;
@@ -45,9 +54,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      final userStateValue = ref.watch(userState);
       // log("user state is $userStateValue");
-      final isUserLoggedIn = userStateValue.user != null;
+      final isUserLoggedIn = authState.value;
+
       final loginRoute = state.uri.toString() == Routes.loginPage;
       final registerRoute = state.uri.toString() == Routes.registerPage;
       final forgetPasswordPage =

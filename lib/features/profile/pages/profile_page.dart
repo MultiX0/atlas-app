@@ -47,7 +47,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
             return buildBody(user, isMe);
           },
           error: (error, _) => Center(child: ErrorWidget(error)),
-          loading: () => const CircularProgressIndicator(),
+          loading: () => const Loader(),
         );
   }
 

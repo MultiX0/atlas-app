@@ -15,6 +15,7 @@ class ReportsDb {
       _client.from(TableNames.novel_chapters_comment_report);
   SupabaseQueryBuilder get _novelChapterReports => _client.from(TableNames.novel_chapter_reports);
   SupabaseQueryBuilder get _novelReportsTable => _client.from(TableNames.novel_reports);
+  SupabaseQueryBuilder get _usersReportsTable => _client.from(TableNames.user_reports);
 
   Future<void> newReport(PostReportModel report) async {
     try {
@@ -69,6 +70,25 @@ class ReportsDb {
         KeyNames.reporter_id: reporter_id,
         KeyNames.novel_id: novelId,
         KeyNames.content: report,
+      });
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> addUserReport({
+    required String reported_id,
+    required String reporter_id,
+    required String reason,
+    required String details,
+  }) async {
+    try {
+      await _usersReportsTable.insert({
+        KeyNames.reporter_id: reporter_id,
+        KeyNames.reported_user_id: reported_id,
+        KeyNames.reason: reason,
+        KeyNames.details: details,
       });
     } catch (e) {
       log(e.toString());
