@@ -1,10 +1,10 @@
 import 'package:atlas_app/imports.dart';
 
-class ComicReviewModel {
+class NovelReviewModel {
   final String id;
   final int likes_count;
   final bool i_liked;
-  final String comicId;
+  final String novelId;
   final String userId;
   final DateTime createdAt;
   final DateTime? updatedAt;
@@ -19,12 +19,12 @@ class ComicReviewModel {
   final List images;
   final UserModel? user;
   final int reviewsCount;
-  final String comic_title;
-  ComicReviewModel({
+  final String novelTitle;
+  NovelReviewModel({
     required this.id,
     required this.likes_count,
     required this.i_liked,
-    required this.comicId,
+    required this.novelId,
     required this.images,
     required this.userId,
     required this.writingQuality,
@@ -39,11 +39,11 @@ class ComicReviewModel {
     required this.spoilers,
     required this.reviewsCount,
     this.user,
-    required this.comic_title,
+    required this.novelTitle,
   });
 
-  ComicReviewModel copyWith({
-    String? comicId,
+  NovelReviewModel copyWith({
+    String? novelId,
     String? userId,
     double? writingQuality,
     double? storyDevelopment,
@@ -61,10 +61,10 @@ class ComicReviewModel {
     int? likes_count,
     bool? i_liked,
     int? reviewsCount,
-    String? comic_title,
+    String? novelTitle,
   }) {
-    return ComicReviewModel(
-      comicId: comicId ?? this.comicId,
+    return NovelReviewModel(
+      novelId: novelId ?? this.novelId,
       userId: userId ?? this.userId,
       writingQuality: writingQuality ?? this.writingQuality,
       storyDevelopment: storyDevelopment ?? this.storyDevelopment,
@@ -82,13 +82,13 @@ class ComicReviewModel {
       id: id ?? this.id,
       likes_count: likes_count ?? this.likes_count,
       reviewsCount: reviewsCount ?? this.reviewsCount,
-      comic_title: comic_title ?? this.comic_title,
+      novelTitle: novelTitle ?? this.novelTitle,
     );
   }
 
-  factory ComicReviewModel.from({required ComicReviewModel reviewModel}) {
-    return ComicReviewModel(
-      comicId: reviewModel.comicId,
+  factory NovelReviewModel.from({required NovelReviewModel reviewModel}) {
+    return NovelReviewModel(
+      novelId: reviewModel.novelId,
       userId: reviewModel.userId,
       writingQuality: reviewModel.writingQuality,
       storyDevelopment: reviewModel.storyDevelopment,
@@ -106,13 +106,13 @@ class ComicReviewModel {
       id: reviewModel.id,
       likes_count: reviewModel.likes_count,
       reviewsCount: reviewModel.reviewsCount,
-      comic_title: reviewModel.comic_title,
+      novelTitle: reviewModel.novelTitle,
     );
   }
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
-      KeyNames.comic_id: comicId,
+      KeyNames.novel_id: novelId,
       KeyNames.userId: userId,
       KeyNames.id: id,
       KeyNames.writing_quality: writingQuality,
@@ -129,12 +129,12 @@ class ComicReviewModel {
     };
   }
 
-  factory ComicReviewModel.fromMap(Map<String, dynamic> map) {
-    return ComicReviewModel(
+  factory NovelReviewModel.fromMap(Map<String, dynamic> map) {
+    return NovelReviewModel(
       id: map[KeyNames.id] ?? "",
       likes_count: map[KeyNames.like_count] ?? 0,
       i_liked: map[KeyNames.user_liked] ?? false,
-      comicId: map[KeyNames.comic_id] ?? "",
+      novelId: map[KeyNames.novel_id] ?? "",
       userId: map[KeyNames.userId] ?? "",
       writingQuality: map[KeyNames.writing_quality] ?? 1.0,
       storyDevelopment: map[KeyNames.story_development] ?? 1.0,
@@ -146,23 +146,26 @@ class ComicReviewModel {
       spoilers: map[KeyNames.spoilers] ?? false,
       user: map[KeyNames.user] == null ? null : UserModel.fromMap(map[KeyNames.user]),
       review: map[KeyNames.review_text] ?? "",
-      createdAt: DateTime.parse(map[KeyNames.created_at]),
-      updatedAt: DateTime.parse(map[KeyNames.updated_at]),
+      createdAt: DateTime.parse(map[KeyNames.created_at]).toUtc(),
+      updatedAt:
+          map[KeyNames.updated_at] == null
+              ? null
+              : DateTime.parse(map[KeyNames.updated_at]).toUtc(),
       reviewsCount: map[KeyNames.reviewsCount] ?? 0,
-      comic_title: map[KeyNames.comic_title] ?? "",
+      novelTitle: map[KeyNames.title] ?? "",
     );
   }
 
   @override
   String toString() {
-    return 'ComicReviewModel(comicId: $comicId, userId: $userId, writingQuality: $writingQuality, storyDevelopment: $storyDevelopment, characterDesign: $characterDesign, updateStability: $updateStability, worldBackground: $worldBackground, overall: $overall, spoilers: $spoilers)';
+    return 'ComicReviewModel(novelId: $novelId, userId: $userId, writingQuality: $writingQuality, storyDevelopment: $storyDevelopment, characterDesign: $characterDesign, updateStability: $updateStability, worldBackground: $worldBackground, overall: $overall, spoilers: $spoilers)';
   }
 
   @override
-  bool operator ==(covariant ComicReviewModel other) {
+  bool operator ==(covariant NovelReviewModel other) {
     if (identical(this, other)) return true;
 
-    return other.comicId == comicId &&
+    return other.novelId == novelId &&
         other.userId == userId &&
         other.writingQuality == writingQuality &&
         other.storyDevelopment == storyDevelopment &&
@@ -175,7 +178,7 @@ class ComicReviewModel {
 
   @override
   int get hashCode {
-    return comicId.hashCode ^
+    return novelId.hashCode ^
         userId.hashCode ^
         writingQuality.hashCode ^
         storyDevelopment.hashCode ^

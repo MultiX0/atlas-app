@@ -421,6 +421,15 @@ class ComicsDb {
     }
   }
 
+  Future<void> toggleFavoriteComic(String comicId) async {
+    try {
+      await client.rpc(FunctionNames.toggle_favorite_comic, params: {'p_comic_id': comicId});
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
   Future<List<Map>> searchMalApi({required String searchQuery, int limit = 25}) async {
     const String query = '''
   query SearchManga(\$search: String, \$limit: Int) {

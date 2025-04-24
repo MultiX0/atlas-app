@@ -36,12 +36,12 @@ class _HelperClass {
   }
 }
 
-class MyWorkState extends StateNotifier<_HelperClass> {
+class MyFavoriteState extends StateNotifier<_HelperClass> {
   final Ref _ref;
   final String _userId;
   static _HelperClass get empty =>
       _HelperClass(works: [], isLoading: false, loadingMore: false, hasReachedEnd: false);
-  MyWorkState({required Ref ref, required String userId})
+  MyFavoriteState({required Ref ref, required String userId})
     : _userId = userId,
       _ref = ref,
       super(empty);
@@ -77,7 +77,11 @@ class MyWorkState extends StateNotifier<_HelperClass> {
 
     const _pageSize = 15;
     final startIndex = refresh ? 0 : state.works.length;
-    final works = await _db.getUserWork(userId: _userId, startAt: startIndex, pageSize: _pageSize);
+    final works = await _db.getUserFavorite(
+      userId: _userId,
+      startAt: startIndex,
+      pageSize: _pageSize,
+    );
     final hasReachedEnd = works.length < _pageSize;
     final updatedWorks = refresh ? works : [...state.works, ...works];
 
@@ -99,11 +103,15 @@ class MyWorkState extends StateNotifier<_HelperClass> {
     updatedWorks.insert(0, work);
     updateState(works: updatedWorks);
   }
+
+  void deleteWork(String id) {
+    updateState(works: state.works.where((w) => w.id != id).toList());
+  }
 }
 
-final myWorksStateProvider = StateNotifierProvider.family<MyWorkState, _HelperClass, String>((
+final userFavoriteState = StateNotifierProvider.family<MyFavoriteState, _HelperClass, String>((
   ref,
   userId,
 ) {
-  return MyWorkState(ref: ref, userId: userId);
+  return MyFavoriteState(ref: ref, userId: userId);
 });

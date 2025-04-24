@@ -1,3 +1,4 @@
+import 'package:atlas_app/core/common/enum/reviews_enum.dart';
 import 'package:atlas_app/features/hashtags/providers/providers.dart';
 import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
@@ -15,8 +16,8 @@ class Navs {
     router.push(Routes.manhwaPage);
   }
 
-  void goToAddComicReviewPage(String update) {
-    router.push("${Routes.addComicReview}/$update");
+  void goToAddReviewPage(String update, ReviewsEnum reviewType) {
+    router.push("${Routes.addComicReview}/$update/${reviewType.toStringValue()}");
   }
 
   void goToMakePostPage(PostType postType) {

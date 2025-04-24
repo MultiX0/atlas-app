@@ -1,5 +1,6 @@
 import 'package:atlas_app/core/common/utils/custom_action_sheet.dart';
 import 'package:atlas_app/core/common/utils/delta_parser.dart';
+import 'package:atlas_app/core/common/widgets/reports/report_widget.dart';
 import 'package:atlas_app/features/novels/controller/novels_controller.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/features/novels/widgets/chapter_buttons_controller.dart';
@@ -62,7 +63,14 @@ class _ChapterReadingPageState extends ConsumerState<ChapterReadingPage> {
         enableScreenshot();
       },
       child: Scaffold(
-        appBar: AppBar(),
+        appBar: AppBar(
+          actions: [
+            IconButton(
+              onPressed: () => openReportSheet(context, ref),
+              icon: const Icon(TablerIcons.report),
+            ),
+          ],
+        ),
         body: Directionality(
           textDirection: TextDirection.rtl,
           child: ListView(
@@ -187,4 +195,44 @@ void openMenu(BuildContext context, content) {
 
 void share(BuildContext context, String part) {
   openSheet(context: context, child: ShareWidget(content: part), scrollControlled: true);
+}
+
+void openReportSheet(BuildContext context, WidgetRef ref) {
+  openSheet(
+    context: context,
+    child: ReportSheet(
+      title: "الإبلاغ عن فصل رواية",
+      reasons: const [
+        ReportReason(
+          title: "محتوى مسيء أو غير لائق",
+          subtitle: "يحتوي على خطاب كراهية، مشاهد جنسية صريحة، أو محتوى غير مناسب.",
+        ),
+        ReportReason(
+          title: "عنف مفرط أو محتوى ضار",
+          subtitle: "يتضمن عنفًا غير مبرر، تعذيبًا، أو الترويج لإيذاء النفس.",
+        ),
+        ReportReason(
+          title: "انتهاك حقوق الملكية الفكرية",
+          subtitle: "يشمل سرقة أدبية أو استخدام محتوى محمي دون إذن.",
+        ),
+        ReportReason(
+          title: "تحرش أو تنمر",
+          subtitle: "يستهدف أفرادًا أو مجموعات بمضايقات أو تهديدات.",
+        ),
+        ReportReason(
+          title: "محتوى غير قانوني",
+          subtitle: "يروج لأنشطة غير قانونية أو ينتهك القوانين المعمول بها.",
+        ),
+        ReportReason(
+          title: "تصنيف غير صحيح",
+          subtitle: "يحتوي على مواضيع حساسة دون وسمه كـ +18 أو تحت فئة مناسبة.",
+        ),
+      ],
+      onSubmit: (reason) {
+        ref
+            .read(novelsControllerProvider.notifier)
+            .addChapterReport(report: reason, context: context);
+      },
+    ),
+  );
 }

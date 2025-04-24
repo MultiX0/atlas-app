@@ -3,6 +3,7 @@
 import 'dart:developer';
 
 import 'package:atlas_app/imports.dart';
+import 'package:no_screenshot/no_screenshot.dart';
 
 class SplashPage extends ConsumerStatefulWidget {
   const SplashPage({super.key});
@@ -12,8 +13,15 @@ class SplashPage extends ConsumerStatefulWidget {
 }
 
 class _SplashPageState extends ConsumerState<SplashPage> {
+  final _noScreenshot = NoScreenshot.instance;
+
+  void enableScreenshot() async {
+    await _noScreenshot.screenshotOn();
+  }
+
   @override
   void initState() {
+    enableScreenshot();
     log("==============");
     log("on splash");
     log("==============");

@@ -4,6 +4,8 @@ import 'package:atlas_app/core/common/widgets/rich_text_view/models.dart';
 import 'package:atlas_app/core/common/widgets/rich_text_view/text_view.dart';
 import 'package:atlas_app/core/common/widgets/slash_parser.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:intl/intl.dart';
+import 'dart:ui' as ui;
 
 class CommentRichTextView extends StatelessWidget {
   final String text;
@@ -24,6 +26,7 @@ class CommentRichTextView extends StatelessWidget {
     this.viewMoreText = 'المزيد',
     this.linkStyle,
   });
+  bool get hasArabic => Bidi.hasAnyRtl(text);
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +36,8 @@ class CommentRichTextView extends StatelessWidget {
           text: text,
           maxLines: maxLines,
           truncate: truncate,
-          textDirection: TextDirection.rtl, // Ensure RTL for Arabic
+          textDirection: hasArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
+
           style:
               style ??
               TextStyle(
@@ -84,6 +88,7 @@ class CommentRichTextView extends StatelessWidget {
                     break;
                   case 'novel':
                     log('Open Novel (ID: $id) → $title');
+                    context.push("${Routes.novelPage}/$id");
                     break;
                 }
               },
@@ -103,14 +108,14 @@ class CommentRichTextView extends StatelessWidget {
         return AlertDialog(
           backgroundColor: AppColors.primaryAccent,
           title: const Text(
-            textDirection: TextDirection.rtl,
+            textDirection: ui.TextDirection.rtl,
             "تحذير: رابط غير موثوق",
             style: TextStyle(fontFamily: arabicAccentFont),
           ),
           content: const Text(
-            'لقد نقرت على رابط لا ينتمي إلى atlasapp.app. زيارة مواقع غير موثوقة قد تعرضك للتصيد الاحتيالي أو البرمجيات الخبيثة. تأكد من أن الرابط يبدأ بـ "atlasmanga.app" قبل المتابعة. إذا كان مشبوهًا، ارجع إلى التطبيق.',
+            'لقد نقرت على رابط لا ينتمي إلى atlasapp.app. زيارة مواقع غير موثوقة قد تعرضك للتصيد الاحتيالي أو البرمجيات الخبيثة. تأكد من أن الرابط يبدأ بـ "atlasapp.app" قبل المتابعة. إذا كان مشبوهًا، ارجع إلى التطبيق.',
             style: TextStyle(fontFamily: arabicPrimaryFont),
-            textDirection: TextDirection.rtl,
+            textDirection: ui.TextDirection.rtl,
           ),
           actions: [
             TextButton(

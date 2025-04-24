@@ -11,7 +11,7 @@ final libraryDbProvider = Provider<LibraryDb>((ref) {
 class LibraryDb {
   SupabaseClient get _client => Supabase.instance.client;
 
-  Future<List<MyWorkModel>> getMyWork({
+  Future<List<MyWorkModel>> getUserWork({
     required String userId,
     required int startAt,
     required int pageSize,
@@ -21,6 +21,26 @@ class LibraryDb {
         FunctionNames.get_user_works,
         params: {'p_user_id': userId, 'p_limit': pageSize, 'p_offset': startAt},
       );
+      if (data == null || data.isEmpty) return [];
+      final dataList = List.from(data);
+      return dataList.map((d) => MyWorkModel.fromMap(d)).toList();
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<List<MyWorkModel>> getUserFavorite({
+    required String userId,
+    required int startAt,
+    required int pageSize,
+  }) async {
+    try {
+      final data = await _client.rpc(
+        FunctionNames.get_user_favorites,
+        params: {'p_user_id': userId, 'p_limit': pageSize, 'p_offset': startAt},
+      );
+      if (data == null || data.isEmpty) return [];
       final dataList = List.from(data);
       return dataList.map((d) => MyWorkModel.fromMap(d)).toList();
     } catch (e) {

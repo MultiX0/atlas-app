@@ -1,5 +1,7 @@
 import 'package:atlas_app/features/novels/controller/novels_controller.dart';
+import 'package:atlas_app/features/novels/models/novel_model.dart';
 import 'package:atlas_app/features/novels/pages/characters_page.dart';
+import 'package:atlas_app/features/novels/pages/novel_reviews_page.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/features/novels/widgets/novel_chapters.dart';
 import 'package:atlas_app/features/novels/widgets/novel_header.dart';
@@ -40,11 +42,11 @@ class _NovelPageState extends ConsumerState<NovelPage> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
-    final novelId = ref.watch(selectedNovelProvider.select((s) => s!.id));
-    return Scaffold(body: buildBody(novelId));
+    final novel = ref.watch(selectedNovelProvider.select((s) => s!));
+    return Scaffold(body: buildBody(novel));
   }
 
-  Widget buildBody(novelId) {
+  Widget buildBody(NovelModel novel) {
     return SafeArea(
       child: NestedScrollView(
         headerSliverBuilder: ((context, innerBoxIsScrolled) {
@@ -63,8 +65,8 @@ class _NovelPageState extends ConsumerState<NovelPage> with SingleTickerProvider
           controller: _controller,
           children: [
             const NovelInfo(),
-            NovelChapters(novelId: novelId),
-            const SizedBox(),
+            NovelChapters(novelId: novel.id),
+            NovelReviewsPage(novel: novel),
             const CharactersPage(),
           ],
         ),

@@ -171,6 +171,8 @@ class TypeControllerWidget extends ConsumerWidget {
     switch (postType) {
       case PostType.comic_review:
         return const ComicReviewTreeWidget();
+      case PostType.novel_review:
+        return const ComicReviewTreeWidget();
       case PostType.repost:
         return const RepostTreeWidget();
       default:

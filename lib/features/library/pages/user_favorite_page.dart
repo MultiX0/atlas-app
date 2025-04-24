@@ -1,18 +1,17 @@
 import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/core/common/widgets/app_refresh.dart';
-import 'package:atlas_app/features/library/providers/my_work_state.dart';
-import 'package:atlas_app/features/library/widgets/create_new_sheet.dart';
+import 'package:atlas_app/features/library/providers/my_favorite_state.dart';
 import 'package:atlas_app/features/library/widgets/work_poster.dart';
 import 'package:atlas_app/imports.dart';
 
-class MyWork extends ConsumerStatefulWidget {
-  const MyWork({super.key});
+class UserFavoritePage extends ConsumerStatefulWidget {
+  const UserFavoritePage({super.key});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _MyWorkState();
 }
 
-class _MyWorkState extends ConsumerState<MyWork> {
+class _MyWorkState extends ConsumerState<UserFavoritePage> {
   final ScrollController _scrollController = ScrollController();
   bool fetched = false;
   final Debouncer _debouncer = Debouncer();
@@ -41,7 +40,7 @@ class _MyWorkState extends ConsumerState<MyWork> {
         duration: duration,
         onDebounce: () {
           final me = ref.read(userState.select((state) => state.user!));
-          ref.read(myWorksStateProvider(me.userId).notifier).fetchData();
+          ref.read(userFavoriteState(me.userId).notifier).fetchData();
         },
       );
     }
@@ -59,7 +58,7 @@ class _MyWorkState extends ConsumerState<MyWork> {
   void fetchData() async {
     await Future.microtask(() {
       final me = ref.read(userState.select((state) => state.user!));
-      ref.read(myWorksStateProvider(me.userId).notifier).fetchData();
+      ref.read(userFavoriteState(me.userId).notifier).fetchData();
       setState(() {
         fetched = true;
       });
@@ -69,7 +68,7 @@ class _MyWorkState extends ConsumerState<MyWork> {
   void refresh() async {
     await Future.delayed(const Duration(milliseconds: 400), () {
       final me = ref.read(userState.select((state) => state.user!));
-      ref.read(myWorksStateProvider(me.userId).notifier).fetchData(refresh: true);
+      ref.read(userFavoriteState(me.userId).notifier).fetchData(refresh: true);
     });
   }
 
@@ -83,23 +82,16 @@ class _MyWorkState extends ConsumerState<MyWork> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          openSheet(context: context, child: const CreateNewSheet());
-        },
-        backgroundColor: AppColors.primary.withValues(alpha: .6),
-        child: Icon(Icons.add, color: AppColors.whiteColor),
-      ),
       body: Consumer(
         builder: (context, ref, _) {
           final me = ref.read(userState.select((state) => state.user!));
 
-          final works = ref.watch(myWorksStateProvider(me.userId).select((state) => state.works));
+          final works = ref.watch(userFavoriteState(me.userId).select((state) => state.works));
           final isLoading = ref.watch(
-            myWorksStateProvider(me.userId).select((state) => state.isLoading),
+            userFavoriteState(me.userId).select((state) => state.isLoading),
           );
           final loadingMore = ref.watch(
-            myWorksStateProvider(me.userId).select((state) => state.loadingMore),
+            userFavoriteState(me.userId).select((state) => state.loadingMore),
           );
 
           if (isLoading) {
@@ -130,7 +122,7 @@ class _MyWorkState extends ConsumerState<MyWork> {
                           Image.asset('assets/images/no_data_cry_.gif', height: 130),
                           const SizedBox(height: 15),
                           const Text(
-                            "ليس لديك أي أعمال",
+                            "لايوجد شيء في المفضلة",
                             style: TextStyle(fontFamily: arabicAccentFont, fontSize: 18),
                           ),
                         ],

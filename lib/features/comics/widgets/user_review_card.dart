@@ -1,40 +1,75 @@
 import 'dart:async';
-
+import 'package:atlas_app/features/auth/providers/user_state.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:atlas_app/features/comics/widgets/review_content.dart';
 import 'package:atlas_app/features/comics/widgets/review_header.dart';
 import 'package:atlas_app/features/comics/widgets/review_images.dart';
 import 'package:atlas_app/features/comics/widgets/reviews_actions.dart';
 import 'package:atlas_app/features/comics/widgets/reviews_card_container.dart';
 import 'package:atlas_app/features/comics/widgets/reviews_time_info.dart';
-import 'package:atlas_app/imports.dart';
 import 'package:intl/intl.dart';
 
 class UserReviewCard extends ConsumerStatefulWidget {
-  UserReviewCard({super.key, required this.review, required this.index, required this.comic})
-    : reviewArabic = Bidi.hasAnyRtl(review.review);
+  const UserReviewCard({
+    super.key,
+    required this.reviewText,
+    required this.images,
+    required this.userId,
+    required this.username,
+    required this.avatarUrl,
+    required this.rating,
+    required this.isLiked,
+    required this.index,
+    required this.color,
+    required this.createdAt,
+    required this.likeCount,
+    required this.reviewsCount,
+    required this.onLike,
+    this.updatedAt,
+    this.onRepost,
+    this.onMenuPressed,
+    this.isArabic,
+    this.padding = const EdgeInsets.symmetric(vertical: 10),
+    this.cardPadding = const EdgeInsets.all(16),
+  });
 
-  final ComicReviewModel review;
+  final String reviewText;
+  final List<String> images;
+  final String userId;
+  final String username;
+  final String avatarUrl;
+  final double rating;
+  final bool isLiked;
   final int index;
-  final ComicModel comic;
-  final bool reviewArabic;
+  final Color color;
+  final DateTime createdAt;
+  final DateTime? updatedAt;
+  final int likeCount;
+  final int reviewsCount;
+  final Future<bool?> Function(String userId, int index, bool isLiked) onLike;
+  final VoidCallback? onRepost;
+  final VoidCallback? onMenuPressed;
+  final bool? isArabic;
+  final EdgeInsets padding;
+  final EdgeInsets cardPadding;
+
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _UserReviewCardState();
+  ConsumerState<UserReviewCard> createState() => _UserReviewCardState();
 }
 
 class _UserReviewCardState extends ConsumerState<UserReviewCard> {
   Timer? _debounce;
+
   Future<bool?> handleLike({
     required WidgetRef ref,
     required int index,
-    required ComicReviewModel review,
     required String userId,
+    required bool isLiked,
   }) async {
     if (_debounce?.isActive ?? false) return false;
     _debounce = Timer(const Duration(milliseconds: 300), () {});
-    ref
-        .read(reviewsControllerProvider.notifier)
-        .handleComicReviewLike(review.copyWith(i_liked: !review.i_liked), userId, index);
-    return true;
+    return widget.onLike(userId, index, isLiked);
   }
 
   @override
@@ -45,47 +80,58 @@ class _UserReviewCardState extends ConsumerState<UserReviewCard> {
 
   @override
   Widget build(BuildContext context) {
-    final me = ref.watch(userState).user!;
-    bool isMe = widget.review.userId == me.userId;
-    final reviewArabic = widget.reviewArabic;
+    final currentUserId = ref.watch(userState.select((s) => s.user!)).userId;
+    final isMe = widget.userId == currentUserId;
+    final isArabic = widget.isArabic ?? Bidi.hasAnyRtl(widget.reviewText);
 
     return RepaintBoundary(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+        padding: widget.padding,
         child: CardContainer(
-          padding: const EdgeInsets.all(16),
+          padding: widget.cardPadding,
           child: Column(
-            crossAxisAlignment: reviewArabic ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            crossAxisAlignment: isArabic ? CrossAxisAlignment.end : CrossAxisAlignment.start,
             children: [
-              ReviewHeader(review: widget.review, comic: widget.comic, isMe: isMe),
+              ReviewHeader(
+                userId: widget.userId,
+                username: widget.username,
+                avatarUrl: widget.avatarUrl,
+                rating: widget.rating,
+                color: widget.color,
+                isMe: isMe,
+                onMenuPressed: widget.onMenuPressed,
+              ),
               const SizedBox(height: 8),
-              ReviewTimeInfo(review: widget.review),
+              ReviewTimeInfo(createdAt: widget.createdAt, updatedAt: widget.updatedAt),
               const SizedBox(height: 15),
-              ReviewContent(review: widget.review, reviewArabic: reviewArabic),
-              if (widget.review.images.isNotEmpty) ...[
+              ReviewContent(reviewText: widget.reviewText, isArabic: isArabic),
+              if (widget.images.isNotEmpty) ...[
                 const SizedBox(height: 15),
                 GestureDetector(
                   onDoubleTap:
                       () => handleLike(
                         ref: ref,
                         index: widget.index,
-                        userId: me.userId,
-                        review: widget.review,
+                        userId: currentUserId,
+                        isLiked: widget.isLiked,
                       ),
-                  child: ReviewImages(review: widget.review),
+                  child: ReviewImages(imageUrls: widget.images),
                 ),
                 const SizedBox(height: 15),
               ],
               ReviewActions(
-                review: widget.review,
-                userId: me.userId,
+                userId: widget.userId,
+                isLiked: widget.isLiked,
+                likeCount: widget.likeCount,
+                reviewsCount: widget.reviewsCount,
                 onLike:
                     (_) => handleLike(
                       ref: ref,
                       index: widget.index,
-                      userId: me.userId,
-                      review: widget.review,
+                      userId: currentUserId,
+                      isLiked: widget.isLiked,
                     ),
+                onRepost: widget.onRepost,
               ),
             ],
           ),

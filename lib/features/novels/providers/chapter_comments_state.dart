@@ -131,8 +131,8 @@ class ChapterCommentsState extends StateNotifier<_HelperClass> {
     updateState(comments: updatedState);
   }
 
-  void deleteComment(NovelChapterCommentWithMeta comment) {
-    updateState(comments: state.comments.where((c) => c.id != comment.id).toList());
+  void deleteComment(String commentId) {
+    updateState(comments: state.comments.where((c) => c.id != commentId).toList());
   }
 
   NovelChapterCommentWithMeta getById(String id) {

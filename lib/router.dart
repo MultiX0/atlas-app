@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:atlas_app/core/common/enum/reviews_enum.dart';
 import 'package:atlas_app/features/assistant/pages/chat_page.dart';
 import 'package:atlas_app/features/auth/pages/forget_password/confirm_email_page.dart';
 import 'package:atlas_app/features/auth/pages/forget_password/email_field_page.dart';
@@ -108,19 +109,19 @@ final routerProvider = Provider<GoRouter>((ref) {
       buildRoute(path: Routes.forgotPasswordEmailPage, child: const EmailFieldPage(), fade: true),
       buildRoute(path: Routes.search, child: const SearchPage(), fade: true),
       buildRoute(path: Routes.manhwaPage, child: const ManhwaPage(), fade: true),
-      buildRoute(path: Routes.addNovelPost, child: const AddNovelPage(), fade: true),
       buildRoute(path: Routes.addNovelChapterPage, child: const AddChapterPage(), fade: true),
       buildRoute(path: Routes.novelChapterDrafts, child: const ChapterDraftsPage(), fade: true),
       buildRoute(path: Routes.novelReadChapter, child: const ChapterReadingPage(), fade: true),
       buildRoute(path: Routes.chapterCommentsPage, child: const ChapterCommentsPage(), fade: true),
 
       GoRoute(
-        path: "${Routes.addComicReview}/:update",
+        path: "${Routes.addComicReview}/:update/:type",
         pageBuilder: (context, state) {
           final update = state.pathParameters["update"] ?? "f";
+          final type = reviewsEnumFromString(state.pathParameters['type'] ?? "comic");
 
           return CustomTransitionPage(
-            child: AddComicReview(update: update == 't'),
+            child: AddComicReview(update: update == 't', reviewType: type),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);
             },
@@ -135,6 +136,20 @@ final routerProvider = Provider<GoRouter>((ref) {
 
           return CustomTransitionPage(
             child: UpdatePassword(localUpdate: local == 't'),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+          );
+        },
+      ),
+
+      GoRoute(
+        path: "${Routes.addNovelPage}/:edit",
+        pageBuilder: (context, state) {
+          final local = state.pathParameters["edit"] ?? "f";
+
+          return CustomTransitionPage(
+            child: AddNovelPage(edit: local == 't'),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);
             },
@@ -171,7 +186,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) {
           final typeString = state.pathParameters["type"];
           final type = stringToPostType(typeString ?? "normal");
-          final defaultText = ref.read(selectedPostProvider)!.content;
+          final defaultText =
+              ref.read(selectedPostProvider)?.content ?? state.pathParameters['defaultText'] ?? "";
 
           return CustomTransitionPage(
             child: MakePostPage(

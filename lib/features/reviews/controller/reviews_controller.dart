@@ -6,6 +6,8 @@ import 'dart:io';
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/image_to_avif_convert.dart';
 import 'package:atlas_app/core/common/utils/upload_storage.dart';
+import 'package:atlas_app/features/novels/models/novel_review_model.dart';
+import 'package:atlas_app/features/novels/providers/novel_reviews_state.dart';
 import 'package:atlas_app/features/reviews/db/reviews_db.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:loader_overlay/loader_overlay.dart';
@@ -39,7 +41,7 @@ class ReviewsController extends StateNotifier<bool> {
       final me = _ref.read(userState);
       state = true;
       context.loaderOverlay.show();
-      final _images = await uploadImages(images, comicId: comicId, userId: userId);
+      final _images = await uploadImages(images, dir: '/comics/$comicId', userId: userId);
       final now = DateTime.now();
       final review = ComicReviewModel(
         comic_title: "",
@@ -78,6 +80,63 @@ class ReviewsController extends StateNotifier<bool> {
     }
   }
 
+  Future<void> insertNovelReview({
+    required String novelId,
+    required List<File> images,
+    required String userId,
+    required double writingQuality,
+    required double storyDevelopment,
+    required double characterDesign,
+    required double updateStability,
+    required double worldBackground,
+    required String reviewText,
+    required double overall,
+    required bool spoilers,
+    required BuildContext context,
+  }) async {
+    try {
+      final me = _ref.read(userState);
+      state = true;
+      context.loaderOverlay.show();
+      final _images = await uploadImages(images, dir: '/novels/$novelId', userId: userId);
+      final now = DateTime.now();
+      final review = NovelReviewModel(
+        novelTitle: "",
+        id: uuid.v4(),
+        likes_count: 0,
+        i_liked: false,
+        review: reviewText,
+        novelId: novelId,
+        createdAt: now,
+        updatedAt: now,
+        images: _images,
+        user: me.user,
+        userId: userId,
+        writingQuality: writingQuality,
+        storyDevelopment: storyDevelopment,
+        characterDesign: characterDesign,
+        updateStability: updateStability,
+        worldBackground: worldBackground,
+        overall: overall,
+        spoilers: spoilers,
+        reviewsCount: 0,
+      );
+
+      await db.insertNovelReview(review);
+      _ref.read(novelReviewsState(novelId).notifier).addReview(review);
+      context.loaderOverlay.hide();
+      CustomToast.success("تم نشر مراجعتك بنجاح");
+      context.pop();
+      state = false;
+    } catch (e) {
+      state = false;
+      context.loaderOverlay.hide();
+
+      log(e.toString());
+      rethrow;
+    }
+  }
+
   Future<void> handleComicReviewLike(ComicReviewModel review, String userId, int index) async {
     try {
       _ref
@@ -93,6 +152,59 @@ class ReviewsController extends StateNotifier<bool> {
       log(e.toString());
       rethrow;
     }
+  }
+
+  Future<void> handleNovelReviewLike(NovelReviewModel review, String userId, int index) async {
+    try {
+      _ref
+          .read(novelReviewsState(review.novelId).notifier)
+          .handleLocalLike(review.copyWith(i_liked: !review.i_liked), index);
+
+      await db.handleNovelReviewLike(review, userId);
+    } catch (e) {
+      _ref
+          .read(novelReviewsState(review.novelId).notifier)
+          .handleLocalLike(review.copyWith(i_liked: !review.i_liked), index);
+      CustomToast.error(errorMsg);
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> updateNovelReview(NovelReviewModel review, BuildContext context) async {
+    try {
+      state = true;
+      context.loaderOverlay.show();
+      await db.updateNovelReview(review);
+      _ref.read(novelReviewsState(review.novelId).notifier).updateReviewByUserId(review);
+      state = false;
+      context.loaderOverlay.hide();
+      CustomToast.success("تم تحديث المراجعة بنجاح");
+      context.pop();
+    } catch (e) {
+      context.loaderOverlay.hide();
+      state = false;
+      CustomToast.error(errorMsg);
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> deleteNovelReview(NovelReviewModel review, BuildContext context) async {
+    state = true;
+    context.loaderOverlay.show();
+    try {
+      await db.deleteNovelReview(review);
+      _ref.read(novelReviewsState(review.novelId).notifier).deleteReview(review);
+      context.pop(); // close sheet
+
+      CustomToast.success("تم حذف المراجعة بنجاح");
+    } catch (e) {
+      CustomToast.error(errorMsg);
+      log(e.toString());
+    }
+    context.loaderOverlay.hide();
+    state = false;
   }
 
   Future<void> updateComicReview(ComicReviewModel review, BuildContext context) async {
@@ -144,9 +256,22 @@ class ReviewsController extends StateNotifier<bool> {
     }
   }
 
+  Future<int> getNovelReviewsCount(String novelId) async {
+    try {
+      state = true;
+      final count = await db.getNovelReviewsCount(novelId);
+      state = false;
+      return count;
+    } catch (e) {
+      state = false;
+      log(e.toString());
+      rethrow;
+    }
+  }
+
   Future<List<String>> uploadImages(
     List<File> images, {
-    required String comicId,
+    required String dir,
     required String userId,
   }) async {
     try {
@@ -163,7 +288,7 @@ class ReviewsController extends StateNotifier<bool> {
           extension = avifImage.absolute.path.split('.').last.trim().toString();
           final link = await UploadStorage.uploadImages(
             image: avifImage,
-            path: 'comics/$comicId/reviews/$userId-${uuid.v4()}.$extension',
+            path: '$dir/reviews/$userId-${uuid.v4()}.$extension',
           );
           log("avif image uploaded: $link");
           _links.add(link);
@@ -173,7 +298,7 @@ class ReviewsController extends StateNotifier<bool> {
           extension = image.absolute.path.split('.').last.trim().toString();
           final link = await UploadStorage.uploadImages(
             image: image,
-            path: 'comics/$comicId/reviews/$userId-${uuid.v4()}.$extension',
+            path: '$dir/reviews/$userId-${uuid.v4()}.$extension',
           );
           _links.add(link);
         }

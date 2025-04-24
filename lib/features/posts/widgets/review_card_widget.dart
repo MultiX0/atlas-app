@@ -1,42 +1,51 @@
+import 'package:atlas_app/imports.dart';
 import 'package:atlas_app/features/comics/widgets/rating_bar_display.dart';
 import 'package:atlas_app/features/posts/widgets/post_card_widget.dart';
-import 'package:atlas_app/imports.dart';
 
-// Widget for review card
 class ReviewCardWidget extends ConsumerWidget {
-  final dynamic review;
-  final bool reviewArabic;
-  final Color color;
-
   const ReviewCardWidget({
     super.key,
-    required this.review,
-    required this.reviewArabic,
+    required this.reviewText,
+    required this.username,
+    required this.avatarUrl,
+    required this.rating,
+    required this.isArabic,
     required this.color,
+    this.padding = const EdgeInsets.all(16),
+    this.itemSize = 12,
   });
+
+  final String reviewText;
+  final String username;
+  final String avatarUrl;
+  final double rating;
+  final bool isArabic;
+  final Color color;
+  final EdgeInsets padding;
+  final double itemSize;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return CardWidget(
       color: color,
-      padding: const EdgeInsets.all(16),
+      padding: padding,
       child: Column(
-        crossAxisAlignment: reviewArabic ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment: isArabic ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               CircleAvatar(
-                backgroundColor: AppColors.blackColor,
-                backgroundImage: CachedNetworkAvifImageProvider(review.user!.avatar),
+                backgroundColor: Colors.black,
+                backgroundImage: CachedNetworkAvifImageProvider(avatarUrl),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("@${review.user?.username}"),
+                    Text("@$username"),
                     const SizedBox(height: 5),
-                    RatingBarDisplay(rating: review.overall, comic: null, itemSize: 12),
+                    RatingBarDisplay(rating: rating, color: color, itemSize: itemSize),
                   ],
                 ),
               ),
@@ -44,10 +53,10 @@ class ReviewCardWidget extends ConsumerWidget {
           ),
           const SizedBox(height: 15),
           Text(
-            review.review,
-            textDirection: reviewArabic ? TextDirection.rtl : TextDirection.ltr,
-            textAlign: reviewArabic ? TextAlign.right : TextAlign.left,
-            style: TextStyle(fontFamily: reviewArabic ? arabicPrimaryFont : primaryFont),
+            reviewText,
+            textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
+            textAlign: isArabic ? TextAlign.right : TextAlign.left,
+            style: TextStyle(fontFamily: isArabic ? 'arabicPrimaryFont' : 'primaryFont'),
           ),
         ],
       ),

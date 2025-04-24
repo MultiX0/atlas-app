@@ -1,18 +1,19 @@
 import 'package:atlas_app/imports.dart';
 
 class ReviewContent extends StatelessWidget {
-  const ReviewContent({super.key, required this.review, required this.reviewArabic});
+  const ReviewContent({super.key, required this.reviewText, this.isArabic = false, this.textStyle});
 
-  final ComicReviewModel review;
-  final bool reviewArabic;
+  final String reviewText;
+  final bool isArabic;
+  final TextStyle? textStyle;
 
   @override
   Widget build(BuildContext context) {
     return Text(
-      review.review,
-      textDirection: reviewArabic ? TextDirection.rtl : TextDirection.ltr,
-      textAlign: reviewArabic ? TextAlign.right : TextAlign.left,
-      style: TextStyle(fontFamily: reviewArabic ? arabicPrimaryFont : primaryFont),
+      reviewText,
+      textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
+      textAlign: isArabic ? TextAlign.right : TextAlign.left,
+      style: textStyle ?? const TextStyle(fontFamily: arabicPrimaryFont),
     );
   }
 }

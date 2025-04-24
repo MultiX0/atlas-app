@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:atlas_app/features/characters/models/character_preview_model.dart';
 import 'package:atlas_app/features/comics/models/comic_preview_model.dart';
 import 'package:atlas_app/features/novels/models/novel_preview_model.dart';
+import 'package:atlas_app/features/novels/models/novel_review_model.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:flutter/foundation.dart';
 
@@ -28,7 +29,9 @@ class PostModel {
 
   final List<CharacterPreviewModel> charactersMentioned;
   final List<NovelPreviewModel> novelsMentioned;
-  final ComicReviewModel? reviewMentioned;
+  final ComicReviewModel? comicReviewMentioned;
+  final NovelReviewModel? novelReviewMentioned;
+
   final List hashtags;
   final int shares_count;
   final bool shared_by_me;
@@ -55,12 +58,13 @@ class PostModel {
     required this.novelsMentioned,
     required this.shared_by_me,
     required this.shares_count,
-    this.reviewMentioned,
+    this.comicReviewMentioned,
     required this.hashtags,
     required this.comments_open,
     this.updatedAt,
     required this.isPinned,
     required this.isSaved,
+    this.novelReviewMentioned,
   });
 
   PostModel copyWith({
@@ -81,6 +85,7 @@ class PostModel {
     List<CharacterPreviewModel>? charactersMentioned,
     List<NovelPreviewModel>? novelsMentioned,
     ComicReviewModel? reviewMentioned,
+    NovelReviewModel? novelReviewMentioned,
     List? hashtags,
     int? shares_count,
     bool? shared_by_me,
@@ -106,7 +111,8 @@ class PostModel {
       manhwaMentioned: manhwaMentioned ?? this.manhwaMentioned,
       charactersMentioned: charactersMentioned ?? this.charactersMentioned,
       novelsMentioned: novelsMentioned ?? this.novelsMentioned,
-      reviewMentioned: reviewMentioned ?? this.reviewMentioned,
+      comicReviewMentioned: reviewMentioned ?? comicReviewMentioned,
+      novelReviewMentioned: novelReviewMentioned ?? this.novelReviewMentioned,
       hashtags: hashtags ?? this.hashtags,
       shared_by_me: shared_by_me ?? this.shared_by_me,
       shares_count: shares_count ?? this.shares_count,
@@ -135,7 +141,7 @@ class PostModel {
       // 'manhwaMentioned': manhwaMentioned.map((x) => x.toMap()).toList(),
       // 'charactersMentioned': charactersMentioned.map((x) => x.toMap()).toList(),
       // 'novelsMentioned': novelsMentioned.map((x) => x.toMap()).toList(),
-      'reviewMentioned': reviewMentioned?.toMap(),
+      'reviewMentioned': comicReviewMentioned?.toMap(),
       'hashtags': hashtags,
     };
   }
@@ -185,16 +191,21 @@ class PostModel {
               : List<NovelPreviewModel>.from(
                 (map[KeyNames.novel_mentions] as List).map((x) => NovelPreviewModel.fromMap(x)),
               ),
-      reviewMentioned:
-          map[KeyNames.review_mentioned] != null
-              ? ComicReviewModel.fromMap(map[KeyNames.review_mentioned])
+      comicReviewMentioned:
+          map[KeyNames.comic_review_mentioned] != null
+              ? ComicReviewModel.fromMap(map[KeyNames.comic_review_mentioned])
               : null,
+
+      novelReviewMentioned:
+          map[KeyNames.novel_review_mentioned] == null
+              ? null
+              : NovelReviewModel.fromMap(map[KeyNames.novel_review_mentioned]),
       hashtags: List.from((map[KeyNames.hashtags] ?? [])),
     );
   }
   @override
   String toString() {
-    return 'PostModel(postId: $postId, createdAt: $createdAt, content: $content, userId: $userId, parentId: $parentId, parent: $parent, user: $user, images: $images, canReposted: $canReposted, likeCount: $likeCount, userLiked: $userLiked, commentsCount: $commentsCount, repostedCount: $repostedCount, manhwaMentioned: $manhwaMentioned, charactersMentioned: $charactersMentioned, novelsMentioned: $novelsMentioned, reviewMentioned: $reviewMentioned, hashtags: $hashtags)';
+    return 'PostModel(postId: $postId, createdAt: $createdAt, content: $content, userId: $userId, parentId: $parentId, parent: $parent, user: $user, images: $images, canReposted: $canReposted, likeCount: $likeCount, userLiked: $userLiked, commentsCount: $commentsCount, repostedCount: $repostedCount, manhwaMentioned: $manhwaMentioned, charactersMentioned: $charactersMentioned, novelsMentioned: $novelsMentioned, reviewMentioned: $comicReviewMentioned, hashtags: $hashtags)';
   }
 
   @override
@@ -217,7 +228,8 @@ class PostModel {
         listEquals(other.manhwaMentioned, manhwaMentioned) &&
         listEquals(other.charactersMentioned, charactersMentioned) &&
         listEquals(other.novelsMentioned, novelsMentioned) &&
-        other.reviewMentioned == reviewMentioned &&
+        other.comicReviewMentioned == comicReviewMentioned &&
+        other.novelReviewMentioned == novelReviewMentioned &&
         listEquals(other.hashtags, hashtags);
   }
 
@@ -239,7 +251,7 @@ class PostModel {
         manhwaMentioned.hashCode ^
         charactersMentioned.hashCode ^
         novelsMentioned.hashCode ^
-        reviewMentioned.hashCode ^
+        comicReviewMentioned.hashCode ^
         hashtags.hashCode;
   }
 }

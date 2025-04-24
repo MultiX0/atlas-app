@@ -1,4 +1,7 @@
+import 'dart:developer';
+
 import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
+import 'package:atlas_app/core/common/widgets/reports/report_widget.dart';
 import 'package:atlas_app/features/novels/controller/novels_controller.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
@@ -179,6 +182,7 @@ class _NovelHeaderState extends ConsumerState<NovelHeader> {
                       child: IconButton(
                         color: novel.isFavorite ? AppColors.primary : AppColors.whiteColor,
                         onPressed: () {
+                          log(novel.isFavorite.toString());
                           _debouncer.debounce(
                             duration: const Duration(milliseconds: 300),
                             onDebounce: () {
@@ -189,7 +193,7 @@ class _NovelHeaderState extends ConsumerState<NovelHeader> {
                         icon: Icon(
                           novel.isFavorite ? TablerIcons.heart_minus : TablerIcons.heart_plus,
                         ),
-                        tooltip: "Back",
+                        tooltip: "المفضلة",
                       ),
                     ),
                     const SizedBox(width: 15),
@@ -204,7 +208,17 @@ class _NovelHeaderState extends ConsumerState<NovelHeader> {
                           await Share.share(text);
                         },
                         icon: const Icon(TablerIcons.share_2),
-                        tooltip: "Back",
+                        tooltip: "مشاركة",
+                      ),
+                    ),
+                    const SizedBox(width: 15),
+                    CircleAvatar(
+                      backgroundColor: AppColors.scaffoldBackground,
+                      child: IconButton(
+                        color: AppColors.whiteColor,
+                        onPressed: () => openReportSheet(context, ref),
+                        icon: const Icon(TablerIcons.report),
+                        tooltip: "ابلاغ",
                       ),
                     ),
                   ],
@@ -216,4 +230,44 @@ class _NovelHeaderState extends ConsumerState<NovelHeader> {
       ),
     );
   }
+}
+
+void openReportSheet(BuildContext context, WidgetRef ref) {
+  openSheet(
+    context: context,
+    child: ReportSheet(
+      title: "الإبلاغ عن رواية",
+      reasons: const [
+        ReportReason(
+          title: "محتوى مسيء أو غير لائق",
+          subtitle: "تحتوي الرواية على خطاب كراهية، مشاهد جنسية صريحة، أو محتوى غير مناسب.",
+        ),
+        ReportReason(
+          title: "عنف مفرط أو محتوى ضار",
+          subtitle: "تشمل الرواية عنفًا غير مبرر، تعذيبًا، أو ترويجًا لإيذاء النفس.",
+        ),
+        ReportReason(
+          title: "انتهاك حقوق الملكية الفكرية",
+          subtitle: "تحتوي الرواية على سرقة أدبية أو استخدام محتوى محمي دون تصريح.",
+        ),
+        ReportReason(
+          title: "تحرش أو تنمر",
+          subtitle: "تستهدف الرواية أفرادًا أو مجموعات بمضايقات أو تهديدات.",
+        ),
+        ReportReason(
+          title: "محتوى غير قانوني",
+          subtitle: "تروج الرواية لأنشطة غير قانونية أو تنتهك القوانين المعمول بها.",
+        ),
+        ReportReason(
+          title: "تصنيف غير صحيح",
+          subtitle: "تحتوي الرواية على مواضيع حساسة دون وسمه كـ +18 أو تحت فئة مناسبة.",
+        ),
+      ],
+      onSubmit: (reason) {
+        ref
+            .read(novelsControllerProvider.notifier)
+            .addNovelReport(context: context, report: reason);
+      },
+    ),
+  );
 }

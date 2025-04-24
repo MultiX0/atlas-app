@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/upload_storage.dart';
 import 'package:atlas_app/features/library/models/my_work_model.dart';
+import 'package:atlas_app/features/library/providers/my_favorite_state.dart';
 import 'package:atlas_app/features/library/providers/my_work_state.dart';
 import 'package:atlas_app/features/novels/db/novels_db.dart';
 import 'package:atlas_app/features/novels/models/chapter_draft_model.dart';
@@ -20,6 +21,7 @@ import 'package:atlas_app/features/novels/providers/chapters_state.dart';
 import 'package:atlas_app/features/novels/providers/drafts_state.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/features/novels/providers/views_state.dart';
+import 'package:atlas_app/features/reports/db/reports_db.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:uuid/uuid.dart';
@@ -33,6 +35,7 @@ class NovelsController extends StateNotifier<bool> {
   NovelsController({required Ref ref}) : _ref = ref, super(false);
 
   NovelsDb get db => _ref.watch(novelsDbProvider);
+  ReportsDb get reportsDb => _ref.watch(reportsDbProvider);
   final uuid = const Uuid();
 
   Future<NovelModel?> getNovel(String id) async {
@@ -90,6 +93,61 @@ class NovelsController extends StateNotifier<bool> {
       state = false;
       context.pop();
       CustomToast.success("تم انشاء رواية جديدة بنجاح");
+    } catch (e) {
+      context.loaderOverlay.hide();
+      state = false;
+      CustomToast.error(errorMsg);
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> updateNovel({
+    required String title,
+    required String story,
+    required String src_lang,
+    required int age_rating,
+    required String userId,
+    required File? poster,
+    required String? posterUrl,
+    required String? bannerUrl,
+    required List<NovelsGenreModel> genres,
+    required File? banner,
+    required BuildContext context,
+  }) async {
+    state = true;
+    context.loaderOverlay.show();
+    final novel = _ref.read(selectedNovelProvider)!;
+
+    try {
+      final data = await Future.wait<dynamic>([
+        if (poster != null) uploadImage(poster, userId, true, novelId: novel.id),
+        if (banner != null) uploadImage(banner, userId, true, novelId: novel.id),
+      ]);
+
+      String posterLink = data.isEmpty ? posterUrl : data[0];
+      String? bannerLink;
+      if (data.length > 1) {
+        bannerLink = data[1];
+      } else {
+        bannerLink = bannerUrl;
+      }
+      await db.handleUpdatedNewNovel(
+        id: novel.id,
+        title: title,
+        story: story,
+        src_lang: src_lang,
+        age_rating: age_rating,
+        userId: userId,
+        poster: posterLink,
+        banner: bannerLink,
+        genres: genres,
+        oldGenreses: novel.genrese,
+      );
+      context.loaderOverlay.hide();
+      state = false;
+      context.pop();
+      CustomToast.success("تم تحديث الرواية بنجاح");
     } catch (e) {
       context.loaderOverlay.hide();
       state = false;
@@ -253,6 +311,8 @@ class NovelsController extends StateNotifier<bool> {
   }
 
   Future<void> handleFavorite(NovelModel novel) async {
+    final me = _ref.read(userState.select((s) => s.user!));
+
     try {
       final newNovel = novel.copyWith(
         isFavorite: !novel.isFavorite,
@@ -260,11 +320,17 @@ class NovelsController extends StateNotifier<bool> {
       );
       _ref.read(novelViewsStateProvider.notifier).updateNovel(newNovel);
       _ref.read(selectedNovelProvider.notifier).state = newNovel;
+      _ref
+          .read(userFavoriteState(me.userId).notifier)
+          .addWork(
+            MyWorkModel(title: novel.title, type: 'novel', poster: novel.poster, id: novel.id),
+          );
       await db.handleFavorite(novel);
       CustomToast.success(
         "تمت ${novel.isFavorite ? "ازالة" : "اضافة"} الرواية ${novel.isFavorite ? "من" : "الى"} المفضلة بنجاح",
       );
     } catch (e) {
+      _ref.read(userFavoriteState(me.userId).notifier).deleteWork(novel.id);
       CustomToast.error(errorMsg);
       _ref.read(novelViewsStateProvider.notifier).updateNovel(novel);
       _ref.read(selectedNovelProvider.notifier).state = novel;
@@ -274,16 +340,52 @@ class NovelsController extends StateNotifier<bool> {
     }
   }
 
-  Future<void> deleteChapter(BuildContext context, ChapterModel chapter) async {
+  Future<void> deleteChapter(ChapterModel chapter) async {
     try {
-      context.loaderOverlay.show();
-      await db.deleteChapter(chapter.id);
-      context.loaderOverlay.hide();
-      _ref.read(chaptersStateProvider(chapter.novelId).notifier).deleteChapter(chapter.id);
       CustomToast.success("تم حذف الفصل بنجاح");
+      _ref.read(chaptersStateProvider(chapter.novelId).notifier).deleteChapter(chapter.id);
+      await db.deleteChapter(chapter.id);
     } catch (e) {
-      context.loaderOverlay.hide();
       CustomToast.error(e);
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> deleteDraft(ChapterDraftModel draft) async {
+    final novel = _ref.read(selectedNovelProvider)!;
+    try {
+      _ref.read(novelChapterDraftsProvider(novel.id).notifier).removeDraft(draft);
+      await db.deleteDraft(draft);
+      CustomToast.success("تم حذف المسودة بنجاح");
+    } catch (e) {
+      CustomToast.error(errorMsg);
+      _ref.read(novelChapterDraftsProvider(novel.id).notifier).addDraft(draft);
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> handleCommentDelete({
+    required bool isReply,
+    required String id,
+    required String commentId,
+  }) async {
+    try {
+      final chapter = _ref.read(selectedChapterProvider)!;
+      if (isReply) {
+        _ref.read(novelChapterCommentRepliesState(commentId).notifier).deleteComment(id);
+        await db.deleteChapterCommentReply(id);
+      } else {
+        _ref.read(novelChapterCommentsStateProvider(chapter.id).notifier).deleteComment(commentId);
+        await db.deleteChapterComment(commentId);
+      }
+      final newChapter = chapter.copyWith(commentsCount: chapter.commentsCount - 1);
+      _ref.read(chaptersStateProvider(chapter.novelId).notifier).updateChapter(newChapter);
+      _ref.read(selectedChapterProvider.notifier).state = newChapter;
+
+      CustomToast.success("تم حذف التعليق بنجاح");
+    } catch (e) {
       log(e.toString());
       rethrow;
     }
@@ -318,7 +420,7 @@ class NovelsController extends StateNotifier<bool> {
       _ref.read(chaptersStateProvider(chapter.novelId).notifier).updateChapter(newChapter);
       _ref.read(selectedChapterProvider.notifier).state = newChapter;
     } catch (e) {
-      _ref.read(novelChapterCommentsStateProvider(chapter.id).notifier).deleteComment(comment);
+      _ref.read(novelChapterCommentsStateProvider(chapter.id).notifier).deleteComment(comment.id);
       CustomToast.error(errorMsg);
       log(e.toString());
       rethrow;
@@ -402,6 +504,50 @@ class NovelsController extends StateNotifier<bool> {
           .read(novelChapterCommentsStateProvider(comment.chapterId).notifier)
           .updateComment(comment);
 
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> addChapterCommentReport({
+    required String report,
+    required String reported_id,
+    required BuildContext context,
+  }) async {
+    try {
+      final me = _ref.read(userState.select((s) => s.user!));
+      await reportsDb.addChapterCommentReport(
+        report: report,
+        reporter_id: me.userId,
+        reported_id: reported_id,
+      );
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> addNovelReport({required String report, required BuildContext context}) async {
+    try {
+      final novel = _ref.read(selectedNovelProvider)!;
+      final me = _ref.read(userState.select((s) => s.user!));
+      await reportsDb.addNovelReport(report: report, reporter_id: me.userId, novelId: novel.id);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> addChapterReport({required String report, required BuildContext context}) async {
+    try {
+      final me = _ref.read(userState.select((s) => s.user!));
+      final chapter = _ref.read(selectedChapterProvider)!;
+      await reportsDb.addChapterReport(
+        report: report,
+        reporter_id: me.userId,
+        chapter_id: chapter.id,
+      );
+    } catch (e) {
       log(e.toString());
       rethrow;
     }

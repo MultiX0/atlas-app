@@ -132,4 +132,8 @@ class KeyNames {
   static const chapter_id = 'chapter_id';
   static const replies_count = 'replies_count';
   static const parent_user = 'parent_user';
+  static const reporter_id = 'reporter_id';
+  static const reported_id = 'reported_id';
+  static const comic_review_mentioned = 'comic_review_mentioned';
+  static const novel_review_mentioned = 'novel_review_mentioned';
 }

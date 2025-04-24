@@ -8,6 +8,7 @@ import 'package:atlas_app/features/novels/models/novel_chapter_comment_model.dar
 import 'package:atlas_app/features/novels/models/novel_chapter_comment_reply_model.dart';
 import 'package:atlas_app/features/novels/providers/chapter_comments_replies.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
+import 'package:atlas_app/features/novels/widgets/comment_report_sheet.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -121,19 +122,24 @@ class ChapterCommentTile extends StatelessWidget {
                   ),
                 ],
               ),
-              Row(
-                children: [
-                  Consumer(
-                    builder: (context, ref, _) {
-                      return TextButton(
+              Consumer(
+                builder: (context, ref, _) {
+                  final me = ref.read(userState.select((s) => s.user!));
+                  final novel = ref.read(selectedNovelProvider)!;
+                  final isMeOrCreator = (me.userId == novel.userId) || (user.userId == me.userId);
+                  return Row(
+                    children: [
+                      TextButton(
                         onPressed:
-                            () => handleReply(
+                            () => handleAction(
                               ref,
                               commentId,
                               parentUserId,
                               content,
                               user.username,
                               parentUser,
+                              true,
+                              context,
                             ),
                         child: const Text(
                           "رد",
@@ -143,21 +149,44 @@ class ChapterCommentTile extends StatelessWidget {
                             color: AppColors.mutedSilver,
                           ),
                         ),
-                      );
-                    },
-                  ),
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text(
-                      "ابلاغ",
-                      style: TextStyle(
-                        fontFamily: arabicAccentFont,
-                        fontSize: 15,
-                        color: AppColors.mutedSilver,
                       ),
-                    ),
-                  ),
-                ],
+                      TextButton(
+                        onPressed:
+                            () => handleAction(
+                              ref,
+                              commentId,
+                              parentUserId,
+                              content,
+                              user.username,
+                              parentUser,
+                              false,
+                              context,
+                            ),
+                        child: const Text(
+                          "ابلاغ",
+                          style: TextStyle(
+                            fontFamily: arabicAccentFont,
+                            fontSize: 15,
+                            color: AppColors.mutedSilver,
+                          ),
+                        ),
+                      ),
+                      if (isMeOrCreator) ...[
+                        TextButton(
+                          onPressed: () => handleDelete(context, ref, isReply, commentId, id),
+                          child: const Text(
+                            "حذف",
+                            style: TextStyle(
+                              fontFamily: arabicAccentFont,
+                              fontSize: 15,
+                              color: AppColors.mutedSilver,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  );
+                },
               ),
               if (!isReply && comment != null && comment!.repliesCount > 0) ...[
                 CommentRepliesSection(comment: comment!),
@@ -170,13 +199,15 @@ class ChapterCommentTile extends StatelessWidget {
     );
   }
 
-  void handleReply(
+  void handleAction(
     WidgetRef ref,
     String id,
     String parentUserId,
     String content,
     String username,
     UserModel parentUser,
+    bool isReply,
+    BuildContext context,
   ) async {
     try {
       final _map = {
@@ -185,13 +216,62 @@ class ChapterCommentTile extends StatelessWidget {
         KeyNames.content: content,
         KeyNames.username: username,
         KeyNames.parent_user: parentUser,
+        'is_reply': isReply,
       };
 
       ref.read(repliedToProvider.notifier).state = _map;
+      if (!isReply) {
+        openSheet(context: context, child: const CommentReportSheet());
+      }
     } catch (e) {
       log(e.toString());
       rethrow;
     }
+  }
+
+  void handleDelete(
+    BuildContext context,
+    WidgetRef ref,
+    isReply,
+    String commentId,
+    String id,
+  ) async {
+    const btnStyle = TextStyle(fontFamily: arabicAccentFont, color: AppColors.primary);
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.primaryAccent,
+          title: const Text(
+            textDirection: TextDirection.rtl,
+            "تأكيد الحذف",
+            style: TextStyle(fontFamily: arabicAccentFont),
+          ),
+          content: const Text(
+            "هل أنت متأكد أنك تريد حذف هذا التعليق؟",
+            style: TextStyle(fontFamily: arabicPrimaryFont),
+            textDirection: TextDirection.rtl,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                context.pop();
+                ref
+                    .read(novelsControllerProvider.notifier)
+                    .handleCommentDelete(isReply: isReply, id: id, commentId: commentId);
+              },
+              child: const Text("الااستمرار", style: btnStyle),
+            ),
+            TextButton(
+              onPressed: () {
+                context.pop();
+              },
+              child: const Text("عودة", style: btnStyle),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<bool?> handleLike(WidgetRef ref, String id, bool isReply) async {

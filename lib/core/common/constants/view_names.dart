@@ -8,4 +8,5 @@ class ViewNames {
   static const novel_chapter_comment_replies_with_likes =
       'novel_chapter_comment_replies_with_likes';
   static const novel_chapter_comments_with_meta = 'novel_chapter_comments_with_meta';
+  static const novel_reviews_with_likes = 'novel_reviews_with_likes';
 }

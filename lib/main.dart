@@ -8,10 +8,10 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'imports.dart';
 
 Future<void> main() async {
+  timeago.setLocaleMessages('ar', timeago.ArMessages());
   WidgetsFlutterBinding.ensureInitialized();
   await _initEnv();
   await Future.wait([langdetect.initLangDetect(), _supabaseInit(), _firebaseInit()]);
-  timeago.setLocaleMessages('ar', timeago.ArMessages());
   editChromeSystem();
 
   runApp(const ProviderScope(child: App()));

@@ -111,7 +111,7 @@ class NovelModel {
                 ),
               ),
       favoriteCount: map[KeyNames.favorite_count] ?? 0,
-      isFavorite: map[KeyNames.is_favorite] ?? false,
+      isFavorite: map[KeyNames.user_favorite] ?? false,
       viewsCount: map[KeyNames.view_count] ?? 0,
       isViewed: map[KeyNames.is_viewed] ?? false,
       postsCount: map[KeyNames.mentioned_posts] ?? 0,

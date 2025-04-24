@@ -34,4 +34,9 @@ class TableNames {
   static const novel_chapter_views = 'novel_chapter_views';
   static const novel_chapter_comments = 'novel_chapter_comments';
   static const novel_chapter_comment_replies = 'novel_chapter_comment_replies';
+  static const novel_chapters_comment_report = 'novel_chapters_comment_report';
+  static const novel_chapter_reports = 'novel_chapter_reports';
+  static const novel_reports = 'novel_reports';
+  static const novel_reviews = 'novel_reviews';
+  static const novel_review_likes = 'novel_review_likes';
 }

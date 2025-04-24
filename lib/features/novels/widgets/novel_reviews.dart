@@ -1,34 +1,36 @@
 import 'package:atlas_app/features/comics/widgets/reviews_avg_card.dart';
 import 'package:atlas_app/features/comics/widgets/user_review_card.dart';
+import 'package:atlas_app/features/novels/models/novel_model.dart';
+import 'package:atlas_app/features/novels/models/novel_review_model.dart';
+import 'package:atlas_app/features/novels/providers/novel_reviews_state.dart';
 import 'package:atlas_app/imports.dart';
 
-class ReviewsWidget extends ConsumerStatefulWidget {
-  const ReviewsWidget({
+class NovelReviewsWidget extends ConsumerStatefulWidget {
+  const NovelReviewsWidget({
     super.key,
     required this.reviews,
-    required this.comic,
+    required this.novel,
     required this.iAlreadyReviewdOnce,
   });
-  final List<ComicReviewModel> reviews;
-  final ComicModel comic;
+  final List<NovelReviewModel> reviews;
+  final NovelModel novel;
   final bool iAlreadyReviewdOnce;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _ReviewsWidgetState();
 }
 
-class _ReviewsWidgetState extends ConsumerState<ReviewsWidget> {
+class _ReviewsWidgetState extends ConsumerState<NovelReviewsWidget> {
   @override
   Widget build(BuildContext context) {
     final moreLoading = ref.watch(
-      manhwaReviewsStateProvider(widget.comic.comicId).select((state) => state.moreLoading),
+      novelReviewsState(widget.novel.id).select((state) => state.moreLoading),
     );
     final avgReviews = ref.watch(
-      manhwaReviewsStateProvider(widget.comic.comicId).select((state) => state.avgReviews),
+      novelReviewsState(widget.novel.id).select((state) => state.avgReviews),
     );
 
-    final color = widget.comic.color != null ? HexColor(widget.comic.color!) : AppColors.primary;
-
+    final color = widget.novel.color;
     return SliverList.builder(
       addRepaintBoundaries: true,
       itemCount: widget.reviews.length + (moreLoading ? 2 : 1),
@@ -87,12 +89,12 @@ class _ReviewsWidgetState extends ConsumerState<ReviewsWidget> {
           onLike: (id, i, isLiked) async {
             ref
                 .read(reviewsControllerProvider.notifier)
-                .handleComicReviewLike(review.copyWith(i_liked: !isLiked), id, i);
+                .handleNovelReviewLike(review.copyWith(i_liked: !isLiked), id, i);
             return true;
           },
           onRepost: () {
             ref.read(selectedReview.notifier).state = review;
-            ref.read(navsProvider).goToMakePostPage(PostType.comic_review);
+            ref.read(navsProvider).goToMakePostPage(PostType.novel_review);
           },
           index: i - 1,
         );

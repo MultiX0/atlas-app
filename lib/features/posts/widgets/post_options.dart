@@ -57,8 +57,7 @@ class _PostOptionsSheetState extends State<PostOptions> {
             children: [
               buildTile(
                 "ابلاغ",
-                // visible: !isOwner,
-                visible: true,
+                visible: !isOwner,
                 LucideIcons.flag,
                 onTap: () {
                   context.pop();

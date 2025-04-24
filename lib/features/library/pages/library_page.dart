@@ -1,3 +1,4 @@
+import 'package:atlas_app/features/library/pages/user_favorite_page.dart';
 import 'package:atlas_app/features/library/widgets/my_work.dart';
 import 'package:atlas_app/imports.dart';
 
@@ -39,7 +40,7 @@ class _LibraryPageState extends ConsumerState<LibraryPage> with SingleTickerProv
           tabs: const [Tab(text: "أعمالي"), Tab(text: "المفضلة")],
         ),
       ),
-      body: TabBarView(controller: _controller, children: const [MyWork(), SizedBox()]),
+      body: TabBarView(controller: _controller, children: const [MyWork(), UserFavoritePage()]),
     );
   }
 }

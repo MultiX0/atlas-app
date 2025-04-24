@@ -36,7 +36,7 @@ class CreateNewSheet extends StatelessWidget {
                 "رواية",
                 onTap: () {
                   context.pop();
-                  context.push(Routes.addNovelPost);
+                  context.push(Routes.addNovelPage);
                 },
                 icons: TablerIcons.book,
               ),

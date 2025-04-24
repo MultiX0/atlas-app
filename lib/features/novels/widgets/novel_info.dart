@@ -15,29 +15,45 @@ class _NovelInfoState extends ConsumerState<NovelInfo> {
   @override
   Widget build(BuildContext context) {
     final novel = ref.watch(selectedNovelProvider)!;
+    final me = ref.watch(userState.select((s) => s.user!));
+    bool isMeCreator = novel.userId == me.userId;
 
     return RepaintBoundary(
-      child: CustomScrollView(
-        cacheExtent: 100,
-        slivers: [
-          SliverOverlapInjector(handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)),
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                StatisticsCard(
-                  favoriteCount: novel.favoriteCount,
-                  postsCount: novel.postsCount,
-                  views: novel.viewsCount,
+      child: Scaffold(
+        floatingActionButton:
+            !isMeCreator
+                ? null
+                : FloatingActionButton(
+                  backgroundColor: AppColors.primary.withValues(alpha: .6),
+                  onPressed: () {
+                    if (isMeCreator) {
+                      context.push("${Routes.addNovelPage}/t");
+                    }
+                  },
+                  child: const Icon(TablerIcons.edit),
                 ),
-                const SizedBox(height: 10),
-                SynopsisCard(color: novel.color, synopsis: novel.synopsis),
-                const SizedBox(height: 10),
-                GenresCard(color: novel.color, genres: novel.genrese.map((g) => g.name).toList()),
-              ]),
+        body: CustomScrollView(
+          cacheExtent: 100,
+          slivers: [
+            SliverOverlapInjector(handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  StatisticsCard(
+                    favoriteCount: novel.favoriteCount,
+                    postsCount: novel.postsCount,
+                    views: novel.viewsCount,
+                  ),
+                  const SizedBox(height: 10),
+                  SynopsisCard(color: novel.color, synopsis: novel.synopsis),
+                  const SizedBox(height: 10),
+                  GenresCard(color: novel.color, genres: novel.genrese.map((g) => g.name).toList()),
+                ]),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

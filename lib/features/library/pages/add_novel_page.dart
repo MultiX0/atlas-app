@@ -9,10 +9,14 @@ import 'package:atlas_app/features/library/widgets/novel_genres_selection.dart';
 import 'package:atlas_app/features/novels/controller/novels_controller.dart';
 import 'package:atlas_app/features/novels/db/novels_db.dart';
 import 'package:atlas_app/features/novels/models/novels_genre_model.dart';
+import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:flutter/foundation.dart';
 
 class AddNovelPage extends ConsumerStatefulWidget {
-  const AddNovelPage({super.key});
+  final bool edit;
+
+  const AddNovelPage({super.key, required this.edit});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _AddNovelPageState();
@@ -26,6 +30,8 @@ class _AddNovelPageState extends ConsumerState<AddNovelPage> {
   File? poster;
   File? banner;
   int? age;
+  String? posterUrl;
+  String? bannerUrl;
 
   @override
   void initState() {
@@ -33,6 +39,19 @@ class _AddNovelPageState extends ConsumerState<AddNovelPage> {
     _nameController = TextEditingController();
     _storyController = TextEditingController();
     super.initState();
+  }
+
+  void handleState() {
+    if (!widget.edit) return;
+    final novel = ref.read(selectedNovelProvider)!;
+
+    setState(() {
+      selectedGenres = novel.genrese;
+      posterUrl = novel.poster;
+      bannerUrl = novel.banner;
+      _nameController.text = novel.title;
+      _storyController.text = novel.synopsis;
+    });
   }
 
   @override
@@ -71,7 +90,7 @@ class _AddNovelPageState extends ConsumerState<AddNovelPage> {
       CustomToast.error("الرجاء تعبئة كل الحقول");
       return;
     }
-    if (poster == null) {
+    if (poster == null && !widget.edit) {
       CustomToast.error("الرجاء اضافة بوستر للرواية");
       return;
     }
@@ -85,7 +104,33 @@ class _AddNovelPageState extends ConsumerState<AddNovelPage> {
       CustomToast.error("الرجاء اختيار فئة عمرية");
       return;
     }
+
+    if (story.length < 100 && !kDebugMode) {
+      CustomToast.error("على الملخص على الأقل أن يحتوي على 100 حرف");
+      return;
+    }
+
     final me = ref.read(userState.select((state) => state.user!));
+
+    if (widget.edit) {
+      ref
+          .read(novelsControllerProvider.notifier)
+          .updateNovel(
+            title: title,
+            story: story,
+            src_lang: 'ar',
+            age_rating: age ?? 16,
+            userId: me.userId,
+            poster: poster,
+            posterUrl: posterUrl,
+            bannerUrl: bannerUrl,
+            genres: selectedGenres,
+            banner: banner,
+            context: context,
+          );
+      return;
+    }
+
     ref
         .read(novelsControllerProvider.notifier)
         .handleInsertNewNovel(
@@ -176,7 +221,7 @@ class _AddNovelPageState extends ConsumerState<AddNovelPage> {
                         hintText: 'ملخص أو القصة',
                         minLines: 4,
                         maxLines: 4,
-                        maxLength: 500,
+                        maxLength: 800,
                       ),
                     ],
                   ),

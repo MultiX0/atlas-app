@@ -1,14 +1,16 @@
-import 'package:atlas_app/core/common/widgets/image_view_controller.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:atlas_app/core/common/widgets/image_view_controller.dart';
 
 class ReviewImages extends StatelessWidget {
-  ReviewImages({super.key, required this.review})
-    : imageProviders = review.images.map((image) => CachedNetworkAvifImageProvider(image)).toList();
+  const ReviewImages({super.key, required this.imageUrls, this.imageProviders});
 
-  final ComicReviewModel review;
-  final List<ImageProvider> imageProviders;
+  final List<String> imageUrls;
+  final List<ImageProvider>? imageProviders;
+
   @override
   Widget build(BuildContext context) {
-    return ViewImagesController(images: imageProviders);
+    final providers =
+        imageProviders ?? imageUrls.map((url) => CachedNetworkAvifImageProvider(url)).toList();
+    return ViewImagesController(images: providers);
   }
 }

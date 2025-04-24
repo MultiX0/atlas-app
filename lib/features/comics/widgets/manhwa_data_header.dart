@@ -1,5 +1,7 @@
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
+import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/core/common/utils/manhwa_status_arabic.dart';
+import 'package:atlas_app/features/comics/controller/comics_controller.dart';
 import 'package:atlas_app/imports.dart';
 
 class ManhwaDataHeader extends ConsumerStatefulWidget {
@@ -10,6 +12,13 @@ class ManhwaDataHeader extends ConsumerStatefulWidget {
 }
 
 class _ManhwaDataHeaderState extends ConsumerState<ManhwaDataHeader> {
+  final Debouncer _debouncer = Debouncer();
+  @override
+  void dispose() {
+    _debouncer.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
@@ -174,10 +183,19 @@ class _ManhwaDataHeaderState extends ConsumerState<ManhwaDataHeader> {
                     CircleAvatar(
                       backgroundColor: AppColors.scaffoldBackground,
                       child: IconButton(
-                        color: AppColors.whiteColor,
-                        onPressed: () => CustomToast.soon(),
-                        icon: const Icon(TablerIcons.heart_plus),
-                        tooltip: "Back",
+                        color: comic.user_favorite ? AppColors.primary : AppColors.whiteColor,
+                        onPressed: () {
+                          _debouncer.debounce(
+                            duration: const Duration(milliseconds: 300),
+                            onDebounce: () {
+                              ref.read(comicsControllerProvider.notifier).toggleFavorite();
+                            },
+                          );
+                        },
+                        icon: Icon(
+                          comic.user_favorite ? TablerIcons.heart_minus : TablerIcons.heart_plus,
+                        ),
+                        tooltip: "المفضلة",
                       ),
                     ),
                     const SizedBox(width: 15),

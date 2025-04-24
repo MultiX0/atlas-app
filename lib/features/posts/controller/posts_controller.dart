@@ -11,6 +11,8 @@ import 'package:atlas_app/core/common/utils/upload_storage.dart';
 import 'package:atlas_app/core/common/widgets/slash_parser.dart';
 import 'package:atlas_app/features/hashtags/providers/hashtag_state_provider.dart';
 import 'package:atlas_app/features/hashtags/providers/providers.dart';
+import 'package:atlas_app/features/novels/providers/novel_reviews_state.dart';
+import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/features/posts/db/posts_db.dart';
 import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/features/profile/provider/profile_posts_state.dart';
@@ -39,6 +41,7 @@ class PostsController extends StateNotifier<bool> {
     required bool canComment,
   }) async {
     try {
+      if (postContent.trim().isEmpty) context.pop();
       final user = _ref.read(userState).user!;
       final postId = uuid.v4();
       List<String>? links;
@@ -66,6 +69,22 @@ class PostsController extends StateNotifier<bool> {
         final review = _ref.read(selectedReview);
         await db.insertMentions([SlashEntity('comic_review', review!.id, 'Review')], postId);
         _ref.read(manhwaReviewsStateProvider(review.comicId).notifier).handleNewRepost(review);
+      }
+
+      if (postType == PostType.novel_review) {
+        final review = _ref.read(selectedReview);
+        await db.insertMentions([SlashEntity('novel_review', review!.id, 'Review')], postId);
+        _ref.read(novelReviewsState(review.novelId).notifier).handleNewRepost(review);
+      }
+
+      if (postType == PostType.comic) {
+        final comic = _ref.read(selectedComicProvider)!;
+        await db.insertMentions([SlashEntity('comic', comic.comicId, 'Post')], postId);
+      }
+
+      if (postType == PostType.novel) {
+        final novel = _ref.read(selectedNovelProvider)!;
+        await db.insertMentions([SlashEntity('novel', novel.id, 'Novel')], postId);
       }
 
       await _ref.read(profilePostsStateProvider(user.userId).notifier).fetchData(refresh: true);

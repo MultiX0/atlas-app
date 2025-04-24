@@ -23,7 +23,14 @@ class ComicReviewTreeWidget extends ConsumerWidget {
 
             return Padding(
               padding: const EdgeInsets.all(8.0),
-              child: ReviewCardWidget(review: review, reviewArabic: reviewArabic, color: color),
+              child: ReviewCardWidget(
+                avatarUrl: review.user!.avatar,
+                rating: review.overall,
+                reviewText: review.review,
+                username: review.user!.username,
+                isArabic: reviewArabic,
+                color: AppColors.primary,
+              ),
             );
           },
         ),

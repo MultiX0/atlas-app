@@ -328,6 +328,7 @@ class NovelsDb {
 
   Future<void> insertNovelGenreses(List<NovelsGenreModel> genres, String novelId) async {
     try {
+      if (genres.isEmpty) return;
       final data =
           genres.map((g) => {KeyNames.genre_id: g.id, KeyNames.novel_id: novelId}).toList();
       await _novelsGenresTable.insert(data);
@@ -337,9 +338,42 @@ class NovelsDb {
     }
   }
 
+  Future<void> deleteNovelGenreses(List<int> ids, String novelId) async {
+    try {
+      await _novelsGenresTable
+          .delete()
+          .eq(KeyNames.novel_id, novelId)
+          .inFilter(KeyNames.genre_id, ids);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
   Future<void> insertNovel(Map<String, dynamic> data) async {
     try {
-      await _novelsTable.insert(data);
+      await _novelsTable.upsert(data, ignoreDuplicates: false, onConflict: data[KeyNames.id]);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> deleteChapterComment(String commentId) async {
+    try {
+      await _client.rpc(FunctionNames.delete_chapter_comment, params: {'p_comment_id': commentId});
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> deleteChapterCommentReply(String replyId) async {
+    try {
+      await _client.rpc(
+        FunctionNames.delete_chapter_comment_reply,
+        params: {'p_reply_id': replyId},
+      );
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -370,6 +404,49 @@ class NovelsDb {
       };
       await insertNovel(data);
       await insertNovelGenreses(genres, id);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> handleUpdatedNewNovel({
+    required String id,
+    required String title,
+    required String story,
+    required String src_lang,
+    required int age_rating,
+    required String userId,
+    required String poster,
+    required List<NovelsGenreModel> genres,
+    required List<NovelsGenreModel> oldGenreses,
+    String? banner,
+  }) async {
+    try {
+      List<NovelsGenreModel> oldOnlyGenres =
+          oldGenreses.where((oldGenre) {
+            return !genres.any((newGenre) => newGenre.id == oldGenre.id);
+          }).toList();
+
+      List<NovelsGenreModel> newOnlyGenres =
+          genres.where((newGenre) {
+            return !oldGenreses.any((oldGenre) => oldGenre.id == oldGenre.id);
+          }).toList();
+
+      await deleteNovelGenreses(oldOnlyGenres.map((g) => g.id).toList(), id);
+
+      final data = {
+        KeyNames.title: title,
+        KeyNames.story: story,
+        KeyNames.userId: userId,
+        KeyNames.poster: poster,
+        KeyNames.age_rating: age_rating,
+        KeyNames.banner: banner,
+        KeyNames.src_lang: src_lang,
+        KeyNames.id: id,
+      };
+      await insertNovel(data);
+      await insertNovelGenreses(newOnlyGenres, id);
     } catch (e) {
       log(e.toString());
       rethrow;

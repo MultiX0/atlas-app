@@ -1,5 +1,4 @@
 import 'package:atlas_app/core/common/utils/custom_action_sheet.dart';
-import 'package:atlas_app/core/common/utils/format_number.dart';
 import 'package:atlas_app/features/novels/controller/novels_controller.dart';
 import 'package:atlas_app/features/novels/models/chapter_draft_model.dart';
 import 'package:atlas_app/features/novels/models/chapter_model.dart';
@@ -139,7 +138,7 @@ class ChapterTile extends StatelessWidget {
               actions: [
                 TextButton(
                   onPressed: () {
-                    ref.read(novelsControllerProvider.notifier).deleteChapter(context, chapter);
+                    ref.read(novelsControllerProvider.notifier).deleteChapter(chapter);
                     context.pop();
                   },
                   child: const Text("الااستمرار", style: btnStyle),
