@@ -77,6 +77,8 @@ class _MyWorkState extends ConsumerState<MyWork> {
   void dispose() {
     _debouncer.cancel();
     _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+
     super.dispose();
   }
 

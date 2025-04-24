@@ -1,5 +1,4 @@
 import 'package:atlas_app/features/profile/controller/profile_controller.dart';
-import 'package:atlas_app/features/profile/provider/providers.dart';
 import 'package:atlas_app/features/profile/widgets/profile_body.dart';
 import 'package:atlas_app/features/profile/widgets/profile_header_widget.dart';
 import 'package:atlas_app/features/profile/widgets/profile_tabs.dart';
@@ -7,7 +6,8 @@ import 'package:atlas_app/features/profile/widgets/profile_tabs.dart';
 import 'package:atlas_app/imports.dart';
 
 class ProfilePage extends ConsumerStatefulWidget {
-  const ProfilePage({super.key});
+  const ProfilePage({super.key, required this.userId});
+  final String userId;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _ProfilePageState();
@@ -18,9 +18,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
   @override
   void initState() {
     final me = ref.read(userState).user!;
-    final userId = ref.read(selectedUserIdProvider);
-
-    bool isMe = me.userId == userId;
+    bool isMe = me.userId == widget.userId;
 
     _controller = TabController(length: isMe ? 2 : 3, vsync: this);
     super.initState();
@@ -33,7 +31,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
 
   Widget buildBodyController() {
     final me = ref.watch(userState).user!;
-    final userId = ref.watch(selectedUserIdProvider);
+    final userId = widget.userId;
     bool isMe = me.userId == userId;
 
     if (isMe) {

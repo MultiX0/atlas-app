@@ -328,6 +328,24 @@ class NovelsDb {
     }
   }
 
+  Future<List<NovelModel>> searchNovels({
+    required int startIndex,
+    required int pageSize,
+    required String query,
+  }) async {
+    try {
+      final data = await _novelsView
+          .select("*")
+          .textSearch(KeyNames.title, query)
+          .range(startIndex, startIndex + pageSize - 1);
+
+      return data.map((n) => NovelModel.fromMap(n)).toList();
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
   Future<List<NovelsGenreModel>> getNovelsGenreses() async {
     try {
       final data = await _novelsGenresesData.select("*");

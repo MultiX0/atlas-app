@@ -36,6 +36,7 @@ final navigationShellProvider = Provider<StatefulNavigationShell>((ref) {
   throw UnimplementedError();
 });
 
+final auth = Supabase.instance.client.auth;
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ValueNotifier<bool>(ref.read(isLoggedProvider));
 
@@ -103,7 +104,13 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [buildRoute(path: Routes.library, child: const LibraryPage(), fade: true)],
           ),
           StatefulShellBranch(
-            routes: [buildRoute(path: Routes.user, child: const ProfilePage(), fade: true)],
+            routes: [
+              buildRoute(
+                path: Routes.user,
+                child: ProfilePage(userId: auth.currentSession?.user.id ?? ""),
+                fade: true,
+              ),
+            ],
           ),
         ],
         builder: (state, context, shell) {
@@ -247,6 +254,20 @@ final routerProvider = Provider<GoRouter>((ref) {
 
           return CustomTransitionPage(
             child: ManhwaLoader(comicId: id),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+          );
+        },
+      ),
+
+      GoRoute(
+        path: "${Routes.user}/:id",
+        pageBuilder: (context, state) {
+          final id = state.pathParameters["id"] ?? "";
+
+          return CustomTransitionPage(
+            child: ProfilePage(userId: id),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);
             },

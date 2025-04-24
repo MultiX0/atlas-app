@@ -27,7 +27,8 @@ class _NovelHeaderState extends ConsumerState<NovelHeader> {
     final size = MediaQuery.sizeOf(context);
     final novel = ref.watch(selectedNovelProvider)!;
     final shadowColor = novel.color.withValues(alpha: .25);
-
+    final me = ref.watch(userState.select((s) => s.user!));
+    final isMeCreator = me.userId == novel.userId;
     return SliverToBoxAdapter(
       child: RepaintBoundary(
         child: SizedBox(
@@ -211,16 +212,18 @@ class _NovelHeaderState extends ConsumerState<NovelHeader> {
                         tooltip: "مشاركة",
                       ),
                     ),
-                    const SizedBox(width: 15),
-                    CircleAvatar(
-                      backgroundColor: AppColors.scaffoldBackground,
-                      child: IconButton(
-                        color: AppColors.whiteColor,
-                        onPressed: () => openReportSheet(context, ref),
-                        icon: const Icon(TablerIcons.report),
-                        tooltip: "ابلاغ",
+                    if (!isMeCreator) ...[
+                      const SizedBox(width: 15),
+                      CircleAvatar(
+                        backgroundColor: AppColors.scaffoldBackground,
+                        child: IconButton(
+                          color: AppColors.whiteColor,
+                          onPressed: () => openReportSheet(context, ref),
+                          icon: const Icon(TablerIcons.report),
+                          tooltip: "ابلاغ",
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
