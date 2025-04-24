@@ -14,6 +14,9 @@ class WorkPoster extends StatelessWidget {
         if (work.type.startsWith("n")) {
           context.push("${Routes.novelPage}/${work.id}");
         }
+        if (work.type.startsWith("c")) {
+          context.push("${Routes.comicPage}/${work.id}");
+        }
       },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,

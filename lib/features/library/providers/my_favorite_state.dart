@@ -107,6 +107,14 @@ class MyFavoriteState extends StateNotifier<_HelperClass> {
   void deleteWork(String id) {
     updateState(works: state.works.where((w) => w.id != id).toList());
   }
+
+  void updateWorkById(MyWorkModel work) {
+    List<MyWorkModel> updatedWorks = List.from(state.works);
+    final indexOf = state.works.indexWhere((w) => work.id == w.id);
+    if (indexOf == -1) return addWork(work);
+    updatedWorks[indexOf] = work;
+    updateState(works: updatedWorks);
+  }
 }
 
 final userFavoriteState = StateNotifierProvider.family<MyFavoriteState, _HelperClass, String>((

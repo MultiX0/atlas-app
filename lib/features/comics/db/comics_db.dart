@@ -238,7 +238,7 @@ class ComicsDb {
 
         // If we found results in local DB, return them
         if (comicIds.isNotEmpty) {
-          return await _fetchComicDetailsFromLocalDb(comicIds);
+          return await fetchComicDetailsFromLocalDb(comicIds);
         }
       }
 
@@ -332,7 +332,7 @@ class ComicsDb {
   }
 
   // Fetch detailed comic data from local database using IDs
-  Future<List<ComicModel>> _fetchComicDetailsFromLocalDb(List ids) async {
+  Future<List<ComicModel>> fetchComicDetailsFromLocalDb(List ids) async {
     if (ids.isEmpty) return [];
 
     final data = await _comicsView.select('*').inFilter('comic_id', ids);
@@ -387,13 +387,14 @@ class ComicsDb {
     }
   }
 
-  Future<void> handleUpdateComic(ComicModel comic) async {
+  Future<ComicModel?> handleUpdateComic(ComicModel comic, bool fromSearch) async {
     try {
+      log("${comic.lastUpdateAt?.toIso8601String()}");
       final now = DateTime.now().toUtc();
       if (comic.lastUpdateAt != null &&
           comic.lastUpdateAt!.add(const Duration(hours: 24)).isAfter(now)) {
         log("next update in ${comic.lastUpdateAt!.add(const Duration(hours: 24))}");
-        return;
+        return null;
       }
 
       final comicData = await getComicById(comic.aniId);
@@ -413,10 +414,13 @@ class ComicsDb {
         user_favorite: comic.user_favorite,
       );
       log("updating { ${comicModel.aniId} } ...");
-      _ref.read(manhwaSearchStateProvider.notifier).updateSpecificComic(comicModel);
+      if (fromSearch) {
+        _ref.read(manhwaSearchStateProvider.notifier).updateSpecificComic(comicModel);
+      }
       await updateComic(comicModel, characters);
-    } catch (e) {
-      log(e.toString());
+      return comicModel;
+    } catch (e, trace) {
+      log(e.toString(), stackTrace: trace);
       rethrow;
     }
   }

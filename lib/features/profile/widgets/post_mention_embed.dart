@@ -1,4 +1,5 @@
 import 'package:atlas_app/features/characters/models/character_preview_model.dart';
+import 'package:atlas_app/features/comics/models/comic_preview_model.dart';
 import 'package:atlas_app/imports.dart';
 
 import '../../novels/models/novel_preview_model.dart';
@@ -24,6 +25,9 @@ class PostMentionEmbedWidget extends ConsumerWidget {
               // Define your onTap action here
               if (firstItem is NovelPreviewModel) {
                 context.push("${Routes.novelPage}/${firstItem.id}");
+              }
+              if (firstItem is ComicPreviewModel) {
+                context.push("${Routes.comicPage}/${firstItem.id}");
               }
             },
             splashColor: AppColors.mutedSilver.withValues(alpha: .2),

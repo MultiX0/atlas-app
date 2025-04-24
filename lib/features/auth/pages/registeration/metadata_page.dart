@@ -5,6 +5,7 @@ import 'package:atlas_app/imports.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart' as picker;
 import 'package:intl/intl.dart';
+import 'dart:ui' as ui;
 
 class MetadataPage extends ConsumerStatefulWidget {
   const MetadataPage({super.key, required this.next, required this.prevs});
@@ -116,7 +117,7 @@ class _MetadataPageState extends ConsumerState<MetadataPage> {
       child: Scaffold(
         bottomNavigationBar: Padding(
           padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 25),
-          child: CustomButton(text: "Continue", onPressed: next, isLoading: isLoading),
+          child: CustomButton(text: "متابعة", onPressed: next, isLoading: isLoading, fontSize: 16),
         ),
         appBar: AppBar(
           leading: BackButton(
@@ -125,22 +126,25 @@ class _MetadataPageState extends ConsumerState<MetadataPage> {
             },
           ),
         ),
-        body: Form(
-          key: _formKey,
-          child: ListView(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-            children: [
-              const Text(
-                "Choose how you want to be seen\non Atlas!",
-                style: TextStyle(fontFamily: accentFont, fontSize: 20),
-              ),
-              const SizedBox(height: Spacing.normalGap),
-              buildNicknameField(),
-              const SizedBox(height: Spacing.normalGap),
-              buildUsernameField(),
-              const SizedBox(height: Spacing.normalGap),
-              buildBirthdateField(),
-            ],
+        body: Directionality(
+          textDirection: ui.TextDirection.rtl,
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+              children: [
+                const Text(
+                  "اختر كيف تريد أن تُرى على أطلس!",
+                  style: TextStyle(fontFamily: arabicAccentFont, fontSize: 24),
+                ),
+                const SizedBox(height: Spacing.normalGap),
+                buildNicknameField(),
+                const SizedBox(height: Spacing.normalGap),
+                buildUsernameField(),
+                const SizedBox(height: Spacing.normalGap),
+                buildBirthdateField(),
+              ],
+            ),
           ),
         ),
       ),
@@ -151,21 +155,21 @@ class _MetadataPageState extends ConsumerState<MetadataPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        buildLabel("Birthdate", size: 15),
+        buildLabel("تاريخ الميلاد", size: 15),
         CustomTextFormField(
           prefixIcon: LucideIcons.calendar,
-          hintText: "Select Your Birthdate",
+          hintText: "اختر تاريخ ميلادك",
           controller: _birthDateController,
           readOnly: true,
           validator: (val) {
             if (val == null || val.isEmpty) {
-              return 'please select your birthdate';
+              return 'يرجى اختيار تاريخ ميلادك';
             }
             return null;
           },
           onTap: birthDateSheet,
         ),
-        buildLabel("(You must be 13+ to join.)"),
+        buildLabel("(يجب أن تكون في سن 14 أو أكثر للانضمام.)"),
       ],
     );
   }
@@ -174,18 +178,21 @@ class _MetadataPageState extends ConsumerState<MetadataPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        buildLabel("Username", size: 15),
+        buildLabel("اسم المستخدم", size: 15),
         CustomTextFormField(
           prefixIcon: LucideIcons.at_sign,
-          hintText: "Enter Your username",
+          hintText: "أدخل اسم المستخدم الخاص بك",
           controller: _usernameController,
           validator: (val) => validateUsername(val),
           inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^[a-z0-9_.]*$'))],
         ),
         if (isUsernameTaken) ...[
-          buildLabel("This username is already in use. Try another!", color: AppColors.errorColor),
+          buildLabel(
+            "اسم المستخدم هذا قيد الاستخدام بالفعل. جرب اسمًا آخر!",
+            color: AppColors.errorColor,
+          ),
         ],
-        buildLabel("(Your unique handle on Atlas. No spaces or special characters.)"),
+        buildLabel("(معرفك الفريد على أطلس. لا مسافات أو رموز خاصة.)"),
       ],
     );
   }
@@ -194,49 +201,49 @@ class _MetadataPageState extends ConsumerState<MetadataPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        buildLabel("Nickname", size: 15),
+        buildLabel("الاسم الشخصي", size: 15),
         CustomTextFormField(
           prefixIcon: LucideIcons.user,
-          hintText: "Enter Your nickname",
+          hintText: "أدخل اسم مستعارك",
           controller: _fullNameController,
           validator: (val) => validateNickname(val),
         ),
-        buildLabel("(This name will be visible to others. Use your real name or a nickname!)"),
+        buildLabel("(سيكون هذا الاسم مرئيًا للآخرين. استخدم اسمك الحقيقي أو لقبًا!)"),
       ],
     );
   }
 
   String? validateNickname(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return "Nickname cannot be empty.";
+      return "اللقب لا يمكن أن يكون فارغًا.";
     }
     if (!RegExp(r'^[a-zA-Z0-9 ]+$').hasMatch(value)) {
-      return "Nickname can only contain letters, numbers, and spaces.";
+      return "اللقب يمكن أن يحتوي فقط على الحروف، الأرقام، والمسافات.";
     }
     if (value.trim().length < 3 || value.trim().length > 10) {
-      return "Nickname must be between 3 and 10 characters.";
+      return "يجب أن يكون اللقب بين 3 و 10 أحرف.";
     }
     return null; // Valid
   }
 
   String? validateUsername(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return "Username cannot be empty.";
+      return "اسم المستخدم لا يمكن أن يكون فارغًا.";
     }
     if (value.length < 3 || value.length > 15) {
-      return "Username must be between 3 and 15 characters.";
+      return "يجب أن يكون اسم المستخدم بين 3 و 15 حرفًا.";
     }
     if (!RegExp(r'^[a-z0-9_.]+$').hasMatch(value)) {
-      return "Username can only contain lowercase letters, numbers, underscores, and dots.";
+      return "اسم المستخدم يمكن أن يحتوي فقط على الحروف الصغيرة، الأرقام، العلامات السفلية (_)، والنقاط (.).";
     }
     if (RegExp(r'[_\.]{2,}').hasMatch(value)) {
-      return "Username cannot have consecutive underscores or dots.";
+      return "اسم المستخدم لا يمكن أن يحتوي على شرطات سفلية أو نقاط متتالية.";
     }
     if (value.startsWith('_') ||
         value.startsWith('.') ||
         value.endsWith('_') ||
         value.endsWith('.')) {
-      return "Username cannot start or end with an underscore or dot.";
+      return "اسم المستخدم لا يمكن أن يبدأ أو ينتهي بشرطة سفلية أو نقطة.";
     }
     return null; // Valid
   }
@@ -247,7 +254,11 @@ class _MetadataPageState extends ConsumerState<MetadataPage> {
       child: GestureDetector(
         child: Text(
           text,
-          style: TextStyle(fontFamily: accentFont, fontSize: size, color: AppColors.mutedSilver),
+          style: TextStyle(
+            fontFamily: arabicAccentFont,
+            fontSize: size,
+            color: AppColors.mutedSilver,
+          ),
         ),
       ),
     );

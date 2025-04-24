@@ -218,8 +218,20 @@ class NovelsDb {
     }
   }
 
-  Future<void> insertNewChapter(ChapterModel chapter) async {
+  Future<void> publishNovel(String novelId) async {
     try {
+      await _novelsTable.update({KeyNames.novel_id: novelId}).eq(KeyNames.id, novelId);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> insertNewChapter(ChapterModel chapter, NovelModel novel) async {
+    try {
+      if (novel.publishedAt == null) {
+        await publishNovel(novel.id);
+      }
       await _novelChaptersTable.insert(chapter.toMap());
     } catch (e) {
       log(e.toString());
@@ -309,7 +321,7 @@ class NovelsDb {
         await deleteDraft(draft);
         return;
       }
-      await Future.wait([deleteDraft(draft), insertNewChapter(chapter)]);
+      await Future.wait([deleteDraft(draft), insertNewChapter(chapter, novel)]);
     } catch (e) {
       log(e.toString());
       rethrow;

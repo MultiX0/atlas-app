@@ -11,9 +11,11 @@ class AuthDb {
   SupabaseQueryBuilder get _usersTable => client.from(TableNames.users);
   SupabaseQueryBuilder get _usersMetadataTable => client.from(TableNames.users_metadata);
 
-  Future<void> login({required String email, required String password}) async {
+  Future<UserModel?> login({required String email, required String password}) async {
     try {
-      await client.auth.signInWithPassword(password: password, email: email);
+      final credintial = await client.auth.signInWithPassword(password: password, email: email);
+      if (credintial.session == null) return null;
+      return getUserData(credintial.session!.user.id);
     } catch (e) {
       log(e.toString());
       rethrow;

@@ -29,4 +29,13 @@ class ProfileDb {
 
     return List<Map<String, dynamic>>.from(response);
   }
+
+  Future<void> updateProfile(UserModel user) async {
+    try {
+      await _usersTable.update(user.toMap()).eq(KeyNames.id, user.userId);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
 }

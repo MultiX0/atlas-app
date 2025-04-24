@@ -42,10 +42,7 @@ Future<File?> profilePhotoPicker({bool isAvatar = true, required Size size}) asy
 
 Future<File?> imageCropper(File imageFile, bool isAvatar, Size size) async {
   c.CroppedFile? croppedFile = await c.ImageCropper().cropImage(
-    aspectRatio: c.CropAspectRatio(
-      ratioX: isAvatar ? 100 : size.width,
-      ratioY: isAvatar ? 100 : size.width * 0.30,
-    ),
+    aspectRatio: c.CropAspectRatio(ratioX: size.width, ratioY: size.width * 0.30),
     compressFormat: c.ImageCompressFormat.png,
     compressQuality: 70,
     sourcePath: imageFile.path,
@@ -54,7 +51,13 @@ Future<File?> imageCropper(File imageFile, bool isAvatar, Size size) async {
         toolbarTitle: 'Cropper',
         toolbarColor: AppColors.primary,
         toolbarWidgetColor: AppColors.scaffoldBackground,
-        aspectRatioPresets: [c.CropAspectRatioPreset.square],
+        aspectRatioPresets: [
+          if (isAvatar) ...[
+            c.CropAspectRatioPreset.square,
+          ] else ...[
+            c.CropAspectRatioPreset.ratio5x3,
+          ],
+        ],
       ),
     ],
   );

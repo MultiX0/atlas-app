@@ -23,4 +23,6 @@ class Routes {
   static const novelChapterDrafts = '/chapterDraftsPage';
   static const novelReadChapter = '/novelReadChapter';
   static const chapterCommentsPage = '/chapterCommentsPage';
+  static const comicPage = '/comicPage';
+  static const editProfile = '/editProfile';
 }

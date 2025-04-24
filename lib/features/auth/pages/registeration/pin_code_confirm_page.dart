@@ -88,7 +88,7 @@ class _PinCodeConfirmPageState extends ConsumerState<PinCodeConfirmPage> {
     if (code != '123456') {
       setState(() {
         correctCode = false;
-        notCorrect = 'Invalid code. Please try again.';
+        notCorrect = 'رمز غير صالح. يرجى المحاولة مرة أخرى.';
       });
     } else {
       setState(() {
@@ -146,20 +146,23 @@ class _PinCodeConfirmPageState extends ConsumerState<PinCodeConfirmPage> {
             },
           ),
         ),
-        body: Center(
-          child: ListView(
-            padding: const EdgeInsets.all(30.0),
-            shrinkWrap: true,
-            children: [
-              const AppLogoWidget(),
-              const SizedBox(height: 25),
-              buildBody(submittedPinTheme, defaultPinTheme, focusedPinTheme),
-            ],
+        body: Directionality(
+          textDirection: TextDirection.rtl,
+          child: Center(
+            child: ListView(
+              padding: const EdgeInsets.all(30.0),
+              shrinkWrap: true,
+              children: [
+                const AppLogoWidget(),
+                const SizedBox(height: 25),
+                buildBody(submittedPinTheme, defaultPinTheme, focusedPinTheme),
+              ],
+            ),
           ),
         ),
         bottomNavigationBar: Padding(
           padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 25),
-          child: CustomButton(text: "Continue", onPressed: next),
+          child: CustomButton(text: "متابعة", onPressed: next, fontSize: 16),
         ),
       ),
     );
@@ -171,7 +174,7 @@ class _PinCodeConfirmPageState extends ConsumerState<PinCodeConfirmPage> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         const Text(
-          "Verify Your Email",
+          "تحقق من بريدك الإلكتروني",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
           textAlign: TextAlign.center,
         ),
@@ -179,7 +182,7 @@ class _PinCodeConfirmPageState extends ConsumerState<PinCodeConfirmPage> {
         Text.rich(
           TextSpan(
             text:
-                "We've sent a 6-digit code to your email. Please enter it below to verify your email.\n",
+                "لقد أرسلنا رمز مكون من 6 أرقام إلى بريدك الإلكتروني. يرجى إدخاله أدناه للتحقق من بريدك الإلكتروني.\n",
             children: [
               TextSpan(
                 text: '${currentMetadata?.email}',
@@ -187,7 +190,12 @@ class _PinCodeConfirmPageState extends ConsumerState<PinCodeConfirmPage> {
               ),
             ],
           ),
-          style: TextStyle(fontWeight: FontWeight.w200, color: Colors.white.withValues(alpha: .65)),
+          style: TextStyle(
+            fontFamily: arabicAccentFont,
+            fontWeight: FontWeight.w200,
+            color: Colors.white.withValues(alpha: .96),
+            fontSize: 16,
+          ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 30),
@@ -205,15 +213,25 @@ class _PinCodeConfirmPageState extends ConsumerState<PinCodeConfirmPage> {
         if ((notCorrect != null && notCorrect!.isNotEmpty) && !correctCode) ...[
           Text(
             notCorrect!,
-            style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.errorColor),
+            style: TextStyle(
+              fontFamily: arabicAccentFont,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppColors.errorColor,
+            ),
           ),
           const SizedBox(height: 20),
         ],
 
         if (correctCode && notCorrect == null) ...[
           Text(
-            "Great! Your email is confirmed. Let's continue.",
-            style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.greenColor),
+            "رائع! تم تأكيد بريدك الإلكتروني. لنستمر.",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: AppColors.greenColor,
+              fontSize: 16,
+              fontFamily: arabicAccentFont,
+            ),
           ),
           const SizedBox(height: 20),
         ],
@@ -223,29 +241,28 @@ class _PinCodeConfirmPageState extends ConsumerState<PinCodeConfirmPage> {
             child: Text.rich(
               textAlign: TextAlign.center,
               TextSpan(
-                text: "Didn't receive the email?",
+                text: "لم تستلم البريد الإلكتروني؟",
                 children: [
                   TextSpan(
                     text:
                         _resendCooldown > 0
-                            ? '\nResend code in $_resendCooldown seconds'
-                            : '\nResend code',
+                            ? '\nإعادة إرسال الرمز في $_resendCooldown ثواني'
+                            : '\nإعادة إرسال الرمز',
                     style: TextStyle(
-                      fontSize: 13,
                       color: _resendCooldown > 0 ? AppColors.mutedSilver : AppColors.primary,
                       decoration:
                           _resendCooldown > 0 ? TextDecoration.none : TextDecoration.underline,
                     ),
                   ),
                   const TextSpan(
-                    text: '\nCheck your spam folder.',
-                    style: TextStyle(fontSize: 13, color: AppColors.primary),
+                    text: '\nتحقق من خانة الرسائل غير المرغوب فيها اذا لم يصلك',
+                    style: TextStyle(fontSize: 15, color: AppColors.primary),
                   ),
                 ],
               ),
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
-                fontFamily: accentFont,
+                fontFamily: arabicAccentFont,
                 fontSize: 16,
               ),
             ),

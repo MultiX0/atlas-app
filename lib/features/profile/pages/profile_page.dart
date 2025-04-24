@@ -17,7 +17,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
   late TabController _controller;
   @override
   void initState() {
-    _controller = TabController(length: 3, vsync: this);
+    final me = ref.read(userState).user!;
+    final userId = ref.read(selectedUserIdProvider);
+
+    bool isMe = me.userId == userId;
+
+    _controller = TabController(length: isMe ? 2 : 3, vsync: this);
     super.initState();
   }
 
@@ -54,12 +59,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
           return [
             ProfileHeader(user: user),
             SliverPersistentHeader(
-              delegate: _SliverAppBarDelegate(ProfileTabs(controller: _controller)),
+              delegate: _SliverAppBarDelegate(ProfileTabs(controller: _controller, isMe: isMe)),
               pinned: true,
             ),
           ];
         }),
-        body: ProfileBody(user: user, controller: _controller),
+        body: ProfileBody(isMe: isMe, user: user, controller: _controller),
       ),
     );
   }

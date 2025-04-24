@@ -7,6 +7,7 @@ import 'package:atlas_app/features/auth/pages/forget_password/email_field_page.d
 import 'package:atlas_app/features/auth/pages/forget_password/update_password.dart';
 import 'package:atlas_app/features/auth/pages/login_page.dart';
 import 'package:atlas_app/features/auth/pages/register_page.dart';
+import 'package:atlas_app/features/comics/pages/manhwa_loader.dart';
 import 'package:atlas_app/features/comics/pages/manhwa_page.dart';
 import 'package:atlas_app/features/explore/pages/explore_page.dart';
 import 'package:atlas_app/features/hashtags/pages/hashtag_page.dart';
@@ -20,6 +21,7 @@ import 'package:atlas_app/features/novels/widgets/novel_loader.dart';
 import 'package:atlas_app/features/onboarding/pages/first_page.dart';
 import 'package:atlas_app/features/posts/pages/make_post_page.dart';
 import 'package:atlas_app/features/posts/providers/providers.dart';
+import 'package:atlas_app/features/profile/pages/edit_profile_page.dart';
 import 'package:atlas_app/features/profile/pages/profile_page.dart';
 import 'package:atlas_app/features/reviews/pages/add_comic_review.dart';
 import 'package:atlas_app/features/scrolls/pages/scrolls_page.dart';
@@ -43,9 +45,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      final userStateValue = ref.watch(userState.select((state) => state.user));
+      final userStateValue = ref.watch(userState);
       // log("user state is $userStateValue");
-      final isUserLoggedIn = userStateValue != null;
+      final isUserLoggedIn = userStateValue.user != null;
       final loginRoute = state.uri.toString() == Routes.loginPage;
       final registerRoute = state.uri.toString() == Routes.registerPage;
       final forgetPasswordPage =
@@ -108,11 +110,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       buildRoute(path: Routes.registerPage, child: const RegisterPage(), fade: true),
       buildRoute(path: Routes.forgotPasswordEmailPage, child: const EmailFieldPage(), fade: true),
       buildRoute(path: Routes.search, child: const SearchPage(), fade: true),
-      buildRoute(path: Routes.manhwaPage, child: const ManhwaPage(), fade: true),
+      buildRoute(path: Routes.manhwaPage, child: const ManhwaPage(fromSearch: true), fade: true),
       buildRoute(path: Routes.addNovelChapterPage, child: const AddChapterPage(), fade: true),
       buildRoute(path: Routes.novelChapterDrafts, child: const ChapterDraftsPage(), fade: true),
       buildRoute(path: Routes.novelReadChapter, child: const ChapterReadingPage(), fade: true),
       buildRoute(path: Routes.chapterCommentsPage, child: const ChapterCommentsPage(), fade: true),
+      buildRoute(path: Routes.editProfile, child: const EditProfileScreen(), fade: true),
 
       GoRoute(
         path: "${Routes.addComicReview}/:update/:type",
@@ -228,6 +231,19 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
 
+      GoRoute(
+        path: "${Routes.comicPage}/:id",
+        pageBuilder: (context, state) {
+          final id = state.pathParameters["id"] ?? "";
+
+          return CustomTransitionPage(
+            child: ManhwaLoader(comicId: id),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+          );
+        },
+      ),
       // Catch-all for invalid links
       GoRoute(
         path: '/:path(.*)',

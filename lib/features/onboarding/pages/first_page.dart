@@ -13,70 +13,78 @@ class _OnboardingFirstPageState extends ConsumerState<OnboardingFirstPage> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
-    return Scaffold(
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetAvifImage('assets/images/peakpx.avif'),
-                  fit: BoxFit.cover,
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: Container(
+                decoration: const BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetAvifImage('assets/images/peakpx.avif'),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
-          ),
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.transparent, AppColors.scaffoldBackground],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  stops: const [0.1, 0.65],
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.transparent, AppColors.scaffoldBackground],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    stops: const [0.1, 0.65],
+                  ),
                 ),
               ),
             ),
-          ),
 
-          Positioned.fill(
-            child: SafeArea(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(25, 0, 25, size.width * 0.08),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(
-                      child: AvifImage.asset('assets/images/logo_transparent.avif', height: 100),
-                    ),
-                    const Spacer(),
-                    const Text.rich(
-                      TextSpan(
-                        text: "Welcome to ",
-                        children: [
-                          TextSpan(text: appName, style: TextStyle(color: AppColors.primary)),
-                        ],
+            Positioned.fill(
+              child: SafeArea(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(25, 0, 25, size.width * 0.08),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: AvifImage.asset('assets/images/logo_transparent.avif', height: 100),
                       ),
-                      style: TextStyle(fontFamily: accentFont, fontSize: 35),
-                    ),
-                    const SizedBox(height: 5),
-                    const Text(
-                      "A platform for discovering and discussing manga and manhwa. Explore original works from independent creators, engage with the community, and support new talent. Every published piece is available for reading, ensuring a space where stories thrive.",
-                      style: TextStyle(fontSize: 14),
-                    ),
-                    SizedBox(height: size.width * 0.08),
-                    CustomButton(
-                      text: "Get Started",
-                      onPressed: () {
-                        context.pushReplacement(Routes.loginPage);
-                      },
-                    ),
-                  ],
+                      const Spacer(),
+                      const Text.rich(
+                        TextSpan(
+                          text: "أهلا بكم في ",
+                          children: [
+                            TextSpan(text: "أطلس", style: TextStyle(color: AppColors.primary)),
+                          ],
+                        ),
+                        style: TextStyle(fontFamily: arabicAccentFont, fontSize: 42),
+                      ),
+                      const SizedBox(height: 5),
+                      const Text(
+                        "منصتك لاكتشاف المانجا والروايات الأصلية، ومشاركة أعمالك مع مجتمع يعشق الإبداع. سواء كنت قارئًا شغوفًا أو كاتبًا طموحًا، أطلس هو المكان الذي تبدأ فيه رحلتك الأدبية والفنية",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontFamily: arabicPrimaryFont,
+                          color: AppColors.mutedSilver,
+                        ),
+                      ),
+                      SizedBox(height: size.width * 0.08),
+                      CustomButton(
+                        text: "استكشف الأن",
+                        fontSize: 16,
+                        onPressed: () {
+                          context.pushReplacement(Routes.loginPage);
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

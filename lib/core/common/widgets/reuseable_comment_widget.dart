@@ -81,7 +81,7 @@ class CommentRichTextView extends StatelessWidget {
                 switch (type) {
                   case 'comic':
                     log('Open Comic (ID: $id) → $title');
-                    // Navigator.pushNamed(context, '/comic/$id');
+                    context.push("${Routes.comicPage}/$id");
                     break;
                   case 'char':
                     log('Open Character (ID: $id) → $title');

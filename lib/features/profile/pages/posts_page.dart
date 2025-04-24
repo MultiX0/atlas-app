@@ -93,44 +93,47 @@ class _ProfilePostsPageState extends ConsumerState<ProfilePostsPage> {
                 }
                 return false;
               },
-              child: ListView.builder(
-                addAutomaticKeepAlives: true,
-                addRepaintBoundaries: true,
-                addSemanticIndexes: true,
-                itemCount: posts.length + (loadingMore ? 1 : 0),
-                itemBuilder: (context, i) {
-                  if (posts.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset('assets/images/no_data_cry_.gif', height: 130),
-                          const SizedBox(height: 15),
-                          const Text(
-                            "ليس لديك أي منشور!",
-                            style: TextStyle(fontFamily: arabicAccentFont, fontSize: 18),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
+              child: Align(
+                child: ListView.builder(
+                  addAutomaticKeepAlives: true,
+                  addRepaintBoundaries: true,
+                  addSemanticIndexes: true,
+                  shrinkWrap: posts.isEmpty,
+                  itemCount: posts.isEmpty ? 1 : posts.length + (loadingMore ? 1 : 0),
+                  itemBuilder: (context, i) {
+                    if (posts.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset('assets/images/no_data_cry_.gif', height: 130),
+                            const SizedBox(height: 15),
+                            const Text(
+                              "ليس لديك أي منشور!",
+                              style: TextStyle(fontFamily: arabicAccentFont, fontSize: 18),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
 
-                  if (loadingMore && i == posts.length) {
-                    return const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Center(child: Loader()),
-                    );
-                  }
+                    if (loadingMore && i == posts.length) {
+                      return const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Center(child: Loader()),
+                      );
+                    }
 
-                  final post = posts[i];
-                  return PostWidget(
-                    key: ValueKey(post.postId),
-                    post: post,
-                    onComment: () {},
-                    postLikeType: PostLikeEnum.PROFILE,
-                    onShare: () {},
-                  );
-                },
+                    final post = posts[i];
+                    return PostWidget(
+                      key: ValueKey(post.postId),
+                      post: post,
+                      onComment: () {},
+                      postLikeType: PostLikeEnum.PROFILE,
+                      onShare: () {},
+                    );
+                  },
+                ),
               ),
             );
           },

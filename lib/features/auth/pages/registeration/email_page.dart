@@ -68,46 +68,50 @@ class _EmailPageState extends ConsumerState<EmailPage> {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 25),
         child: CustomButton(
-          text: "Continue",
+          text: "متابعة",
           onPressed: next,
+          fontSize: 16,
           // disabled: isLoading,
           isLoading: isLoading,
         ),
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-          children: [
-            const Text(
-              "Your journey with Atlas starts here!",
-              style: TextStyle(fontFamily: accentFont, fontSize: 20),
-            ),
-            const SizedBox(height: 20),
-            CustomTextFormField(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 25, vertical: 18),
-              controller: _emailController,
-              hintText: "Please enter your real email to continue.",
-              prefixIcon: LucideIcons.mail,
-              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9.@_\-+]'))],
-              validator: (val) => emailValidator(val),
-            ),
-            const SizedBox(height: 15),
-            if (emailTaken) ...[buildEmailTakenAlert()],
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: GestureDetector(
-                child: const Text(
-                  "This will be used for account security and future updates.",
-                  style: TextStyle(
-                    fontFamily: accentFont,
-                    fontSize: 13,
-                    color: AppColors.mutedSilver,
+      body: Directionality(
+        textDirection: TextDirection.rtl,
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+            children: [
+              const Text(
+                "رحلتك مع أطلس تبدأ من هنا!",
+                style: TextStyle(fontFamily: arabicAccentFont, fontSize: 24),
+              ),
+              const SizedBox(height: 20),
+              CustomTextFormField(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 25, vertical: 18),
+                controller: _emailController,
+                hintText: "يرجى إدخال بريدك الإلكتروني.",
+                prefixIcon: LucideIcons.mail,
+                inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9.@_\-+]'))],
+                validator: (val) => emailValidator(val),
+              ),
+              const SizedBox(height: 15),
+              if (emailTaken) ...[buildEmailTakenAlert()],
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: GestureDetector(
+                  child: const Text(
+                    "سيُستخدم هذا لأمان الحساب والتحديثات المستقبلية.",
+                    style: TextStyle(
+                      fontFamily: arabicAccentFont,
+                      fontSize: 13,
+                      color: AppColors.mutedSilver,
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -118,7 +122,7 @@ class _EmailPageState extends ConsumerState<EmailPage> {
       padding: const EdgeInsets.all(8.0),
       child: GestureDetector(
         child: Text(
-          "this email is already registered with Atlas!",
+          "هذا البريد الإلكتروني مسجل بالفعل في أطلس!",
           style: TextStyle(
             fontFamily: accentFont,
             fontSize: 14,
@@ -132,16 +136,16 @@ class _EmailPageState extends ConsumerState<EmailPage> {
 
   String? emailValidator(String? val) {
     if (val == null || val.isEmpty) {
-      return 'please enter your email';
+      return 'يرجى إدخال بريدك الإلكتروني';
     }
 
     if (val.length < 4) {
-      return 'please enter valid email address';
+      return 'يرجى إدخال عنوان بريد إلكتروني صالح';
     }
 
     final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
     if (!emailRegex.hasMatch(val)) {
-      return 'Please enter a valid email address';
+      return 'يرجى إدخال عنوان بريد إلكتروني صالح';
     }
 
     return null;

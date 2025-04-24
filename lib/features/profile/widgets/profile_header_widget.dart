@@ -80,63 +80,82 @@ class ProfileHeader extends ConsumerWidget {
     );
   }
 
-  SizedBox buildTopHeader(Size size, bool isMe) {
-    return SizedBox(
-      height: size.width * 0.45,
-      child: Stack(
-        children: [
-          Opacity(
-            opacity: .75,
-            child: FancyShimmerImage(
-              imageUrl: user.banner,
-              boxFit: BoxFit.cover,
-              height: size.width * 0.30,
-              width: double.infinity,
-            ),
-          ),
-          Positioned(
-            bottom: 15,
-            left: 10,
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.scaffoldBackground, width: 4),
-              ),
-              child: CircleAvatar(
-                backgroundColor: AppColors.primaryAccent,
-                backgroundImage: CachedNetworkImageProvider(user.avatar),
-                radius: 40,
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 5,
-            right: 15,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: .5),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Center(child: Icon(Icons.favorite_border, size: 20)),
+  Builder buildTopHeader(Size size, bool isMe) {
+    return Builder(
+      builder: (context) {
+        return SizedBox(
+          height: size.width * 0.45,
+          child: Stack(
+            children: [
+              Opacity(
+                opacity: .75,
+                child: FancyShimmerImage(
+                  imageUrl: user.banner,
+                  boxFit: BoxFit.cover,
+                  height: size.width * 0.30,
+                  width: double.infinity,
                 ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+              ),
+              Positioned(
+                bottom: 15,
+                left: 10,
+                child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors.scaffoldForeground,
-                    borderRadius: BorderRadius.circular(8),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.scaffoldBackground, width: 4),
                   ),
-                  child: const Center(child: Icon(Icons.more_vert, size: 20)),
+                  child: CircleAvatar(
+                    backgroundColor: AppColors.primaryAccent,
+                    backgroundImage: CachedNetworkImageProvider(user.avatar),
+                    radius: 40,
+                  ),
                 ),
-              ],
-            ),
+              ),
+              Positioned(
+                bottom: 5,
+                right: 15,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    if (isMe) ...[
+                      InkWell(
+                        onTap: () => context.push(Routes.editProfile),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: .5),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Center(child: Icon(TablerIcons.edit, size: 20)),
+                        ),
+                      ),
+                    ] else ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: .5),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Center(child: Icon(Icons.favorite_border, size: 20)),
+                      ),
+                    ],
+
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+                      decoration: BoxDecoration(
+                        color: AppColors.scaffoldForeground,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Center(child: Icon(Icons.more_vert, size: 20)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
