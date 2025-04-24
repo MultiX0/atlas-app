@@ -352,7 +352,7 @@ class NovelsDb {
 
   Future<void> insertNovel(Map<String, dynamic> data) async {
     try {
-      await _novelsTable.upsert(data, ignoreDuplicates: false, onConflict: data[KeyNames.id]);
+      await _novelsTable.upsert(data, ignoreDuplicates: false, onConflict: KeyNames.id);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -410,7 +410,7 @@ class NovelsDb {
     }
   }
 
-  Future<void> handleUpdatedNewNovel({
+  Future<List<NovelsGenreModel>> handleUpdatedNewNovel({
     required String id,
     required String title,
     required String story,
@@ -447,6 +447,7 @@ class NovelsDb {
       };
       await insertNovel(data);
       await insertNovelGenreses(newOnlyGenres, id);
+      return newOnlyGenres;
     } catch (e) {
       log(e.toString());
       rethrow;

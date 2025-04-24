@@ -99,6 +99,14 @@ class MyWorkState extends StateNotifier<_HelperClass> {
     updatedWorks.insert(0, work);
     updateState(works: updatedWorks);
   }
+
+  void updateWorkById(MyWorkModel work) {
+    List<MyWorkModel> updatedWorks = List.from(state.works);
+    final indexOf = state.works.indexWhere((w) => work.id == w.id);
+    if (indexOf == -1) return addWork(work);
+    updatedWorks[indexOf] = work;
+    updateState(works: updatedWorks);
+  }
 }
 
 final myWorksStateProvider = StateNotifierProvider.family<MyWorkState, _HelperClass, String>((

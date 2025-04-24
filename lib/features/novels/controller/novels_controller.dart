@@ -132,7 +132,7 @@ class NovelsController extends StateNotifier<bool> {
       } else {
         bannerLink = bannerUrl;
       }
-      await db.handleUpdatedNewNovel(
+      final newGenreses = await db.handleUpdatedNewNovel(
         id: novel.id,
         title: title,
         story: story,
@@ -144,6 +144,22 @@ class NovelsController extends StateNotifier<bool> {
         genres: genres,
         oldGenreses: novel.genrese,
       );
+
+      _ref
+          .read(myWorksStateProvider(userId).notifier)
+          .updateWorkById(
+            MyWorkModel(title: title, type: 'novel', poster: posterLink, id: novel.id),
+          );
+
+      _ref.read(selectedNovelProvider.notifier).state = novel.copyWith(
+        ageRating: age_rating,
+        banner: bannerLink,
+        poster: posterUrl,
+        title: title,
+        synopsis: story,
+        genrese: newGenreses.isEmpty ? genres : newGenreses,
+      );
+
       context.loaderOverlay.hide();
       state = false;
       context.pop();

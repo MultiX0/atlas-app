@@ -36,6 +36,7 @@ class _AddNovelPageState extends ConsumerState<AddNovelPage> {
   @override
   void initState() {
     fetchGenreses();
+    WidgetsBinding.instance.addPostFrameCallback((_) => handleState());
     _nameController = TextEditingController();
     _storyController = TextEditingController();
     super.initState();
@@ -49,6 +50,7 @@ class _AddNovelPageState extends ConsumerState<AddNovelPage> {
       selectedGenres = novel.genrese;
       posterUrl = novel.poster;
       bannerUrl = novel.banner;
+      age = novel.ageRating;
       _nameController.text = novel.title;
       _storyController.text = novel.synopsis;
     });
@@ -165,13 +167,19 @@ class _AddNovelPageState extends ConsumerState<AddNovelPage> {
                   color: AppColors.textFieldFillColor,
                   borderRadius: BorderRadius.circular(15),
                   image:
-                      banner == null
-                          ? null
-                          : DecorationImage(
+                      banner != null
+                          ? DecorationImage(
                             image: FileImage(banner!),
                             fit: BoxFit.cover,
                             opacity: .75,
-                          ),
+                          )
+                          : bannerUrl != null
+                          ? DecorationImage(
+                            image: CachedNetworkImageProvider(bannerUrl!),
+                            fit: BoxFit.cover,
+                            opacity: .75,
+                          )
+                          : null,
                 ),
                 child: const Center(child: Icon(LucideIcons.image)),
               ),
@@ -194,13 +202,19 @@ class _AddNovelPageState extends ConsumerState<AddNovelPage> {
                         color: AppColors.textFieldFillColor,
                         borderRadius: BorderRadius.circular(15),
                         image:
-                            poster == null
-                                ? null
-                                : DecorationImage(
+                            poster != null
+                                ? DecorationImage(
                                   image: FileImage(poster!),
                                   fit: BoxFit.cover,
                                   opacity: .75,
-                                ),
+                                )
+                                : posterUrl != null
+                                ? DecorationImage(
+                                  image: CachedNetworkImageProvider(posterUrl!),
+                                  fit: BoxFit.cover,
+                                  opacity: .75,
+                                )
+                                : null,
                       ),
                       child: const Center(child: Icon(LucideIcons.image)),
                     ),

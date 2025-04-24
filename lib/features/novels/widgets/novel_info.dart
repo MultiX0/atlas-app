@@ -30,7 +30,7 @@ class _NovelInfoState extends ConsumerState<NovelInfo> {
                       context.push("${Routes.addNovelPage}/t");
                     }
                   },
-                  child: const Icon(TablerIcons.edit),
+                  child: Icon(TablerIcons.edit, color: AppColors.whiteColor),
                 ),
         body: CustomScrollView(
           cacheExtent: 100,
