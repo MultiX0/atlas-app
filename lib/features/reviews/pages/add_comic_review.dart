@@ -1,13 +1,18 @@
 import 'dart:io';
 
+import 'package:atlas_app/core/common/enum/reviews_enum.dart';
+import 'package:atlas_app/core/common/utils/color_to_string.dart';
 import 'package:atlas_app/core/common/utils/image_picker.dart';
+import 'package:atlas_app/features/novels/models/novel_review_model.dart';
+import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:msh_checkbox/msh_checkbox.dart';
 
 class AddComicReview extends ConsumerStatefulWidget {
-  const AddComicReview({super.key, required this.update});
+  const AddComicReview({super.key, required this.update, required this.reviewType});
 
   final bool update;
+  final ReviewsEnum reviewType;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _AddComicReviewState();
@@ -79,26 +84,51 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
   void handleSubmit() {
     if (formKey.currentState!.validate()) {
       final me = ref.read(userState);
-      final comic = ref.read(selectedComicProvider)!;
 
       if (widget.update) return handleUpdate();
 
-      ref
-          .read(reviewsControllerProvider.notifier)
-          .insertComicReview(
-            context: context,
-            comicId: comic.comicId,
-            images: images,
-            userId: me.user!.userId,
-            writingQuality: writingQuality,
-            reviewText: _controller.text.trim(),
-            storyDevelopment: storyDevelopment,
-            characterDesign: characterDesign,
-            updateStability: updateStability,
-            worldBackground: worldBackground,
-            overall: overall,
-            spoilers: spoilers,
-          );
+      if (widget.reviewType == ReviewsEnum.comic) {
+        final comic = ref.read(selectedComicProvider)!;
+        ref
+            .read(reviewsControllerProvider.notifier)
+            .insertComicReview(
+              context: context,
+              comicId: comic.comicId,
+              images: images,
+              userId: me.user!.userId,
+              writingQuality: writingQuality,
+              reviewText: _controller.text.trim(),
+              storyDevelopment: storyDevelopment,
+              characterDesign: characterDesign,
+              updateStability: updateStability,
+              worldBackground: worldBackground,
+              overall: overall,
+              spoilers: spoilers,
+            );
+
+        return;
+      }
+
+      if (widget.reviewType == ReviewsEnum.novel) {
+        final novel = ref.read(selectedNovelProvider)!;
+        ref
+            .read(reviewsControllerProvider.notifier)
+            .insertNovelReview(
+              context: context,
+              novelId: novel.id,
+              images: images,
+              userId: me.user!.userId,
+              writingQuality: writingQuality,
+              reviewText: _controller.text.trim(),
+              storyDevelopment: storyDevelopment,
+              characterDesign: characterDesign,
+              updateStability: updateStability,
+              worldBackground: worldBackground,
+              overall: overall,
+              spoilers: spoilers,
+            );
+        return;
+      }
     }
   }
 
@@ -115,27 +145,60 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
       return;
     }
 
-    ComicReviewModel _review = ComicReviewModel.from(reviewModel: review);
-    _review = _review.copyWith(
-      characterDesign: characterDesign,
-      overall: overall,
-      spoilers: spoilers,
-      review: _controller.text.trim(),
-      storyDevelopment: storyDevelopment,
-      updateStability: updateStability,
-      worldBackground: worldBackground,
-      writingQuality: writingQuality,
-      updatedAt: DateTime.now(),
-    );
+    if (review is ComicReviewModel) {
+      ComicReviewModel _review = ComicReviewModel.from(reviewModel: review);
+      _review = _review.copyWith(
+        characterDesign: characterDesign,
+        overall: overall,
+        spoilers: spoilers,
+        review: _controller.text.trim(),
+        storyDevelopment: storyDevelopment,
+        updateStability: updateStability,
+        worldBackground: worldBackground,
+        writingQuality: writingQuality,
+        updatedAt: DateTime.now(),
+      );
 
-    ref.read(reviewsControllerProvider.notifier).updateComicReview(_review, context);
+      ref.read(reviewsControllerProvider.notifier).updateComicReview(_review, context);
+      return;
+    }
+
+    if (review is NovelReviewModel) {
+      NovelReviewModel _review = NovelReviewModel.from(reviewModel: review);
+      _review = _review.copyWith(
+        characterDesign: characterDesign,
+        overall: overall,
+        spoilers: spoilers,
+        review: _controller.text.trim(),
+        storyDevelopment: storyDevelopment,
+        updateStability: updateStability,
+        worldBackground: worldBackground,
+        writingQuality: writingQuality,
+        updatedAt: DateTime.now(),
+      );
+
+      ref.read(reviewsControllerProvider.notifier).updateNovelReview(_review, context);
+      return;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final comic = ref.watch(selectedComicProvider)!;
-    final overAllColor = comic.color != null ? HexColor(comic.color!) : AppColors.whiteColor;
-    final checkColor = comic.color != null ? HexColor(comic.color!) : AppColors.primary;
+    String? color;
+    if (widget.reviewType == ReviewsEnum.comic) {
+      final comic = ref.watch(selectedComicProvider)!;
+      color = comic.color;
+    }
+
+    if (widget.reviewType == ReviewsEnum.comic) {
+      final novel = ref.watch(selectedNovelProvider)!;
+      color = colorToStirng(novel.color);
+    } else {
+      color = colorToStirng(AppColors.primary);
+    }
+
+    final overAllColor = HexColor(color);
+    final checkColor = HexColor(color);
 
     final me = ref.watch(userState);
     return Scaffold(
@@ -371,8 +434,20 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
     required double rating,
     required Function(double) onRatingUpdate,
   }) {
-    final comic = ref.watch(selectedComicProvider)!;
-    final starColor = comic.color != null ? HexColor(comic.color!) : AppColors.primary;
+    String? color;
+    if (widget.reviewType == ReviewsEnum.comic) {
+      final comic = ref.watch(selectedComicProvider)!;
+      color = comic.color;
+    }
+
+    if (widget.reviewType == ReviewsEnum.comic) {
+      final novel = ref.watch(selectedNovelProvider)!;
+      color = colorToStirng(novel.color);
+    } else {
+      color = colorToStirng(AppColors.primary);
+    }
+
+    final starColor = HexColor(color);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),

@@ -71,10 +71,7 @@ class EnhancedFlutterMentions extends StatefulWidget {
   final double suggestionListHeight;
   final ValueChanged<String>? onMarkupChanged;
   final void Function(String trigger, String value)? onSearchChanged;
-
-  // New parameter: Map of trigger to callback function
   final Map<String, void Function(String)> triggerCallbacks;
-
   final BoxDecoration? suggestionListDecoration;
   final FocusNode? focusNode;
   final bool appendSpaceOnAdd;
@@ -121,15 +118,31 @@ class EnhancedFlutterMentionsState extends State<EnhancedFlutterMentions> {
   ValueNotifier<bool> showSuggestions = ValueNotifier(false);
   LengthMap? _selectedMention;
   String _pattern = '';
-
-  // Track the currently active trigger
   String? _currentTrigger;
 
-  // Track the previously processed text to avoid redundant calls
+  // Method to clear the text
+  void clearText({String? text}) {
+    if (controller != null) {
+      controller!.clear(); // Clear the text in the controller
+      setState(() {
+        _selectedMention = null;
+        _currentTrigger = null;
+        showSuggestions.value = false;
+        if (text != null) {
+          controller!.text = text;
+        }
+      });
+      if (widget.onMarkupChanged != null) {
+        widget.onMarkupChanged!(text ?? ''); // Notify listeners of cleared text
+      }
+      if (widget.onSuggestionVisibleChanged != null) {
+        widget.onSuggestionVisibleChanged!(false); // Hide suggestions
+      }
+    }
+  }
 
   Map<String, Annotation> mapToAnotation() {
     final data = <String, Annotation>{};
-
     for (var element in widget.mentions) {
       if (element.matchAll) {
         data['${element.trigger}([A-Za-z0-9])*'] = Annotation(
@@ -142,7 +155,6 @@ class EnhancedFlutterMentionsState extends State<EnhancedFlutterMentions> {
           markupBuilder: element.markupBuilder,
         );
       }
-
       for (var e in element.data) {
         data["${element.trigger}${e['display']}"] =
             e['style'] != null
@@ -166,33 +178,26 @@ class EnhancedFlutterMentionsState extends State<EnhancedFlutterMentions> {
                 );
       }
     }
-
     return data;
   }
 
   void addMention(Map<String, dynamic> value, [Mention? list]) {
     final selectedMention = _selectedMention!;
-
     setState(() {
       _selectedMention = null;
     });
-
     final _list = widget.mentions.firstWhere(
       (element) => selectedMention.str.contains(element.trigger),
     );
-
     controller!.text = controller!.value.text.replaceRange(
       selectedMention.start,
       selectedMention.end,
       "${_list.trigger}${value['display']}${widget.appendSpaceOnAdd ? ' ' : ''}",
     );
-
     if (widget.onMentionAdd != null) widget.onMentionAdd!(value);
-
     if (_list.trigger == '/') {
       log("Added slash mention. Markdown: ${controller!.markupText}");
     }
-
     var nextCursorPosition = selectedMention.start + 1 + (value['display']?.length ?? 0) as int;
     if (widget.appendSpaceOnAdd) nextCursorPosition++;
     controller!.selection = TextSelection.fromPosition(TextPosition(offset: nextCursorPosition));
@@ -201,16 +206,12 @@ class EnhancedFlutterMentionsState extends State<EnhancedFlutterMentions> {
   void suggestionListerner() {
     final cursorPos = controller!.selection.baseOffset;
     final text = controller!.text;
-
     if (cursorPos < 0) return;
-
     final mentionTriggers = widget.mentions.map((e) => e.trigger).toList();
     final slashMention = widget.mentions.firstWhere(
       (e) => e.trigger == '/',
-      orElse: () => Mention(trigger: '/', data: []), // ✅ FIXED: return dummy Mention, not null
+      orElse: () => Mention(trigger: '/', data: []),
     );
-
-    // Handle slash trigger with space support
     if (slashMention.trigger == '/') {
       int start = cursorPos - 1;
       while (start >= 0 && text[start] != '\n') {
@@ -219,50 +220,38 @@ class EnhancedFlutterMentionsState extends State<EnhancedFlutterMentions> {
         }
         start--;
       }
-
       if (start >= 0 && text[start] == '/') {
         final substring = text.substring(start, cursorPos);
         final mention = LengthMap(str: substring, start: start, end: cursorPos);
-
         setState(() {
           _selectedMention = mention;
           _currentTrigger = '/';
         });
-
-        final query = substring.substring(1); // Remove the slash
+        final query = substring.substring(1);
         widget.triggerCallbacks['/']?.call(query);
-
         showSuggestions.value = true;
         widget.onSuggestionVisibleChanged?.call(true);
         return;
       }
     }
-
-    // Fallback to original logic for other triggers
     var _pos = 0;
     final lengthMap = <LengthMap>[];
-
     controller!.value.text.split(RegExp(r'(\s)')).forEach((element) {
       lengthMap.add(LengthMap(str: element, start: _pos, end: _pos + element.length));
       _pos = _pos + element.length + 1;
     });
-
     final val = lengthMap.indexWhere((element) {
       _pattern = widget.mentions.map((e) => e.trigger).join('|');
       return element.end == cursorPos && mentionTriggers.any((t) => element.str.startsWith(t));
     });
-
     if (val != -1) {
       final mention = lengthMap[val];
-
       setState(() {
         _selectedMention = mention;
         _currentTrigger = mentionTriggers.firstWhere((t) => mention.str.startsWith(t));
       });
-
-      final query = mention.str.substring(1); // remove the trigger
+      final query = mention.str.substring(1);
       widget.triggerCallbacks[_currentTrigger!]?.call(query);
-
       showSuggestions.value = true;
       widget.onSuggestionVisibleChanged?.call(true);
     } else {
@@ -270,7 +259,6 @@ class EnhancedFlutterMentionsState extends State<EnhancedFlutterMentions> {
         _selectedMention = null;
         _currentTrigger = null;
       });
-
       showSuggestions.value = false;
       widget.onSuggestionVisibleChanged?.call(false);
     }
@@ -280,11 +268,9 @@ class EnhancedFlutterMentionsState extends State<EnhancedFlutterMentions> {
     if (widget.onChanged != null) {
       widget.onChanged!(controller!.text);
     }
-
     if (widget.onMarkupChanged != null) {
       widget.onMarkupChanged!(controller!.markupText);
     }
-
     if (widget.onSearchChanged != null && _selectedMention?.str != null) {
       final str = _selectedMention!.str.toLowerCase();
       widget.onSearchChanged!(str[0], str.substring(1));
@@ -295,15 +281,12 @@ class EnhancedFlutterMentionsState extends State<EnhancedFlutterMentions> {
   void initState() {
     final data = mapToAnotation();
     controller = EnhancedAnnotationEditingController(data);
-
     log("defaultText is ${widget.defaultText}");
     if (widget.defaultText != null) {
       controller!.text = widget.defaultText!;
     }
-
     controller!.addListener(suggestionListerner);
     controller!.addListener(inputListeners);
-
     super.initState();
   }
 
@@ -311,6 +294,8 @@ class EnhancedFlutterMentionsState extends State<EnhancedFlutterMentions> {
   void dispose() {
     controller!.removeListener(suggestionListerner);
     controller!.removeListener(inputListeners);
+    controller!.dispose();
+    showSuggestions.dispose();
     super.dispose();
   }
 
@@ -329,7 +314,6 @@ class EnhancedFlutterMentionsState extends State<EnhancedFlutterMentions> {
               orElse: () => widget.mentions[0],
             )
             : widget.mentions[0];
-
     return PortalEntry(
       portalAnchor:
           widget.suggestionPosition == SuggestionPosition.Bottom
@@ -344,6 +328,8 @@ class EnhancedFlutterMentionsState extends State<EnhancedFlutterMentions> {
         builder: (BuildContext context, bool show, Widget? child) {
           return show && !widget.hideSuggestionList
               ? Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                width: double.infinity,
                 constraints: BoxConstraints(maxHeight: widget.suggestionListHeight),
                 child: OptionList(
                   suggestionListHeight: widget.suggestionListHeight,

@@ -17,8 +17,10 @@ class AuthController extends StateNotifier<bool> {
   Future<void> login({required String email, required String password}) async {
     try {
       state = true;
-      await _db.login(email: email, password: password);
-      _ref.read(userState.notifier).initlizeUser();
+      final user = await _db.login(email: email, password: password);
+      _ref.read(userState.notifier).updateState(user);
+      _ref.read(isLoggedProvider.notifier).updateState(true);
+
       state = false;
     } catch (e) {
       state = false;
@@ -39,6 +41,8 @@ class AuthController extends StateNotifier<bool> {
       final user = await _db.signUp(localUser!);
       CustomToast.success("Welcome to Atlas! Your journey starts now.");
       _ref.read(userState.notifier).updateState(user);
+      _ref.read(isLoggedProvider.notifier).updateState(true);
+
       state = false;
     } catch (e) {
       state = false;
@@ -76,9 +80,20 @@ class AuthController extends StateNotifier<bool> {
     }
   }
 
-  Future<UserModel> getUserData(String userId, {bool withMetadata = false}) async {
+  Future<UserModel> getUserData(String userId) async {
     try {
-      return await _db.getUserData(userId, withMetadata: withMetadata);
+      return await _db.getUserData(userId);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> logout() async {
+    try {
+      _ref.read(isLoggedProvider.notifier).updateState(false);
+      await _db.logout();
+      _ref.read(isLoggedProvider.notifier).updateState(false);
     } catch (e) {
       log(e.toString());
       rethrow;

@@ -12,7 +12,7 @@ class _ExplorePageState extends ConsumerState<ExplorePage> with SingleTickerProv
 
   @override
   void initState() {
-    _controller = TabController(length: 3, vsync: this);
+    _controller = TabController(length: 2, vsync: this);
     super.initState();
   }
 
@@ -41,13 +41,10 @@ class _ExplorePageState extends ConsumerState<ExplorePage> with SingleTickerProv
           labelColor: AppColors.primary,
           dividerColor: AppColors.mutedSilver.withValues(alpha: .45),
           indicatorColor: AppColors.primary,
-          tabs: const [Tab(text: "مقاطع قصيرة"), Tab(text: "مانهوا"), Tab(text: "روايات")],
+          tabs: const [Tab(text: "روايات"), Tab(text: "مانهوا")],
         ),
       ),
-      body: TabBarView(
-        controller: _controller,
-        children: const [SizedBox(), SizedBox(), SizedBox()],
-      ),
+      body: TabBarView(controller: _controller, children: const [SizedBox(), SizedBox()]),
     );
   }
 }

@@ -7,7 +7,8 @@ import 'package:atlas_app/features/profile/widgets/profile_tabs.dart';
 import 'package:atlas_app/imports.dart';
 
 class ProfilePage extends ConsumerStatefulWidget {
-  const ProfilePage({super.key});
+  const ProfilePage({super.key, required this.userId});
+  final String userId;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _ProfilePageState();
@@ -17,8 +18,21 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
   late TabController _controller;
   @override
   void initState() {
-    _controller = TabController(length: 3, vsync: this);
+    final me = ref.read(userState).user!;
+    bool isMe = me.userId == widget.userId;
+    _controller = TabController(length: isMe ? 2 : 3, vsync: this);
+    WidgetsBinding.instance.addPostFrameCallback((_) => handleInit());
     super.initState();
+  }
+
+  void handleInit() {
+    Future.microtask(() {
+      final me = ref.read(userState).user!;
+      bool isMe = me.userId == widget.userId;
+      if (isMe) {
+        ref.read(selectedUserProvider.notifier).state = me;
+      }
+    });
   }
 
   @override
@@ -28,7 +42,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
 
   Widget buildBodyController() {
     final me = ref.watch(userState).user!;
-    final userId = ref.watch(selectedUserIdProvider);
+    final userId = widget.userId;
     bool isMe = me.userId == userId;
 
     if (isMe) {
@@ -42,30 +56,24 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
             return buildBody(user, isMe);
           },
           error: (error, _) => Center(child: ErrorWidget(error)),
-          loading: () => const CircularProgressIndicator(),
+          loading: () => const Loader(),
         );
   }
 
   Widget buildBody(UserModel user, bool isMe) {
     return SafeArea(
-      child: Builder(
-        builder: (context) {
-          return NestedScrollView(
-            headerSliverBuilder: ((context, innerBoxIsScrolled) {
-              return [
-                ProfileHeader(user: user),
-                SliverOverlapAbsorber(
-                  handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-                  sliver: SliverPersistentHeader(
-                    delegate: _SliverAppBarDelegate(ProfileTabs(controller: _controller)),
-                    pinned: true,
-                  ),
-                ),
-              ];
-            }),
-            body: ProfileBody(user: user, controller: _controller),
-          );
-        },
+      child: NestedScrollView(
+        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+        headerSliverBuilder: ((context, innerBoxIsScrolled) {
+          return [
+            ProfileHeader(user: user),
+            SliverPersistentHeader(
+              delegate: _SliverAppBarDelegate(ProfileTabs(controller: _controller, isMe: isMe)),
+              pinned: true,
+            ),
+          ];
+        }),
+        body: ProfileBody(isMe: isMe, user: user, controller: _controller),
       ),
     );
   }

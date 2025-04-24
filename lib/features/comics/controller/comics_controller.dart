@@ -1,7 +1,11 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/features/comics/db/comics_db.dart';
+import 'package:atlas_app/features/library/models/my_work_model.dart';
+import 'package:atlas_app/features/library/providers/my_favorite_state.dart';
+import 'package:atlas_app/features/novels/providers/comic_views.dart';
 import 'package:atlas_app/imports.dart';
 
 final comicsControllerProvider = StateNotifierProvider<ComicsController, bool>(
@@ -40,10 +44,53 @@ class ComicsController extends StateNotifier<bool> {
     }
   }
 
-  Future<void> handleComicUpdate(ComicModel comic) async {
+  Future<void> handleComicUpdate(ComicModel comic, bool fromSearch) async {
     try {
-      await db.handleUpdateComic(comic);
+      final updatedComic = await db.handleUpdateComic(comic, fromSearch);
+      if (updatedComic != null) {
+        _ref.read(comicViewsStateProvider.notifier).updateComic(updatedComic);
+        _ref.read(selectedComicProvider.notifier).state = updatedComic;
+      }
     } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> toggleFavorite() async {
+    final comic = _ref.read(selectedComicProvider)!;
+    final me = _ref.read(userState.select((s) => s.user!));
+    try {
+      final updatedComic = comic.copyWith(user_favorite: !comic.user_favorite);
+      _ref.read(selectedComicProvider.notifier).state = updatedComic;
+      _ref.read(comicViewsStateProvider.notifier).updateComic(updatedComic);
+      if (comic.user_favorite) {
+        _ref.read(userFavoriteState(me.userId).notifier).deleteWork(comic.comicId);
+      } else {
+        _ref
+            .read(userFavoriteState(me.userId).notifier)
+            .addWork(
+              MyWorkModel(
+                title: comic.englishTitle,
+                type: 'comic',
+                poster: comic.image,
+                id: comic.comicId,
+              ),
+            );
+      }
+
+      await db.toggleFavoriteComic(comic.comicId);
+      CustomToast.success(
+        "تمت ${comic.user_favorite ? "ازالة" : "اضافة"} العمل ${comic.user_favorite ? "من" : "الى"} المفضلة بنجاح",
+      );
+    } catch (e) {
+      final originalComic = comic.copyWith(user_favorite: comic.user_favorite);
+      _ref.read(selectedComicProvider.notifier).state = originalComic;
+      _ref.read(userFavoriteState(me.userId).notifier).deleteWork(comic.comicId);
+      _ref.read(selectedComicProvider.notifier).state = originalComic;
+      _ref.read(comicViewsStateProvider.notifier).updateComic(originalComic);
+
+      CustomToast.error(errorMsg);
       log(e.toString());
       rethrow;
     }

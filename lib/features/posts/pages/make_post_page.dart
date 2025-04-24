@@ -4,6 +4,7 @@ import 'package:atlas_app/features/posts/controller/posts_controller.dart';
 import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/features/posts/widgets/comic_review_tree_widget.dart';
 import 'package:atlas_app/features/posts/widgets/post_field_widget.dart';
+import 'package:atlas_app/features/posts/widgets/repost_tree_widget.dart';
 import 'package:atlas_app/features/posts/widgets/tools_widget.dart';
 import 'package:atlas_app/imports.dart';
 
@@ -22,6 +23,8 @@ class _MakePostPageState extends ConsumerState<MakePostPage> {
   late TextEditingController _controller;
   List<Map<String, dynamic>> mentionSuggestions = [];
   List<File> images = [];
+  bool? canRepost;
+  bool? canComment;
 
   @override
   void initState() {
@@ -33,6 +36,13 @@ class _MakePostPageState extends ConsumerState<MakePostPage> {
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  void handleOptions(bool canRepost, bool canComment) {
+    setState(() {
+      this.canComment = canComment;
+      this.canRepost = canRepost;
+    });
   }
 
   void handleImages() async {
@@ -64,6 +74,19 @@ class _MakePostPageState extends ConsumerState<MakePostPage> {
                     return;
                   }
                   final data = ref.read(postInputProvider);
+                  if (widget.postType == PostType.edit) {
+                    final originalPost = ref.read(selectedPostProvider)!;
+                    ref
+                        .read(postsControllerProvider.notifier)
+                        .updatePost(
+                          originalPost: originalPost,
+                          postContent: data,
+                          context: context,
+                          canRepost: canRepost ?? true,
+                          canComment: canComment ?? true,
+                        );
+                    return;
+                  }
                   ref
                       .read(postsControllerProvider.notifier)
                       .insertPost(
@@ -71,6 +94,8 @@ class _MakePostPageState extends ConsumerState<MakePostPage> {
                         postContent: data,
                         context: context,
                         images: images,
+                        canComment: canComment ?? true,
+                        canRepost: canRepost ?? true,
                       );
                 },
                 icon: const Icon(LucideIcons.check),
@@ -93,7 +118,12 @@ class _MakePostPageState extends ConsumerState<MakePostPage> {
             ),
             if (images.isNotEmpty) ...[buildImages(), const SizedBox(height: 10)],
 
-            ToolsWidget(selectImages: handleImages),
+            ToolsWidget(
+              selectImages: handleImages,
+              handleOptions: (canRepost, canComment) => handleOptions(canRepost, canComment),
+              canComment: canComment ?? true,
+              canRepost: canRepost ?? true,
+            ),
           ],
         ),
       ),
@@ -141,6 +171,10 @@ class TypeControllerWidget extends ConsumerWidget {
     switch (postType) {
       case PostType.comic_review:
         return const ComicReviewTreeWidget();
+      case PostType.novel_review:
+        return const ComicReviewTreeWidget();
+      case PostType.repost:
+        return const RepostTreeWidget();
       default:
         return PostFieldWidget(defaultText: defaultText);
     }

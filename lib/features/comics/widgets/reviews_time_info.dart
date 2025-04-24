@@ -1,17 +1,23 @@
-import 'package:atlas_app/imports.dart';
+import 'package:atlas_app/core/common/constants/fonts_constants.dart';
+import 'package:flutter/material.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class ReviewTimeInfo extends StatelessWidget {
-  const ReviewTimeInfo({super.key, required this.review});
+  const ReviewTimeInfo({
+    super.key,
+    required this.createdAt,
+    this.updatedAt,
+    this.textStyle = const TextStyle(fontSize: 12, fontFamily: arabicAccentFont),
+  });
 
-  final ComicReviewModel review;
+  final DateTime createdAt;
+  final DateTime? updatedAt;
+  final TextStyle textStyle;
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      review.updatedAt == null
-          ? appDateTimeFormat(review.createdAt)
-          : "${appDateTimeFormat(review.createdAt)} (محدث)",
-      style: const TextStyle(fontSize: 12),
-    );
+    final date = timeago.format(createdAt, locale: 'ar');
+    final text = updatedAt == null ? date : "$date (محدث)";
+    return Text(text, style: textStyle);
   }
 }

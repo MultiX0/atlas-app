@@ -17,4 +17,12 @@ class Routes {
   static const addComicReview = '/addComicReviewPage';
   static const makePostPage = '/makePostPage';
   static const hashtagsPage = '/hashtagsPage';
+  static const addNovelPage = '/addNovelPage';
+  static const novelPage = '/novelPage';
+  static const addNovelChapterPage = '/addChapterPage';
+  static const novelChapterDrafts = '/chapterDraftsPage';
+  static const novelReadChapter = '/novelReadChapter';
+  static const chapterCommentsPage = '/chapterCommentsPage';
+  static const comicPage = '/comicPage';
+  static const editProfile = '/editProfile';
 }

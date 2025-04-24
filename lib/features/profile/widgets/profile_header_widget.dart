@@ -1,3 +1,6 @@
+import 'package:atlas_app/features/profile/controller/profile_controller.dart';
+import 'package:atlas_app/features/profile/provider/providers.dart';
+import 'package:atlas_app/features/profile/widgets/profile_options.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 
@@ -11,15 +14,26 @@ class ProfileHeader extends ConsumerWidget {
     final me = ref.watch(userState).user!;
     bool isMe = me.userId == user.userId;
     final size = MediaQuery.sizeOf(context);
+    final _user = isMe ? me : ref.watch(selectedUserProvider);
 
-    return SliverToBoxAdapter(
-      child: Column(
-        children: [buildTopHeader(size, isMe), buildBottomHeader(), const SizedBox(height: 10)],
+    return SliverAppBar(
+      expandedHeight: size.width * .85,
+      flexibleSpace: FlexibleSpaceBar(
+        collapseMode: CollapseMode.parallax,
+        background: Material(
+          color: AppColors.scaffoldBackground,
+          child: Column(
+            children: [buildTopHeader(size, isMe, _user ?? user), buildBottomHeader(_user ?? user)],
+          ),
+        ),
       ),
+      pinned: false,
+      floating: true,
+      snap: false,
     );
   }
 
-  Widget buildBottomHeader() {
+  Widget buildBottomHeader(UserModel user) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
@@ -33,7 +47,6 @@ class ProfileHeader extends ConsumerWidget {
               fontFamily: accentFont,
             ),
           ),
-          // const SizedBox(height: 5),
           Text(
             "@${user.username}",
             style: TextStyle(fontSize: 13, color: AppColors.mutedSilver.withValues(alpha: .95)),
@@ -52,11 +65,11 @@ class ProfileHeader extends ConsumerWidget {
             child: IntrinsicHeight(
               child: Row(
                 children: [
-                  buildCount(count: user.followsCount?.followers ?? "0", title: "متابعين"),
+                  buildCount(count: formatNumber(user.followers_count), title: "متابعين"),
                   buildVerticalDivider(),
-                  buildCount(count: user.followsCount?.following ?? "0", title: "يتابع"),
+                  buildCount(count: formatNumber(user.following_count), title: "يتابع"),
                   buildVerticalDivider(),
-                  buildCount(count: "15", title: "منشور"),
+                  buildCount(count: formatNumber(user.postsCount), title: "منشور"),
                 ],
               ),
             ),
@@ -73,63 +86,113 @@ class ProfileHeader extends ConsumerWidget {
     );
   }
 
-  SizedBox buildTopHeader(Size size, bool isMe) {
-    return SizedBox(
-      height: size.width * 0.45,
+  Builder buildTopHeader(Size size, bool isMe, UserModel user) {
+    return Builder(
+      builder: (context) {
+        return SizedBox(
+          height: size.width * 0.45,
+          child: Stack(
+            children: [
+              Opacity(
+                opacity: .75,
+                child: FancyShimmerImage(
+                  imageUrl: user.banner,
+                  boxFit: BoxFit.cover,
+                  height: size.width * 0.30,
+                  width: double.infinity,
+                ),
+              ),
+              Positioned(
+                bottom: 15,
+                left: 10,
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.scaffoldBackground, width: 4),
+                  ),
+                  child: CircleAvatar(
+                    backgroundColor: AppColors.primaryAccent,
+                    backgroundImage: CachedNetworkImageProvider(user.avatar),
+                    radius: 40,
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 5,
+                right: 15,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    if (isMe) ...[
+                      InkWell(
+                        onTap: () => context.push(Routes.editProfile),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: .5),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Center(child: Icon(TablerIcons.edit, size: 20)),
+                        ),
+                      ),
+                    ] else ...[
+                      Consumer(
+                        builder: (context, ref, _) {
+                          return InkWell(
+                            onTap:
+                                () => ref
+                                    .read(profileControllerProvider.notifier)
+                                    .handleUserFollow(user.userId),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: .5),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  user.followed == true ? Icons.favorite : Icons.favorite_border,
+                                  size: 20,
+                                  color: user.followed == true ? Colors.pink : AppColors.whiteColor,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
 
-      child: Stack(
-        children: [
-          Opacity(
-            opacity: .75,
-            child: FancyShimmerImage(
-              imageUrl: user.banner,
-              boxFit: BoxFit.cover,
-              height: size.width * 0.30,
-              width: double.infinity,
-            ),
-          ),
-          Positioned(
-            bottom: 15,
-            left: 10,
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.scaffoldBackground, width: 4),
-              ),
-              child: CircleAvatar(
-                backgroundColor: AppColors.primaryAccent,
-                backgroundImage: CachedNetworkImageProvider(user.avatar),
-                radius: 40,
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 5,
-            right: 15,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: .5),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Center(child: Icon(Icons.favorite_border, size: 20)),
+                    const SizedBox(width: 8),
+                    InkWell(
+                      onTap: () => openMoreSheet(context),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+                        decoration: BoxDecoration(
+                          color: AppColors.scaffoldForeground,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Center(child: Icon(Icons.more_vert, size: 20)),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-                  decoration: BoxDecoration(
-                    color: AppColors.scaffoldForeground,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Center(child: Icon(Icons.more_vert, size: 20)),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        );
+      },
+    );
+  }
+
+  void openMoreSheet(BuildContext context) {
+    openSheet(
+      context: context,
+      child: Consumer(
+        builder: (context, ref, _) {
+          final me = ref.read(userState).user!;
+          final isMe = me.userId == user.userId;
+          return UserProfileOptions(user: user, isMe: isMe);
+        },
       ),
     );
   }

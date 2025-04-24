@@ -1,4 +1,5 @@
 import 'package:atlas_app/features/comics/widgets/rating_bar_display.dart';
+import 'package:atlas_app/features/novels/models/novel_review_model.dart';
 import 'package:atlas_app/imports.dart';
 
 import 'package:atlas_app/core/common/widgets/cached_avatar.dart';
@@ -12,9 +13,14 @@ class ReviewMentionedWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    dynamic review = post.comicReviewMentioned ?? post.novelReviewMentioned;
     return RepaintBoundary(
       child: InkWell(
-        onTap: () {},
+        onTap: () {
+          if (review is NovelReviewModel) {
+            context.push("${Routes.novelPage}/${review.novelId}");
+          }
+        },
         child: Padding(
           padding: const EdgeInsets.only(left: 10),
           child: Row(
@@ -33,7 +39,7 @@ class ReviewMentionedWidget extends StatelessWidget {
                         ),
                         children: [
                           TextSpan(
-                            text: post.reviewMentioned!.user!.username,
+                            text: review.user!.username,
                             style: const TextStyle(
                               color: AppColors.primary,
                               fontFamily: accentFont,
@@ -44,7 +50,10 @@ class ReviewMentionedWidget extends StatelessWidget {
                             style: TextStyle(color: AppColors.mutedSilver, fontFamily: accentFont),
                           ),
                           TextSpan(
-                            text: post.reviewMentioned!.comic_title,
+                            text:
+                                review is NovelReviewModel
+                                    ? review.novelTitle
+                                    : review!.comic_title,
                             style: const TextStyle(
                               color: AppColors.primary,
                               fontFamily: accentFont,
@@ -54,13 +63,9 @@ class ReviewMentionedWidget extends StatelessWidget {
                       ),
                       textDirection: ui.TextDirection.rtl,
                     ),
-                    RatingBarDisplay(
-                      rating: post.reviewMentioned!.overall,
-                      comic: null,
-                      itemSize: 12,
-                    ),
+                    RatingBarDisplay(rating: review!.overall, itemSize: 12),
                     Text(
-                      post.reviewMentioned!.review,
+                      review!.review,
                       style: const TextStyle(color: AppColors.mutedSilver, fontSize: 13),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 2,
@@ -70,7 +75,7 @@ class ReviewMentionedWidget extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 15),
-              CachedAvatar(avatar: post.reviewMentioned!.user!.avatar, raduis: 15),
+              CachedAvatar(avatar: review!.user!.avatar, raduis: 15),
             ],
           ),
         ),

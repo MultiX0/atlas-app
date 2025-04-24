@@ -19,12 +19,22 @@ class PostsDb {
   SupabaseQueryBuilder get _postsTable => _client.from(TableNames.posts);
   SupabaseQueryBuilder get _postLikesTable => _client.from(TableNames.post_likes);
   SupabaseQueryBuilder get _mentionsTable => _client.from(TableNames.post_mentions);
+  SupabaseQueryBuilder get _pinnedPostsTable => _client.from(TableNames.pinned_posts);
+  SupabaseQueryBuilder get _savedPostsTable => _client.from(TableNames.saved_posts);
+
   HashtagsDb get hashtagDb => HashtagsDb();
 
-  Future<List<PostModel>> getUserPosts(String userId) async {
+  Future<List<PostModel>> getUserPosts({
+    required int startIndex,
+    required int pageSize,
+    required String userId,
+  }) async {
     try {
-      final _data = await _postsView.select("*").eq(KeyNames.userId, userId);
-      log(_data.toString());
+      final _data = await _postsView
+          .select("*")
+          .eq(KeyNames.userId, userId)
+          .order(KeyNames.created_at, ascending: false)
+          .range(startIndex, startIndex + pageSize - 1);
 
       return _data.map((post) => PostModel.fromMap(post)).toList();
     } catch (e) {
@@ -33,19 +43,110 @@ class PostsDb {
     }
   }
 
-  Future<void> insertPost(String postId, String post, String userId, List<String>? images) async {
+  Future<void> insertPost(
+    String postId,
+    String post,
+    String userId,
+    List<String>? images, {
+    bool canRepost = true,
+    bool canComment = true,
+    String? parentId,
+  }) async {
     try {
       await _postsTable.insert({
         KeyNames.id: postId,
         KeyNames.content: post,
         KeyNames.userId: userId,
         KeyNames.images: images ?? [],
+        KeyNames.can_reposted: canRepost,
+        KeyNames.comments_open: canComment,
+        KeyNames.parent_post: parentId,
       });
 
-      final hashtags = extractHashtagKeyword(post);
-      final mentions = extractSlashKeywords(post);
+      final hashtags = extractHashtagKeyword(post).toSet().toList();
+      List<SlashEntity> mentions = [];
+      for (final m in extractSlashKeywords(post)) {
+        if (!mentions.any((_m) => m.id == _m.id)) {
+          mentions.add(m);
+        }
+      }
+
       await Future.wait([hashtagDb.insertNewHashTag(hashtags), insertMentions(mentions, postId)]);
       await hashtagDb.insertPostHashTag(hashtags, postId);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> handlePostPin(PostModel post) async {
+    try {
+      if (post.isPinned) {
+        await _pinnedPostsTable.delete().eq(KeyNames.post_id, post.postId);
+      } else {
+        await _pinnedPostsTable.insert({KeyNames.post_id: post.postId});
+      }
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> handlePostSave(PostModel post, String userId) async {
+    try {
+      if (post.isSaved) {
+        await _savedPostsTable
+            .delete()
+            .eq(KeyNames.post_id, post.postId)
+            .eq(KeyNames.userId, userId);
+      } else {
+        await _savedPostsTable.insert({KeyNames.post_id: post.postId, KeyNames.userId: userId});
+      }
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> updatePost(
+    PostModel post,
+    List<String> ogHashtags,
+    List<SlashEntity> ogMentions,
+  ) async {
+    try {
+      final hashtags = extractHashtagKeyword(post.content);
+      final mentions = extractSlashKeywords(post.content);
+
+      final removedHashtags = ogHashtags.where((tag) => !hashtags.contains(tag)).toList();
+      final addedHashtags = hashtags.where((tag) => !ogHashtags.contains(tag)).toList();
+      final removedMentions =
+          ogMentions.where((mention) => !mentions.any((m) => m.id == mention.id)).toList();
+      List<String> removedMentionsIds = removedMentions.map((m) => m.id).toList();
+      final addedMentions =
+          mentions.where((mention) => !ogMentions.any((m) => m.id == mention.id)).toList();
+      await _postsTable
+          .update({
+            KeyNames.content: post.content,
+            KeyNames.can_reposted: post.canReposted,
+            KeyNames.comments_open: post.comments_open,
+          })
+          .eq(KeyNames.id, post.postId);
+      await Future.wait([
+        hashtagDb.removeHashtagsFromPost(removedHashtags, post.postId),
+        removeMentionFromPost(removedMentionsIds, post.postId),
+        hashtagDb.insertNewHashTag(addedHashtags),
+        insertMentions(addedMentions, post.postId),
+      ]);
+      await hashtagDb.insertPostHashTag(addedHashtags, post.postId);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> deletePost(String postId) async {
+    try {
+      await _postsTable.delete().eq(KeyNames.id, postId);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -65,6 +166,15 @@ class PostsDb {
               )
               .toList();
       await _mentionsTable.upsert(data);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> removeMentionFromPost(List<String> ids, String postId) async {
+    try {
+      await _mentionsTable.delete().eq(KeyNames.post_id, postId).inFilter(KeyNames.entity_id, ids);
     } catch (e) {
       log(e.toString());
       rethrow;

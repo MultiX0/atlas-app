@@ -10,7 +10,10 @@ class CustomToast {
     required ToastificationStyle style,
   }) {
     toastification.show(
-      title: Text(text, style: TextStyle(color: AppColors.whiteColor)),
+      title: Text(
+        text,
+        style: TextStyle(color: AppColors.whiteColor, fontFamily: arabicPrimaryFont),
+      ),
       style: style,
       autoCloseDuration: const Duration(seconds: 3),
       type: type,
@@ -45,7 +48,7 @@ class CustomToast {
       applyBlurEffect: true,
       // ignore: deprecated_member_use
       closeButtonShowType: CloseButtonShowType.none,
-      autoCloseDuration: const Duration(seconds: 2),
+      autoCloseDuration: const Duration(seconds: 3),
       title: Text(
         textDirection: hasArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr,
         message,
@@ -60,9 +63,8 @@ class CustomToast {
 
   static void soon() {
     CustomToast.get(
-      text: "Comming Soon",
+      text: "قادم قريبا...",
       icon: LucideIcons.badge_info,
-
       type: ToastificationType.info,
       style: ToastificationStyle.simple,
     );

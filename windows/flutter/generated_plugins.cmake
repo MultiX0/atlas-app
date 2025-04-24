@@ -9,6 +9,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   firebase_storage
   flutter_avif_windows
   gal
+  share_plus
   url_launcher_windows
 )
 

@@ -1,29 +1,24 @@
+import 'package:atlas_app/core/common/enum/reviews_enum.dart';
 import 'package:atlas_app/core/common/widgets/app_refresh.dart';
 import 'package:atlas_app/imports.dart';
 
 class ComicReviewsPage extends ConsumerStatefulWidget {
-  const ComicReviewsPage({
-    super.key,
-    required this.comic,
-    required this.tabController,
-    required this.tabIndex,
-  });
+  const ComicReviewsPage({super.key, required this.comic});
 
   final ComicModel comic;
-  final TabController tabController;
-  final int tabIndex;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _ReviewsPageState();
 }
 
 class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
-  final ScrollController _scrollController = ScrollController();
   late final Color color;
   late final Color fontColorForBackground;
   bool fetched = false;
   int? reviewsCount;
   bool hideFloating = false;
+  double _previousScroll = 0.0;
+
   @override
   void initState() {
     color = widget.comic.color != null ? HexColor(widget.comic.color!) : AppColors.primary;
@@ -32,26 +27,8 @@ class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
       if (!fetched) {
         fetchData();
       }
-      _scrollController.addListener(_onScroll);
     });
     super.initState();
-  }
-
-  DateTime? _lastCheck;
-  void _onScroll() {
-    final now = DateTime.now();
-    if (_lastCheck != null && now.difference(_lastCheck!).inMilliseconds < 500) return;
-    _lastCheck = now;
-    if (_isBottom) {
-      ref.read(manhwaReviewsStateProvider(widget.comic.comicId).notifier).fetchReviews();
-    }
-  }
-
-  bool get _isBottom {
-    if (!_scrollController.hasClients) return false;
-    final maxScroll = _scrollController.position.maxScrollExtent;
-    final currentScroll = _scrollController.offset;
-    return currentScroll >= (maxScroll - 100);
   }
 
   void fetchData() {
@@ -92,16 +69,9 @@ class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
     });
   }
 
-  @override
-  void dispose() {
-    _scrollController.removeListener(_onScroll);
-    _scrollController.dispose();
-    super.dispose();
-  }
-
   void addReview(List<ComicReviewModel> reviews, bool iAlreadyReviewdOnce) {
     if (reviews.isEmpty || !iAlreadyReviewdOnce) {
-      ref.read(navsProvider).goToAddComicReviewPage('f');
+      ref.read(navsProvider).goToAddReviewPage('f', ReviewsEnum.comic);
     } else {
       ref.read(navsProvider).goToMakePostPage(PostType.comic);
     }
@@ -109,8 +79,6 @@ class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isCurrentTab = widget.tabController.index == widget.tabIndex;
-
     return Consumer(
       builder: (context, ref, child) {
         final isLoading = ref.watch(
@@ -154,42 +122,57 @@ class _ReviewsPageState extends ConsumerState<ComicReviewsPage> {
         ),
         body: AppRefresh(
           onRefresh: () async => refresh(),
-          child: CustomScrollView(
-            cacheExtent: MediaQuery.sizeOf(context).height * 1.5,
-            primary: isCurrentTab,
-            physics: const AlwaysScrollableScrollPhysics(
-              parent: BouncingScrollPhysics(decelerationRate: ScrollDecelerationRate.normal),
-            ),
-            controller: isCurrentTab ? null : _scrollController,
-            slivers: [
-              SliverOverlapInjector(
-                handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-              ),
-              Consumer(
-                builder: (context, ref, child) {
-                  final reviews = ref.watch(
-                    manhwaReviewsStateProvider(
-                      widget.comic.comicId,
-                    ).select((state) => state.reviews),
-                  );
+          child: NotificationListener<ScrollNotification>(
+            onNotification: (scrollNotification) {
+              if (scrollNotification is ScrollUpdateNotification) {
+                final metrics = scrollNotification.metrics;
+                final maxScroll = metrics.maxScrollExtent;
+                final currentScroll = metrics.pixels;
+                const delta = 100.0;
 
-                  return SliverPadding(
-                    padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-                    sliver: ReviewsWidget(
-                      key: UniqueKey(),
-                      iAlreadyReviewdOnce: ref.read(
-                        manhwaReviewsStateProvider(
-                          widget.comic.comicId,
-                        ).select((state) => state.user_have_review_before),
-                      ),
-                      scrollController: _scrollController,
-                      reviews: reviews,
-                      comic: widget.comic,
-                    ),
-                  );
-                },
+                if (currentScroll > _previousScroll && maxScroll - currentScroll <= delta) {
+                  ref
+                      .read(manhwaReviewsStateProvider(widget.comic.comicId).notifier)
+                      .fetchReviews();
+                }
+                _previousScroll = currentScroll;
+              }
+              return false;
+            },
+            child: CustomScrollView(
+              cacheExtent: MediaQuery.sizeOf(context).height * 1.5,
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(decelerationRate: ScrollDecelerationRate.normal),
               ),
-            ],
+              slivers: [
+                SliverOverlapInjector(
+                  handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+                ),
+                Consumer(
+                  builder: (context, ref, child) {
+                    final reviews = ref.watch(
+                      manhwaReviewsStateProvider(
+                        widget.comic.comicId,
+                      ).select((state) => state.reviews),
+                    );
+
+                    return SliverPadding(
+                      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+                      sliver: ReviewsWidget(
+                        key: UniqueKey(),
+                        iAlreadyReviewdOnce: ref.read(
+                          manhwaReviewsStateProvider(
+                            widget.comic.comicId,
+                          ).select((state) => state.user_have_review_before),
+                        ),
+                        reviews: reviews,
+                        comic: widget.comic,
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),

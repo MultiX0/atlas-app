@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:atlas_app/core/common/enum/post_like_enum.dart';
 import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/features/posts/controller/posts_controller.dart';
+import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/features/profile/widgets/post_body_widget.dart';
 import 'package:atlas_app/features/profile/widgets/post_header.dart';
 import 'package:atlas_app/features/profile/widgets/post_replayed_widget.dart';
@@ -16,7 +17,6 @@ class PostWidget extends ConsumerWidget {
     super.key,
     required this.post,
     required this.onComment,
-    required this.onRepost,
     required this.onShare,
     required this.postLikeType,
     this.hashtag,
@@ -26,7 +26,6 @@ class PostWidget extends ConsumerWidget {
   final bool hasArabic;
   final PostLikeEnum postLikeType;
   final VoidCallback? onComment;
-  final VoidCallback? onRepost;
   final VoidCallback? onShare;
   final String? hashtag;
 
@@ -43,7 +42,7 @@ class PostWidget extends ConsumerWidget {
             Divider(height: 0.25, color: AppColors.mutedSilver.withValues(alpha: .1)),
             const SizedBox(height: 15),
             if (post.parent != null) ...[PostReplyedWidget(post: post), const SizedBox(height: 8)],
-            if (post.reviewMentioned != null) ...[
+            if (post.comicReviewMentioned != null || post.novelReviewMentioned != null) ...[
               ReviewMentionedWidget(post: post),
               const SizedBox(height: 8),
             ],
@@ -55,7 +54,7 @@ class PostWidget extends ConsumerWidget {
               hasArabic: hasArabic,
               onComment: onComment,
               onLike: (_) => onLike(ref, me.userId),
-              onRepost: onRepost,
+              onRepost: () => onRepost(ref),
               onShare: onShare,
             ),
             const SizedBox(height: 5),
@@ -63,6 +62,11 @@ class PostWidget extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  void onRepost(WidgetRef ref) {
+    ref.read(selectedPostProvider.notifier).state = post;
+    ref.read(navsProvider).goToMakePostPage(PostType.repost);
   }
 
   final Debouncer _debouncer = Debouncer();

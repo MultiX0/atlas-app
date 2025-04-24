@@ -1,5 +1,8 @@
 import 'package:atlas_app/features/search/pages/manhwa_search_page.dart';
+import 'package:atlas_app/features/search/pages/novels_search_page.dart';
+import 'package:atlas_app/features/search/pages/users_search.dart';
 import 'package:atlas_app/features/search/providers/manhwa_search_state.dart';
+import 'package:atlas_app/features/search/providers/novel_search_state.dart';
 import 'package:atlas_app/features/search/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
 
@@ -54,6 +57,17 @@ class _SearchPageState extends ConsumerState<SearchPage> with SingleTickerProvid
         }
 
         ref.read(manhwaSearchStateProvider.notifier).search(limit: 15, more: useApi);
+      }
+    } else if (_tabController.index == 1) {
+      final searchText = _searchController.text.trim();
+      if (searchText.isNotEmpty) {
+        ref.read(searchQueryProvider.notifier).state = searchText;
+        ref.read(novelSearchStateProvider.notifier).search(refresh: true);
+      }
+    } else {
+      final searchText = _searchController.text.trim();
+      if (searchText.isNotEmpty) {
+        ref.read(searchQueryProvider.notifier).state = searchText;
       }
     }
     _focusNode.unfocus();
@@ -140,7 +154,7 @@ class _SearchPageState extends ConsumerState<SearchPage> with SingleTickerProvid
           Expanded(
             child: TabBarView(
               controller: _tabController,
-              children: const [ManhwaSearchPage(), SizedBox(), SizedBox()],
+              children: const [ManhwaSearchPage(), NovelsSearchPage(), UsersSearch()],
             ),
           ),
         ],

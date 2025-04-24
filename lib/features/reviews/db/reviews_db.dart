@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:atlas_app/core/common/constants/function_names.dart';
 import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/core/common/constants/view_names.dart';
+import 'package:atlas_app/features/novels/models/novel_review_model.dart';
 import 'package:atlas_app/imports.dart';
 
 final reviewsDBProvider = Provider<ReviewsDb>((ref) {
@@ -18,10 +19,22 @@ class ReviewsDb {
   SupabaseQueryBuilder get _comicReviewsTable => _client.from(TableNames.comic_reviews);
   SupabaseQueryBuilder get _comicReviewLikesTable => _client.from(TableNames.comic_review_likes);
   SupabaseQueryBuilder get _comicReviewsView => _client.from(ViewNames.comic_reviews_with_likes);
+  SupabaseQueryBuilder get _novelReviewsView => _client.from(ViewNames.novel_reviews_with_likes);
+  SupabaseQueryBuilder get _novelReviewsTable => _client.from(TableNames.novel_reviews);
+  SupabaseQueryBuilder get _novelReviewLikesTable => _client.from(TableNames.novel_review_likes);
 
   Future<void> insertComicReview(ComicReviewModel review) async {
     try {
       await _comicReviewsTable.insert(review.toMap());
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> insertNovelReview(NovelReviewModel review) async {
+    try {
+      await _novelReviewsTable.insert(review.toMap());
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -67,11 +80,36 @@ class ReviewsDb {
     }
   }
 
+  Future<bool> checkIhaveNovelReview({required String novelId}) async {
+    try {
+      return await _client.rpc(
+        FunctionNames.has_user_reviewed_novel,
+        params: {'p_novel_id': novelId},
+      );
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
   Future<int> getManhwaReviewsCount(String comicId) async {
     try {
       final _count = await _client.rpc(
         FunctionNames.get_comic_review_count,
         params: {"p_comic_id": comicId},
+      );
+      return _count;
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<int> getNovelReviewsCount(String novelId) async {
+    try {
+      final _count = await _client.rpc(
+        FunctionNames.get_novel_review_count,
+        params: {"p_novel_id": novelId},
       );
       return _count;
     } catch (e) {
@@ -105,11 +143,60 @@ class ReviewsDb {
     }
   }
 
+  Future<AvgReviewsModel> getAvgNovelReviews(String novelId) async {
+    try {
+      final data = await _client.rpc(
+        FunctionNames.get_novel_review_averages,
+        params: {'p_novel_id': novelId},
+      );
+
+      final response = data[0];
+
+      final parsedData = {
+        KeyNames.writing_quality_avg: response[KeyNames.writing_quality_avg],
+        KeyNames.story_development_avg: response[KeyNames.story_development_avg],
+        KeyNames.character_design_avg: response[KeyNames.character_design_avg],
+        KeyNames.update_stability_avg: response[KeyNames.update_stability_avg],
+        KeyNames.world_background_avg: response[KeyNames.world_background_avg],
+        KeyNames.overall_avg: response[KeyNames.overall_avg],
+      };
+
+      return AvgReviewsModel.fromMap(Map.from(parsedData));
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
   Future<void> updateComicReview(ComicReviewModel review) async {
     try {
       await _comicReviewsTable
           .update(review.toMap())
           .eq(KeyNames.comic_id, review.comicId)
+          .eq(KeyNames.userId, review.userId);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> updateNovelReview(NovelReviewModel review) async {
+    try {
+      await _novelReviewsTable
+          .update(review.toMap())
+          .eq(KeyNames.novel_id, review.novelId)
+          .eq(KeyNames.userId, review.userId);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> deleteNovelReview(NovelReviewModel review) async {
+    try {
+      await _novelReviewsTable
+          .delete()
+          .eq(KeyNames.novel_id, review.novelId)
           .eq(KeyNames.userId, review.userId);
     } catch (e) {
       log(e.toString());
@@ -142,6 +229,52 @@ class ReviewsDb {
             .eq(KeyNames.userId, userId)
             .eq(KeyNames.review_id, review.id);
       }
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> handleNovelReviewLike(NovelReviewModel review, String userId) async {
+    try {
+      if (review.i_liked) {
+        await _novelReviewLikesTable.insert({
+          KeyNames.review_id: review.id,
+          KeyNames.userId: userId,
+        });
+      } else {
+        await _novelReviewLikesTable
+            .delete()
+            .eq(KeyNames.userId, userId)
+            .eq(KeyNames.review_id, review.id);
+      }
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<List<NovelReviewModel>> getNovelReviews({
+    required String novelId,
+    required int startIndex,
+    required int pageSize,
+  }) async {
+    try {
+      final data = await _novelReviewsView
+          .select("*")
+          .eq(KeyNames.novel_id, novelId)
+          .order(KeyNames.created_at, ascending: false)
+          .range(startIndex, startIndex + pageSize - 1);
+
+      final reviews =
+          data
+              .map(
+                (review) => NovelReviewModel.fromMap(
+                  review,
+                ).copyWith(user: UserModel.fromMap(review[TableNames.users])),
+              )
+              .toList();
+      return reviews;
     } catch (e) {
       log(e.toString());
       rethrow;

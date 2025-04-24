@@ -2,6 +2,8 @@ import 'dart:developer';
 
 import 'package:atlas_app/features/auth/controller/auth_controller.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:flutter/gestures.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class FinalRegisterPage extends ConsumerStatefulWidget {
   const FinalRegisterPage({super.key, required this.next, required this.prevs});
@@ -40,7 +42,6 @@ class _FinalRegisterPageState extends ConsumerState<FinalRegisterPage> {
       final localUser = ref.read(localUserModel);
       ref.read(localUserModel.notifier).state = localUser!.copyWith(metadata: updatedMetaData);
 
-      //TODO IMPLEMENT BACKEND CODE HERE
       ref.read(authControllerProvider.notifier).signUp();
       log("complete");
       return;
@@ -59,7 +60,8 @@ class _FinalRegisterPageState extends ConsumerState<FinalRegisterPage> {
         bottomNavigationBar: Padding(
           padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 25),
           child: CustomButton(
-            text: "Continue",
+            text: "التسجيل",
+            fontSize: 16,
             onPressed: acceptTerms ? () => next() : null,
             isLoading: isLoading,
             // disabled: acceptTerms,
@@ -72,22 +74,25 @@ class _FinalRegisterPageState extends ConsumerState<FinalRegisterPage> {
             },
           ),
         ),
-        body: Form(
-          key: _formKey,
-          child: ListView(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-            children: [
-              const Text(
-                "Create a strong password and agree to our terms to continue.",
-                style: TextStyle(fontFamily: accentFont, fontSize: 20),
-              ),
-              const SizedBox(height: Spacing.normalGap),
-              buildPasswordField(),
-              const SizedBox(height: Spacing.normalGap),
-              buildConfirmPasswordField(),
-              const SizedBox(height: Spacing.normalGap),
-              buildTermsCheckbox(),
-            ],
+        body: Directionality(
+          textDirection: TextDirection.rtl,
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+              children: [
+                const Text(
+                  "أنشئ كلمة مرور قوية ووافق على شروطنا للمتابعة.",
+                  style: TextStyle(fontFamily: arabicAccentFont, fontSize: 24),
+                ),
+                const SizedBox(height: Spacing.normalGap),
+                buildPasswordField(),
+                const SizedBox(height: Spacing.normalGap),
+                buildConfirmPasswordField(),
+                const SizedBox(height: Spacing.normalGap),
+                buildTermsCheckbox(),
+              ],
+            ),
           ),
         ),
       ),
@@ -107,21 +112,37 @@ class _FinalRegisterPageState extends ConsumerState<FinalRegisterPage> {
             log(acceptTerms.toString());
           },
         ),
-        const Expanded(
+        Expanded(
           child: Text.rich(
             softWrap: true,
             TextSpan(
-              text: "I agree to the ",
+              text: "أوافق على ",
               children: [
-                TextSpan(text: 'Terms of Service', style: TextStyle(color: AppColors.primary)),
-                TextSpan(text: " and "),
-                TextSpan(text: "Privacy Policy", style: TextStyle(color: AppColors.primary)),
+                TextSpan(
+                  text: 'شروط الخدمة',
+                  style: const TextStyle(color: AppColors.primary),
+                  recognizer:
+                      TapGestureRecognizer()
+                        ..onTap = () async {
+                          await launchUrlString('https://www.atlasapp.app/terms');
+                        },
+                ),
+                const TextSpan(text: " و "),
+                TextSpan(
+                  text: "سياسة الخصوصية",
+                  style: const TextStyle(color: AppColors.primary),
+                  recognizer:
+                      TapGestureRecognizer()
+                        ..onTap = () async {
+                          await launchUrlString('https://www.atlasapp.app/privacy');
+                        },
+                ),
               ],
             ),
-            style: TextStyle(
+            style: const TextStyle(
               fontWeight: FontWeight.bold,
               color: AppColors.mutedSilver,
-              fontFamily: accentFont,
+              fontFamily: arabicAccentFont,
             ),
           ),
         ),
@@ -133,15 +154,15 @@ class _FinalRegisterPageState extends ConsumerState<FinalRegisterPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        buildLabel("Password", size: 15),
+        buildLabel("كلمة المرور", size: 15),
         CustomTextFormField(
           prefixIcon: LucideIcons.lock,
           obscureText: true,
-          hintText: "Enter Your Password",
+          hintText: "أدخل كلمة المرور الخاصة بك",
           controller: _passwordController,
           validator: (val) => validatePassword(val),
         ),
-        buildLabel("(Must be at least 8 characters, including a number and a special character.)"),
+        buildLabel("(يجب أن تكون كلمة المرور مكونة من 8 أحرف على الأقل، بما في ذلك رقم ورمز خاص.)"),
       ],
     );
   }
@@ -150,35 +171,35 @@ class _FinalRegisterPageState extends ConsumerState<FinalRegisterPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        buildLabel("Confirm Password", size: 15),
+        buildLabel("تأكيد كلمة المرور", size: 15),
         CustomTextFormField(
           prefixIcon: LucideIcons.lock,
-          hintText: "Enter Your Password Again",
+          hintText: "أدخل كلمة المرور الخاصة بك مرة أخرى",
           obscureText: true,
           controller: _passwordConfirmationController,
           validator: (val) => confirmPassword(val, _passwordController.text.trim()),
         ),
-        buildLabel("(Must match the first password.)"),
+        buildLabel("(يجب أن تتطابق مع كلمة المرور الأولى.)"),
       ],
     );
   }
 
   String? validatePassword(String? value) {
     if (value == null || value.isEmpty) {
-      return "Password cannot be empty.";
+      return "كلمة المرور لا يمكن أن تكون فارغة.";
     }
     if (value.length < 8) {
-      return "Password must be at least 8 characters long.";
+      return "يجب أن تكون كلمة المرور مكونة من 8 أحرف على الأقل.";
     }
     if (!RegExp(r'^(?=.*[0-9])(?=.*[!@#$%^&*()_+=-]).{8,}$').hasMatch(value)) {
-      return "Password must include at least\none number and one special character.";
+      return "يجب أن تتضمن كلمة المرور على الأقل رقمًا واحدًا ورمزًا خاصًا واحدًا.";
     }
     return null; // Valid
   }
 
   String? confirmPassword(String? value, String password) {
     if (value != password) {
-      return "Passwords do not match.";
+      return "كلمات المرور غير متطابقة.";
     }
     return null; // Valid
   }
@@ -189,7 +210,11 @@ class _FinalRegisterPageState extends ConsumerState<FinalRegisterPage> {
       child: GestureDetector(
         child: Text(
           text,
-          style: TextStyle(fontFamily: accentFont, fontSize: size, color: AppColors.mutedSilver),
+          style: TextStyle(
+            fontFamily: arabicAccentFont,
+            fontSize: size,
+            color: AppColors.mutedSilver,
+          ),
         ),
       ),
     );

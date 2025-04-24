@@ -124,8 +124,8 @@ class ComicReviewModel {
       KeyNames.spoilers: spoilers,
       KeyNames.images: images,
       KeyNames.review_text: review,
-      KeyNames.created_at: createdAt.toIso8601String(),
-      KeyNames.updated_at: updatedAt?.toIso8601String(),
+      KeyNames.created_at: createdAt.toUtc().toIso8601String(),
+      KeyNames.updated_at: updatedAt?.toUtc().toIso8601String(),
     };
   }
 

@@ -9,4 +9,21 @@ class FunctionNames {
   static const check_if_review_before = 'check_if_review_before';
   static const get_comic_avg_ratings = 'get_comic_avg_ratings';
   static const search_all = 'search_all';
+  static const get_existing_genres = 'get_existing_genres';
+  static const get_user_works = 'get_user_works';
+  static const get_user_favorites = 'get_user_favorites';
+  static const get_next_chapter_number = 'get_next_chapter_number';
+  static const log_novel_chapter_view = 'log_novel_chapter_view';
+  static const log_novel_view = 'log_novel_view';
+  static const toggle_favorite_novel = 'toggle_favorite_novel';
+  static const toggle_chapter_like = 'toggle_chapter_like';
+  static const toggle_chapter_comment_like = 'toggle_chapter_comment_like';
+  static const toggle_chapter_comment_reply_like = 'toggle_chapter_comment_reply_like';
+  static const delete_chapter_comment = 'delete_chapter_comment';
+  static const delete_chapter_comment_reply = 'delete_chapter_comment_reply';
+  static const has_user_reviewed_novel = 'has_user_reviewed_novel';
+  static const get_novel_review_count = 'get_novel_review_count';
+  static const get_novel_review_averages = 'get_novel_review_averages';
+  static const toggle_favorite_comic = 'toggle_favorite_comic';
+  static const toggle_follow_user = 'toggle_follow_user';
 }

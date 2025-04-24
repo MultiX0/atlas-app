@@ -154,111 +154,108 @@ class _PostFieldWidgetState extends ConsumerState<PostFieldWidget> {
       child: Column(
         children: [
           UserDataWidget(me: me),
-          ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 200),
-            child: EnhancedFlutterMentions(
-              defaultText: widget.defaultText,
-              onMarkupChanged: (val) {
-                log(val);
-                ref.read(postInputProvider.notifier).state = val.trim();
-              },
-              onMentionAdd: onMentionAdded,
-              suggestionPosition: SuggestionPosition.Bottom,
-              maxLines: 10,
-              minLines: 6,
-              cursorColor: AppColors.primary,
-              style: const TextStyle(fontFamily: arabicPrimaryFont),
-              triggerCallbacks: {
-                '@': onMentionSearchChanged,
-                '#': onHashtagSearchChanged,
-                '/': onSlashCommandSearchChanged,
-              },
-              textDirection: TextDirection.rtl,
-              decoration: const InputDecoration(
-                border: InputBorder.none,
-                hintText: "بماذا تفكر؟",
-                hintTextDirection: TextDirection.rtl,
-                hintStyle: TextStyle(fontFamily: arabicAccentFont, fontSize: 18),
-              ),
-              mentions: [
-                Mention(
-                  disableMarkup: true,
-                  suggestionBuilder:
-                      (data) => Material(
-                        color: AppColors.blackColor,
-                        child: ListTile(
-                          title: Text(data['display'] ?? "No Name"),
-                          subtitle: Text("@${data['username'] ?? "No Username"}"),
-                          leading: CircleAvatar(
-                            backgroundColor: AppColors.blackColor,
-                            backgroundImage:
-                                data['photo']?.isNotEmpty == true
-                                    ? CachedNetworkAvifImageProvider(data['photo'])
-                                    : null,
-                            child:
-                                data['photo']?.isNotEmpty != true ? const Icon(Icons.person) : null,
-                          ),
-                        ),
-                      ),
-                  trigger: "@",
-                  style: const TextStyle(color: AppColors.primary),
-                  data: mentionSuggestions,
-                ),
-                Mention(
-                  trigger: "#",
-                  disableMarkup: true,
-                  style: const TextStyle(color: AppColors.primary),
-                  data: hashTagsSuggestions,
-                  matchAll: true,
-
-                  suggestionBuilder:
-                      (data) => Material(
-                        color: AppColors.blackColor,
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            radius: 23,
-                            backgroundColor: AppColors.scaffoldForeground,
-                            child: Icon(LucideIcons.hash, color: AppColors.whiteColor),
-                          ),
-                          title: Text(data['display']),
-                          subtitle: Text(
-                            "${data["count"]} منشور",
-                            textDirection: TextDirection.rtl,
-                            textAlign: TextAlign.end,
-                          ),
-                        ),
-                      ),
-                ),
-                Mention(
-                  trigger: "/",
-                  disableMarkup: false,
-                  markupBuilder: (trigger, id, display) {
-                    final item = slashSuggestions.firstWhere(
-                      (e) => e['id'] == id,
-                      orElse: () => {"type": "novel", "display": display},
-                    );
-                    final type = item['type'] ?? 'novel';
-
-                    return '/$type[$id]:$display/';
-                  },
-                  style: const TextStyle(color: AppColors.primary),
-                  suggestionBuilder:
-                      (data) => Material(
-                        color: AppColors.blackColor,
-                        child: ListTile(
-                          title: Text(data['display'] ?? ""),
-                          leading: CircleAvatar(
-                            backgroundColor: AppColors.primaryAccent,
-                            backgroundImage: CachedNetworkImageProvider(data['photo'] ?? ''),
-                          ),
-                          subtitle: Text(extractSlashMentionType(data['type'] ?? "")),
-                        ),
-                      ),
-                  data: slashSuggestions,
-                  matchAll: true,
-                ),
-              ],
+          EnhancedFlutterMentions(
+            defaultText: widget.defaultText,
+            onMarkupChanged: (val) {
+              log(val);
+              ref.read(postInputProvider.notifier).state = val.trim();
+            },
+            onMentionAdd: onMentionAdded,
+            suggestionPosition: SuggestionPosition.Bottom,
+            maxLines: 10,
+            minLines: 1,
+            cursorColor: AppColors.primary,
+            style: const TextStyle(fontFamily: arabicPrimaryFont),
+            triggerCallbacks: {
+              '@': onMentionSearchChanged,
+              '#': onHashtagSearchChanged,
+              '/': onSlashCommandSearchChanged,
+            },
+            textDirection: TextDirection.rtl,
+            decoration: const InputDecoration(
+              border: InputBorder.none,
+              hintText: "بماذا تفكر؟",
+              hintTextDirection: TextDirection.rtl,
+              hintStyle: TextStyle(fontFamily: arabicAccentFont, fontSize: 18),
             ),
+            mentions: [
+              Mention(
+                disableMarkup: true,
+                suggestionBuilder:
+                    (data) => Material(
+                      color: AppColors.blackColor,
+                      child: ListTile(
+                        title: Text(data['display'] ?? "No Name"),
+                        subtitle: Text("@${data['username'] ?? "No Username"}"),
+                        leading: CircleAvatar(
+                          backgroundColor: AppColors.blackColor,
+                          backgroundImage:
+                              data['photo']?.isNotEmpty == true
+                                  ? CachedNetworkAvifImageProvider(data['photo'])
+                                  : null,
+                          child:
+                              data['photo']?.isNotEmpty != true ? const Icon(Icons.person) : null,
+                        ),
+                      ),
+                    ),
+                trigger: "@",
+                style: const TextStyle(color: AppColors.primary),
+                data: mentionSuggestions,
+              ),
+              Mention(
+                trigger: "#",
+                disableMarkup: true,
+                style: const TextStyle(color: AppColors.primary),
+                data: hashTagsSuggestions,
+                matchAll: true,
+
+                suggestionBuilder:
+                    (data) => Material(
+                      color: AppColors.blackColor,
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          radius: 23,
+                          backgroundColor: AppColors.scaffoldForeground,
+                          child: Icon(LucideIcons.hash, color: AppColors.whiteColor),
+                        ),
+                        title: Text(data['display']),
+                        subtitle: Text(
+                          "${data["count"]} منشور",
+                          textDirection: TextDirection.rtl,
+                          textAlign: TextAlign.end,
+                        ),
+                      ),
+                    ),
+              ),
+              Mention(
+                trigger: "/",
+                disableMarkup: false,
+                markupBuilder: (trigger, id, display) {
+                  final item = slashSuggestions.firstWhere(
+                    (e) => e['id'] == id,
+                    orElse: () => {"type": "novel", "display": display},
+                  );
+                  final type = item['type'] ?? 'novel';
+
+                  return '/$type[$id]:$display/';
+                },
+                style: const TextStyle(color: AppColors.primary),
+                suggestionBuilder:
+                    (data) => Material(
+                      color: AppColors.blackColor,
+                      child: ListTile(
+                        title: Text(data['display'] ?? ""),
+                        leading: CircleAvatar(
+                          backgroundColor: AppColors.primaryAccent,
+                          backgroundImage: CachedNetworkImageProvider(data['photo'] ?? ''),
+                        ),
+                        subtitle: Text(extractSlashMentionType(data['type'] ?? "")),
+                      ),
+                    ),
+                data: slashSuggestions,
+                matchAll: true,
+              ),
+            ],
           ),
         ],
       ),

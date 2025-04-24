@@ -8,3 +8,5 @@ const emptyBanner =
 const malAPI = 'https://api.jikan.moe/v4/manga';
 const aniListAPI = "https://graphql.anilist.co";
 const errorMsg = 'حدث خطأ الرجاء المحاولة مرة أخرى لاحقا';
+const appDomain = 'https://atlasapp.app';
+const subAppDomain = 'https://app.atlasapp.app';

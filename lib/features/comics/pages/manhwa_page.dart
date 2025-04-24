@@ -10,7 +10,9 @@ import 'package:atlas_app/features/comics/widgets/reviews_page.dart';
 import 'package:atlas_app/imports.dart';
 
 class ManhwaPage extends ConsumerStatefulWidget {
-  const ManhwaPage({super.key});
+  const ManhwaPage({super.key, required this.fromSearch});
+
+  final bool fromSearch;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _ManhwaPageState();
@@ -18,7 +20,6 @@ class ManhwaPage extends ConsumerStatefulWidget {
 
 class _ManhwaPageState extends ConsumerState<ManhwaPage> with SingleTickerProviderStateMixin {
   late TabController _controller;
-  bool reviewsFetched = false;
 
   @override
   void initState() {
@@ -54,7 +55,7 @@ class _ManhwaPageState extends ConsumerState<ManhwaPage> with SingleTickerProvid
       context.pop();
       return;
     }
-    ref.read(comicsControllerProvider.notifier).handleComicUpdate(comic);
+    ref.read(comicsControllerProvider.notifier).handleComicUpdate(comic, widget.fromSearch);
   }
 
   @override
@@ -88,7 +89,7 @@ class _ManhwaPageState extends ConsumerState<ManhwaPage> with SingleTickerProvid
           controller: _controller,
           children: [
             const ManhwaDataBody(),
-            ComicReviewsPage(comic: comic, tabController: _controller, tabIndex: 1),
+            ComicReviewsPage(comic: comic),
             ManhwaCharactersWidget(comic: comic),
           ],
         ),

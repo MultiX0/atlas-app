@@ -15,6 +15,8 @@ class _ManhwaDataBodyState extends ConsumerState<ManhwaDataBody> {
   @override
   Widget build(BuildContext context) {
     final comic = ref.watch(selectedComicProvider)!;
+    final seeMoreTextColor =
+        comic.color == null ? AppColors.primary.withValues(alpha: .7) : HexColor(comic.color!);
 
     return RepaintBoundary(
       child: CustomScrollView(
@@ -25,11 +27,18 @@ class _ManhwaDataBodyState extends ConsumerState<ManhwaDataBody> {
             padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                StatisticsCard(comic: comic),
+                StatisticsCard(
+                  favoriteCount: comic.favorite_count,
+                  postsCount: comic.posts_count,
+                  views: comic.views,
+                ),
                 const SizedBox(height: 10),
-                SynopsisCard(comic: comic),
+                SynopsisCard(color: seeMoreTextColor, synopsis: comic.ar_synopsis),
                 const SizedBox(height: 10),
-                GenresCard(comic: comic),
+                GenresCard(
+                  color: seeMoreTextColor,
+                  genres: comic.genres.map((g) => g.ar_name).toList(),
+                ),
                 if (comic.externalLinks != null && comic.externalLinks!.isNotEmpty) ...[
                   const SizedBox(height: 10),
                   ExternalLinksCard(comic: comic),

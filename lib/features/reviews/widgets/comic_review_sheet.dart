@@ -1,11 +1,13 @@
+import 'package:atlas_app/core/common/enum/reviews_enum.dart';
 import 'package:atlas_app/core/common/utils/deletion_sheet.dart';
+import 'package:atlas_app/features/novels/models/novel_review_model.dart';
 import 'package:atlas_app/imports.dart';
 
-class ComicReviewSheet extends ConsumerWidget {
-  const ComicReviewSheet({super.key, required this.isCreator, required this.review});
+class ReviewOptionsSheet extends ConsumerWidget {
+  const ReviewOptionsSheet({super.key, required this.isCreator, required this.review});
 
   final bool isCreator;
-  final ComicReviewModel review;
+  final dynamic review;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -19,7 +21,16 @@ class ComicReviewSheet extends ConsumerWidget {
   void update(WidgetRef ref, BuildContext context) {
     context.pop();
     ref.read(selectedReview.notifier).state = review;
-    ref.read(navsProvider).goToAddComicReviewPage('t');
+    ReviewsEnum reviewType;
+    if (review is NovelReviewModel) {
+      reviewType = ReviewsEnum.novel;
+    } else if (review is ComicReviewModel) {
+      reviewType = ReviewsEnum.comic;
+    } else {
+      reviewType = ReviewsEnum.webtoon;
+    }
+
+    ref.read(navsProvider).goToAddReviewPage('t', reviewType);
   }
 
   void delete(WidgetRef ref, BuildContext context) {
@@ -33,7 +44,12 @@ class ComicReviewSheet extends ConsumerWidget {
           return DeleteSheet(
             message: 'هل أنت متأكد أنك تريد حذف هذا التقييم؟',
             onDelete: () {
-              controller.deleteComicReview(review, context);
+              if (review is ComicReviewModel) {
+                controller.deleteComicReview(review, context);
+              }
+              if (review is NovelReviewModel) {
+                controller.deleteNovelReview(review, context);
+              }
             },
           );
         },

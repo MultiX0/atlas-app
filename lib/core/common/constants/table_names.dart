@@ -22,4 +22,22 @@ class TableNames {
   static const comic_review_likes = 'comic_review_likes';
   static const post_hashtags = 'post_hashtags';
   static const hashtags = 'hashtags';
+  static const pinned_posts = 'pinned_posts';
+  static const saved_posts = 'saved_posts';
+  static const post_reports = 'post_reports';
+  static const novels_genreses_data = 'novels_genreses_data';
+  static const original_webtoons = 'original_webtoons';
+  static const users_favorite_novels = 'users_favorite_novels';
+  static const novel_views = 'novel_views';
+  static const novel_chapters = 'novel_chapters';
+  static const novel_chapter_drafts = 'novel_chapter_drafts';
+  static const novel_chapter_views = 'novel_chapter_views';
+  static const novel_chapter_comments = 'novel_chapter_comments';
+  static const novel_chapter_comment_replies = 'novel_chapter_comment_replies';
+  static const novel_chapters_comment_report = 'novel_chapters_comment_report';
+  static const novel_chapter_reports = 'novel_chapter_reports';
+  static const novel_reports = 'novel_reports';
+  static const novel_reviews = 'novel_reviews';
+  static const novel_review_likes = 'novel_review_likes';
+  static const user_reports = 'user_reports';
 }
