@@ -9,13 +9,23 @@ import 'package:atlas_app/core/common/utils/upload_storage.dart';
 import 'package:atlas_app/features/auth/controller/auth_controller.dart';
 import 'package:atlas_app/features/auth/db/auth_db.dart';
 import 'package:atlas_app/features/profile/db/profile_db.dart';
+import 'package:atlas_app/features/profile/provider/providers.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:uuid/uuid.dart';
 
 final getUserByIdProvider = FutureProvider.family<UserModel, String>((ref, userId) async {
   final controller = ref.watch(authControllerProvider.notifier);
-  return controller.getUserData(userId);
+
+  final user = await controller.getUserData(userId);
+  ref.read(selectedUserProvider.notifier).state = user;
+  return user;
+});
+
+final searchUsersProvider = FutureProvider.family<List<UserModel>, String>((ref, query) async {
+  final controller = ref.watch(profileControllerProvider.notifier);
+
+  return await controller.profileSearch(query);
 });
 
 final profileControllerProvider = StateNotifierProvider<ProfileController, bool>((ref) {
@@ -37,6 +47,15 @@ class ProfileController extends StateNotifier<bool> {
   Future<List<Map<String, dynamic>>> fetchUsersForMention(String query) async {
     try {
       return await _profileDb.fetchUsersForMention(query);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<List<UserModel>> profileSearch(String query) async {
+    try {
+      return await _profileDb.profileSearch(query);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -135,6 +154,36 @@ class ProfileController extends StateNotifier<bool> {
       return link;
     } catch (e, trace) {
       log(e.toString(), stackTrace: trace);
+      rethrow;
+    }
+  }
+
+  Future<void> handleUserFollow(String targetId) async {
+    final oldUser = _ref.read(selectedUserProvider);
+    final me = _ref.read(userState.select((s) => s.user!));
+    try {
+      _ref.read(selectedUserProvider.notifier).state = oldUser?.copyWith(
+        followed: !(oldUser.followed ?? false),
+        followers_count:
+            (oldUser.followed ?? false) ? oldUser.followers_count - 1 : oldUser.followers_count + 1,
+      );
+
+      _ref
+          .read(userState.notifier)
+          .updateState(
+            me.copyWith(
+              following_count:
+                  (oldUser?.followed ?? false) ? me.following_count - 1 : me.following_count + 1,
+            ),
+          );
+
+      await _profileDb.toggleFollow(targetId);
+    } catch (e) {
+      _ref.read(selectedUserProvider.notifier).state = oldUser;
+      _ref.read(userState.notifier).updateState(me);
+
+      CustomToast.error(errorMsg);
+      log(e.toString());
       rethrow;
     }
   }

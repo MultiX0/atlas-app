@@ -1,3 +1,5 @@
+import 'package:atlas_app/features/profile/controller/profile_controller.dart';
+import 'package:atlas_app/features/profile/provider/providers.dart';
 import 'package:atlas_app/features/profile/widgets/profile_options.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
@@ -12,6 +14,7 @@ class ProfileHeader extends ConsumerWidget {
     final me = ref.watch(userState).user!;
     bool isMe = me.userId == user.userId;
     final size = MediaQuery.sizeOf(context);
+    final _user = isMe ? me : ref.watch(selectedUserProvider);
 
     return SliverAppBar(
       expandedHeight: size.width * .85,
@@ -19,7 +22,9 @@ class ProfileHeader extends ConsumerWidget {
         collapseMode: CollapseMode.parallax,
         background: Material(
           color: AppColors.scaffoldBackground,
-          child: Column(children: [buildTopHeader(size, isMe), buildBottomHeader()]),
+          child: Column(
+            children: [buildTopHeader(size, isMe, _user ?? user), buildBottomHeader(_user ?? user)],
+          ),
         ),
       ),
       pinned: false,
@@ -28,7 +33,7 @@ class ProfileHeader extends ConsumerWidget {
     );
   }
 
-  Widget buildBottomHeader() {
+  Widget buildBottomHeader(UserModel user) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
@@ -60,11 +65,11 @@ class ProfileHeader extends ConsumerWidget {
             child: IntrinsicHeight(
               child: Row(
                 children: [
-                  buildCount(count: user.followsCount?.followers ?? "0", title: "متابعين"),
+                  buildCount(count: formatNumber(user.followers_count), title: "متابعين"),
                   buildVerticalDivider(),
-                  buildCount(count: user.followsCount?.following ?? "0", title: "يتابع"),
+                  buildCount(count: formatNumber(user.following_count), title: "يتابع"),
                   buildVerticalDivider(),
-                  buildCount(count: "15", title: "منشور"),
+                  buildCount(count: formatNumber(user.postsCount), title: "منشور"),
                 ],
               ),
             ),
@@ -81,7 +86,7 @@ class ProfileHeader extends ConsumerWidget {
     );
   }
 
-  Builder buildTopHeader(Size size, bool isMe) {
+  Builder buildTopHeader(Size size, bool isMe, UserModel user) {
     return Builder(
       builder: (context) {
         return SizedBox(
@@ -131,13 +136,29 @@ class ProfileHeader extends ConsumerWidget {
                         ),
                       ),
                     ] else ...[
-                      Container(
-                        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: .5),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Center(child: Icon(Icons.favorite_border, size: 20)),
+                      Consumer(
+                        builder: (context, ref, _) {
+                          return InkWell(
+                            onTap:
+                                () => ref
+                                    .read(profileControllerProvider.notifier)
+                                    .handleUserFollow(user.userId),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: .5),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  user.followed == true ? Icons.favorite : Icons.favorite_border,
+                                  size: 20,
+                                  color: user.followed == true ? Colors.pink : AppColors.whiteColor,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ],
 

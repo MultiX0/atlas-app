@@ -63,7 +63,7 @@ class UserState extends StateNotifier<UserStateHelper> {
         return state.user;
       }
       final userId = _client.auth.currentSession!.user.id;
-      UserModel user = await _db.getUserData(userId, withMetadata: true);
+      UserModel user = await _db.getUserData(userId);
       log("user data: $user");
       await Future.delayed(const Duration(milliseconds: 100));
       state = UserStateHelper(user: user, isLoading: false, hasError: false, isInitlized: true);

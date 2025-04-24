@@ -1,4 +1,5 @@
 import 'package:atlas_app/features/profile/controller/profile_controller.dart';
+import 'package:atlas_app/features/profile/provider/providers.dart';
 import 'package:atlas_app/features/profile/widgets/profile_body.dart';
 import 'package:atlas_app/features/profile/widgets/profile_header_widget.dart';
 import 'package:atlas_app/features/profile/widgets/profile_tabs.dart';
@@ -19,9 +20,19 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
   void initState() {
     final me = ref.read(userState).user!;
     bool isMe = me.userId == widget.userId;
-
     _controller = TabController(length: isMe ? 2 : 3, vsync: this);
+    WidgetsBinding.instance.addPostFrameCallback((_) => handleInit());
     super.initState();
+  }
+
+  void handleInit() {
+    Future.microtask(() {
+      final me = ref.read(userState).user!;
+      bool isMe = me.userId == widget.userId;
+      if (isMe) {
+        ref.read(selectedUserProvider.notifier).state = me;
+      }
+    });
   }
 
   @override

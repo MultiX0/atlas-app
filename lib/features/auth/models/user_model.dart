@@ -2,7 +2,6 @@
 
 import 'package:atlas_app/core/common/constants/key_names.dart';
 import 'package:atlas_app/features/auth/models/user_metadata.dart';
-import 'package:atlas_app/features/profile/models/follows_model.dart';
 
 class UserModel {
   final String fullName;
@@ -10,49 +9,42 @@ class UserModel {
   final String userId;
   final String avatar;
   final String banner;
-  final FollowsCountModel? followsCount;
   final String? bio;
   final UserMetadata? metadata;
+  final int followers_count;
+  final int following_count;
+  final bool? is_follow_me;
+  final bool? followed;
+  final int postsCount;
   UserModel({
     required this.fullName,
     required this.username,
     required this.userId,
     required this.avatar,
     required this.banner,
-    this.metadata,
+    required this.postsCount,
     this.bio,
-    this.followsCount,
+    this.metadata,
+    required this.followers_count,
+    required this.following_count,
+    this.is_follow_me,
+    this.followed,
   });
 
   factory UserModel.newUser(UserModel user) {
     return UserModel(
       fullName: user.fullName,
+      followers_count: user.followers_count,
+      following_count: user.following_count,
+      bio: user.bio,
+      followed: user.followed,
+      postsCount: user.postsCount,
+      is_follow_me: user.is_follow_me,
+      metadata: user.metadata,
       username: user.username,
       userId: user.userId,
       avatar: user.avatar,
       banner: user.banner,
-    );
-  }
-
-  UserModel copyWith({
-    String? fullName,
-    String? username,
-    String? userId,
-    String? avatar,
-    UserMetadata? metadata,
-    FollowsCountModel? followsCount,
-    String? banner,
-    String? bio,
-  }) {
-    return UserModel(
-      fullName: fullName ?? this.fullName,
-      username: username ?? this.username,
-      userId: userId ?? this.userId,
-      avatar: avatar ?? this.avatar,
-      metadata: metadata ?? this.metadata,
-      banner: banner ?? this.banner,
-      followsCount: followsCount ?? this.followsCount,
-      bio: bio ?? this.bio,
     );
   }
 
@@ -75,6 +67,13 @@ class UserModel {
       avatar: map[KeyNames.avatar] ?? "",
       banner: map[KeyNames.banner] ?? "",
       bio: map[KeyNames.bio],
+      followers_count: map[KeyNames.followers_count] ?? 0,
+      following_count: map[KeyNames.following_count] ?? 0,
+      followed: map[KeyNames.followed] ?? false,
+      is_follow_me: map[KeyNames.is_follow_me] ?? false,
+      metadata:
+          map[KeyNames.metadata] == null ? null : UserMetadata.fromMap(map[KeyNames.metadata]),
+      postsCount: map[KeyNames.posts_count] ?? 0,
       // metadata: UserMetadata.fromMap(map['metadata'] as Map<String, dynamic>),
     );
   }
@@ -102,5 +101,35 @@ class UserModel {
         userId.hashCode ^
         avatar.hashCode ^
         metadata.hashCode;
+  }
+
+  UserModel copyWith({
+    String? fullName,
+    String? username,
+    String? userId,
+    String? avatar,
+    String? banner,
+    String? bio,
+    UserMetadata? metadata,
+    int? followers_count,
+    int? following_count,
+    bool? is_follow_me,
+    bool? followed,
+    int? postsCount,
+  }) {
+    return UserModel(
+      fullName: fullName ?? this.fullName,
+      username: username ?? this.username,
+      userId: userId ?? this.userId,
+      avatar: avatar ?? this.avatar,
+      banner: banner ?? this.banner,
+      bio: bio ?? this.bio,
+      metadata: metadata ?? this.metadata,
+      followers_count: followers_count ?? this.followers_count,
+      following_count: following_count ?? this.following_count,
+      is_follow_me: is_follow_me ?? this.is_follow_me,
+      followed: followed ?? this.followed,
+      postsCount: postsCount ?? this.postsCount,
+    );
   }
 }

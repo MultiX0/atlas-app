@@ -138,4 +138,10 @@ class KeyNames {
   static const novel_review_mentioned = 'novel_review_mentioned';
   static const reported_user_id = 'reported_user_id';
   static const details = 'details';
+  static const followers_count = 'followers_count';
+  static const following_count = 'following_count';
+  static const is_follow_me = 'is_follow_me';
+  static const followed = 'followed';
+  static const metadata = 'metadata';
+  static const posts_count = 'posts_count';
 }

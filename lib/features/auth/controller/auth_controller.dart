@@ -80,9 +80,9 @@ class AuthController extends StateNotifier<bool> {
     }
   }
 
-  Future<UserModel> getUserData(String userId, {bool withMetadata = false}) async {
+  Future<UserModel> getUserData(String userId) async {
     try {
-      return await _db.getUserData(userId, withMetadata: withMetadata);
+      return await _db.getUserData(userId);
     } catch (e) {
       log(e.toString());
       rethrow;

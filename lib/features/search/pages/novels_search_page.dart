@@ -1,6 +1,7 @@
 import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/core/common/widgets/manhwa_poster.dart';
 import 'package:atlas_app/features/search/providers/novel_search_state.dart';
+import 'package:atlas_app/features/search/widgets/empty_search.dart';
 import 'package:atlas_app/imports.dart';
 
 class NovelsSearchPage extends ConsumerStatefulWidget {
@@ -91,19 +92,7 @@ class _NovelsSearchPageState extends ConsumerState<NovelsSearchPage> {
     }
 
     if (novels.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset('assets/images/no_data_cry_.gif', height: 130),
-            const SizedBox(height: 15),
-            const Text(
-              "سجل البحث فارغ",
-              style: TextStyle(fontFamily: arabicAccentFont, fontSize: 18),
-            ),
-          ],
-        ),
-      );
+      return const EmptySearch();
     }
 
     return GridView.builder(

@@ -215,100 +215,91 @@ class _UserReportSheetState extends State<UserReportSheet> {
       padding: const EdgeInsets.all(16),
       child: Directionality(
         textDirection: TextDirection.rtl,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "الإبلاغ عن المستخدم",
-              style: TextStyle(fontFamily: arabicAccentFont, fontSize: 20),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              "يرجى اختيار سبب الإبلاغ:",
-              style: TextStyle(fontFamily: arabicPrimaryFont, fontSize: 16),
-            ),
-            const SizedBox(height: 8),
-            ..._reportReasons.map(
-              (reason) => RadioListTile<String>(
-                title: Text(
-                  reason['reason']!,
-                  style: const TextStyle(fontFamily: arabicPrimaryFont),
-                ),
-                subtitle: Text(
-                  reason['description']!,
-                  style: const TextStyle(
-                    fontFamily: arabicPrimaryFont,
-                    color: AppColors.mutedSilver,
-                  ),
-                ),
-                value: reason['reason']!,
-                groupValue: _selectedReason,
-                onChanged: (value) {
-                  setState(() {
-                    _selectedReason = value;
-                  });
-                },
-                activeColor: AppColors.primary,
+        child: Padding(
+          padding: MediaQuery.of(context).viewInsets,
+
+          child: ListView(
+            children: [
+              const Text(
+                "يرجى اختيار سبب الإبلاغ:",
+                style: TextStyle(fontFamily: arabicPrimaryFont, fontSize: 16),
               ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _detailsController,
-              maxLines: 3,
-              decoration: InputDecoration(
-                labelText: "تفاصيل إضافية (اختياري)",
-                hintText: "أدخل تفاصيل إضافية عن الإبلاغ",
-                hintStyle: const TextStyle(fontFamily: arabicPrimaryFont),
-                filled: true,
-                fillColor: AppColors.textFieldFillColor,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-              style: const TextStyle(fontFamily: arabicPrimaryFont),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () => context.pop(),
-                  child: const Text(
-                    "إلغاء",
-                    style: TextStyle(fontFamily: arabicAccentFont, color: AppColors.primary),
+              const SizedBox(height: 8),
+              ..._reportReasons.map(
+                (reason) => RadioListTile<String>(
+                  title: Text(
+                    reason['reason']!,
+                    style: const TextStyle(fontFamily: arabicPrimaryFont),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Consumer(
-                  builder: (context, ref, _) {
-                    return ElevatedButton(
-                      onPressed: () => _isSubmitting ? null : _submitReport(ref),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      child:
-                          _isSubmitting
-                              ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                              : const Text(
-                                "إرسال",
-                                style: TextStyle(fontFamily: arabicAccentFont, color: Colors.white),
-                              ),
-                    );
+                  subtitle: Text(
+                    reason['description']!,
+                    style: const TextStyle(
+                      fontFamily: arabicPrimaryFont,
+                      color: AppColors.mutedSilver,
+                    ),
+                  ),
+                  value: reason['reason']!,
+                  groupValue: _selectedReason,
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedReason = value;
+                    });
                   },
+                  activeColor: AppColors.primary,
                 ),
-              ],
-            ),
-          ],
+              ),
+              const SizedBox(height: 16),
+
+              CustomTextFormField(
+                hintText: "أدخل تفاصيل إضافية عن الإبلاغ",
+                controller: _detailsController,
+                maxLines: 3,
+                maxLength: 512,
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => context.pop(),
+                    child: const Text(
+                      "إلغاء",
+                      style: TextStyle(fontFamily: arabicAccentFont, color: AppColors.primary),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      return ElevatedButton(
+                        onPressed: () => _isSubmitting ? null : _submitReport(ref),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child:
+                            _isSubmitting
+                                ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                                : const Text(
+                                  "إرسال",
+                                  style: TextStyle(
+                                    fontFamily: arabicAccentFont,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

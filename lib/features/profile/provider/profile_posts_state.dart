@@ -127,8 +127,8 @@ class ProfilePostsStateProvider extends StateNotifier<ProfilePostsStateHelper> {
       log(
         "fetchData completed, updated posts: ${state.posts.map((p) => "${p.postId}: ${p.userLiked}").toList()}",
       );
-    } catch (e) {
-      log("fetchData error: $e");
+    } catch (e, trace) {
+      log("fetchData error: $e", stackTrace: trace);
       updateState(isLoading: false, loadingMore: false, error: e.toString());
     }
   }

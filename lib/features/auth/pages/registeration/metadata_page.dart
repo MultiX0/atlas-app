@@ -85,6 +85,9 @@ class _MetadataPageState extends ConsumerState<MetadataPage> {
       ref.read(localUserMetadata.notifier).state = localMetaData!.copyWith(birthDate: selectedDate);
       final username = _usernameController.text.trim();
       ref.read(localUserModel.notifier).state = UserModel(
+        followers_count: 0,
+        following_count: 0,
+        postsCount: 0,
         fullName: _fullNameController.text.trim(),
         username: username,
         userId: "",

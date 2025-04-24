@@ -2,8 +2,8 @@ import 'dart:developer';
 
 import 'package:atlas_app/core/common/constants/function_names.dart';
 import 'package:atlas_app/core/common/constants/table_names.dart';
+import 'package:atlas_app/core/common/constants/view_names.dart';
 import 'package:atlas_app/core/common/utils/hashing.dart';
-import 'package:atlas_app/features/auth/models/user_metadata.dart';
 import 'package:atlas_app/imports.dart';
 
 class IsLoggedState extends StateNotifier<bool> {
@@ -21,6 +21,7 @@ final isLoggedProvider = StateNotifierProvider<IsLoggedState, bool>((ref) {
 class AuthDb {
   final client = Supabase.instance.client;
   SupabaseQueryBuilder get _usersTable => client.from(TableNames.users);
+  SupabaseQueryBuilder get _usersView => client.from(ViewNames.user_profiles_view);
   SupabaseQueryBuilder get _usersMetadataTable => client.from(TableNames.users_metadata);
 
   Future<UserModel?> login({required String email, required String password}) async {
@@ -92,25 +93,9 @@ class AuthDb {
     }
   }
 
-  Future<UserModel> getUserData(String userId, {bool withMetadata = false}) async {
+  Future<UserModel> getUserData(String userId) async {
     try {
-      if (withMetadata) {
-        final data =
-            await _usersMetadataTable
-                .select("*,${TableNames.users}(*)")
-                .eq(KeyNames.userId, userId)
-                .maybeSingle();
-
-        if (data != null) {
-          final metaData = UserMetadata.fromMap(data);
-          final user = UserModel.fromMap(data[TableNames.users]).copyWith(metadata: metaData);
-          return user;
-        }
-
-        throw Exception("the user metadata is null");
-      }
-
-      final data = await _usersTable.select("*").eq(KeyNames.id, userId).maybeSingle();
+      final data = await _usersView.select("*").eq(KeyNames.id, userId).maybeSingle();
       if (data != null) {
         return UserModel.fromMap(data);
       }
