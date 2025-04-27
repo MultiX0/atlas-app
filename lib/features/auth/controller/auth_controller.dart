@@ -99,4 +99,36 @@ class AuthController extends StateNotifier<bool> {
       rethrow;
     }
   }
+
+  Future<void> sendOTP({required String email, required String name}) async {
+    try {
+      state = true;
+      await _db.sendOTP(email: email, name: name);
+      state = false;
+    } catch (e) {
+      log(e.toString());
+      state = false;
+      rethrow;
+    }
+  }
+
+  Future<void> verificationCheck({
+    required String email,
+    required String password,
+    required String verificationCode,
+  }) async {
+    try {
+      state = true;
+      await _db.verificationCheck(
+        email: email,
+        password: password,
+        verificationCode: verificationCode,
+      );
+      state = false;
+    } catch (e) {
+      log(e.toString());
+      state = false;
+      rethrow;
+    }
+  }
 }

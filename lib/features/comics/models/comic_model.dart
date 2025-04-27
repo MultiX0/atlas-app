@@ -144,8 +144,6 @@ class ComicModel {
       KeyNames.tags: tags,
       KeyNames.last_update_at: lastUpdateAt?.toIso8601String(),
       KeyNames.external_links: externalLinks?.map((external) => external.toMap()).toList(),
-      // 'titles': titles.map((x) => x.toMap()).toList(),
-      // 'genres': genres.map((x) => x.toMap()).toList(),
       KeyNames.image: image,
     };
   }

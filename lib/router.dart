@@ -4,7 +4,7 @@ import 'package:atlas_app/core/common/enum/reviews_enum.dart';
 import 'package:atlas_app/features/assistant/pages/chat_page.dart';
 import 'package:atlas_app/features/auth/db/auth_db.dart';
 import 'package:atlas_app/features/auth/pages/forget_password/confirm_email_page.dart';
-import 'package:atlas_app/features/auth/pages/forget_password/email_field_page.dart';
+import 'package:atlas_app/features/settings/pages/email_field_page.dart';
 import 'package:atlas_app/features/auth/pages/forget_password/update_password.dart';
 import 'package:atlas_app/features/auth/pages/login_page.dart';
 import 'package:atlas_app/features/auth/pages/register_page.dart';
@@ -27,6 +27,7 @@ import 'package:atlas_app/features/profile/pages/profile_page.dart';
 import 'package:atlas_app/features/reviews/pages/add_comic_review.dart';
 import 'package:atlas_app/features/scrolls/pages/scrolls_page.dart';
 import 'package:atlas_app/features/search/pages/search_page.dart';
+import 'package:atlas_app/features/settings/pages/forgot_password_page.dart';
 import 'package:atlas_app/features/splash/splash_page.dart';
 import 'package:atlas_app/nav_bar.dart';
 
@@ -63,7 +64,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       final forgetPasswordPage =
           state.uri.toString() == Routes.forgotPasswordConfirmEmailPage ||
           state.uri.toString() == Routes.forgotPasswordEmailPage ||
-          state.uri.toString() == Routes.updatePasswordPage;
+          state.uri.toString() == Routes.updatePasswordPage ||
+          state.uri.toString() == Routes.forgotPassword;
       final firstPageRoute = state.uri.toString() == Routes.onboardingPage;
 
       if (!isUserLoggedIn) {
@@ -132,6 +134,21 @@ final routerProvider = Provider<GoRouter>((ref) {
       buildRoute(path: Routes.novelReadChapter, child: const ChapterReadingPage(), fade: true),
       buildRoute(path: Routes.chapterCommentsPage, child: const ChapterCommentsPage(), fade: true),
       buildRoute(path: Routes.editProfile, child: const EditProfileScreen(), fade: true),
+
+      GoRoute(
+        path: Routes.forgotPassword,
+        name: Routes.forgotPassword,
+        pageBuilder: (context, state) {
+          final email = ((state.extra as Map<String, dynamic>)["email"] ?? "").toString().trim();
+
+          return CustomTransitionPage(
+            child: ForgotPasswordPage(email: email),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+          );
+        },
+      ),
 
       GoRoute(
         path: "${Routes.addComicReview}/:update/:type",

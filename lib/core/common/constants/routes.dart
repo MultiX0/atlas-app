@@ -25,4 +25,5 @@ class Routes {
   static const chapterCommentsPage = '/chapterCommentsPage';
   static const comicPage = '/comicPage';
   static const editProfile = '/editProfile';
+  static const forgotPassword = '/forgotPassword';
 }

@@ -1,8 +1,6 @@
 import 'dart:developer';
 
-import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/features/characters/models/character_model.dart';
-import 'package:atlas_app/features/characters/models/comic_characters_model.dart';
 import 'package:atlas_app/features/translate/translate_service.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:uuid/uuid.dart';
@@ -13,85 +11,75 @@ final characterDbProvider = Provider<CharactersDb>((ref) {
 });
 
 class CharactersDb {
-  SupabaseClient get _client => Supabase.instance.client;
-  SupabaseQueryBuilder get _charactersTable => _client.from(TableNames.characters);
-  SupabaseQueryBuilder get _comicCharactersTable => _client.from(TableNames.comic_characters);
-
   TranslationService get _translationService => TranslationService();
 
   final uuid = const Uuid();
 
-  Future<void> insertCharacters(List<CharacterModel> characters) async {
+  // This method prepares character data for API but doesn't insert it directly
+  Future<Map<String, dynamic>?> prepareCharacterData(
+    ComicModel comic,
+    List<Map<String, dynamic>> charactersMap,
+  ) async {
     try {
-      final uniqueCharactersMap = {for (var c in characters) c.id: c.toJson()}.values.toList();
-      await _charactersTable.upsert(
-        uniqueCharactersMap,
-        onConflict: KeyNames.id,
-        ignoreDuplicates: false,
+      if (charactersMap.isEmpty) return null;
+
+      // Find the relevant character data for this comic
+      final charactersComicData = charactersMap.firstWhere(
+        (map) => map["comic_ani_id"] == comic.aniId,
+        orElse: () => {"comic_ani_id": comic.aniId, "characters": []},
       );
+
+      // Log for debugging
+      if (charactersComicData.containsKey("characters")) {
+        final charCount = (charactersComicData["characters"] as List).length;
+        log("Found $charCount characters for comic ${comic.englishTitle} (${comic.comicId})");
+      } else {
+        log("No characters found for comic ${comic.englishTitle} (${comic.comicId})");
+        return charactersComicData; // Return early with empty characters
+      }
+
+      // Extract character models from the data
+      final characters = <CharacterModel>[];
+
+      for (final char in charactersComicData["characters"]) {
+        if (char is Map && char.containsKey("character")) {
+          try {
+            characters.add(CharacterModel.fromDB(char["character"]));
+          } catch (e) {
+            log("Error parsing character: $e");
+          }
+        }
+      }
+
+      // If we found valid characters, translate their descriptions
+      if (characters.isNotEmpty) {
+        final translatedChars = await translateCharacterDescription(characters);
+
+        // Update the characters in charactersComicData with translated descriptions
+        for (int i = 0; i < translatedChars.length; i++) {
+          if (i < (charactersComicData["characters"] as List).length) {
+            final char = translatedChars[i];
+            charactersComicData["characters"][i]["character"]["ar_description"] =
+                char.ar_description;
+          }
+        }
+      }
+
+      return charactersComicData;
     } catch (e) {
-      log(e.toString());
-      rethrow;
+      log("Error preparing character data for comic ${comic.comicId}: ${e.toString()}");
+      return null;
     }
   }
 
+  // Legacy method kept for backward compatibility
   Future<void> handleInsertCharacters(
     ComicModel comic,
     List<Map<String, dynamic>> charactersMap,
   ) async {
     try {
-      if (charactersMap.isEmpty) return;
-
-      final charactersComicData = charactersMap.firstWhere(
-        (map) => map["comic_ani_id"] == comic.aniId,
-      );
-
-      final characters = List<CharacterModel>.from(
-        (charactersComicData['characters'] as List<Map<String, dynamic>>)
-            .map((char) => CharacterModel.fromDB(char["character"]))
-            .toList(),
-      );
-
-      // log("THERE IS ${characters.length} FOR THR COMIC (${comic.comicId})");
-      // log("CHARACTERS FOR ${comic.englishTitle}:");
-      // for (final char in characters) {
-      //   log(char.fullName);
-      // }
-
-      final _translatedChars = await translateCharacterDescription(characters);
-
-      List<ComicCharacterModel> _comicCharacters = [];
-
-      for (int i = 0; i < _translatedChars.length; i++) {
-        final char = _translatedChars[i];
-
-        if (_comicCharacters.indexWhere((c) => c.character?.id == char.id) == -1) {
-          _comicCharacters.add(
-            ComicCharacterModel(
-              id: '${comic.comicId}-${char.id}',
-              comicId: comic.comicId,
-              characterId: char.id,
-              role: charactersComicData["characters"][i]["role"],
-              character: char,
-            ),
-          );
-        }
-      }
-
-      await insertCharacters(_translatedChars);
-      await insertComicsCharacters(_comicCharacters);
-    } catch (e) {
-      log(e.toString());
-      rethrow;
-    }
-  }
-
-  Future<void> insertComicsCharacters(List<ComicCharacterModel> _comicCharacters) async {
-    try {
-      await _comicCharactersTable.upsert(
-        _comicCharacters.map((char) => char.toDB()).toList(),
-        onConflict: 'id',
-      );
+      log("handleInsertCharacters called - this is now handled in prepareCharacterData");
+      await prepareCharacterData(comic, charactersMap);
     } catch (e) {
       log(e.toString());
       rethrow;
