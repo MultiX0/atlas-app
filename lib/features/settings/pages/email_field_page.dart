@@ -1,3 +1,4 @@
+import 'package:atlas_app/features/auth/controller/auth_controller.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:flutter/services.dart';
 
@@ -24,10 +25,11 @@ class _EmailFieldPageState extends ConsumerState<EmailFieldPage> {
     super.dispose();
   }
 
-  void next() {
+  void next() async {
     final email = _emailController.text.trim().toLowerCase();
     if (_formKey.currentState!.validate()) {
-      if (email != "shwiamahommed@gmail.com") {
+      final isValid = await ref.read(authControllerProvider.notifier).isEmailTaken(email);
+      if (!isValid) {
         setState(() {
           isValidEmail = false;
         });
@@ -36,6 +38,7 @@ class _EmailFieldPageState extends ConsumerState<EmailFieldPage> {
       setState(() {
         isValidEmail = true;
       });
+      if (!mounted) return;
       context.pushReplacementNamed(
         Routes.forgotPassword,
         extra: {'email': _emailController.text.trim()},
@@ -51,7 +54,16 @@ class _EmailFieldPageState extends ConsumerState<EmailFieldPage> {
       appBar: AppBar(title: const Text("نسيت كلمة المرور؟")),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 25),
-        child: CustomButton(text: "إرسال رمز التأكيد", onPressed: () => next()),
+        child: Consumer(
+          builder: (context, ref, _) {
+            final isLoading = ref.watch(authControllerProvider);
+            return CustomButton(
+              text: "إرسال رمز التأكيد",
+              onPressed: () => next(),
+              isLoading: isLoading,
+            );
+          },
+        ),
       ),
       body: Directionality(
         textDirection: TextDirection.rtl,

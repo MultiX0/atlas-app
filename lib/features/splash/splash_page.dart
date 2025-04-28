@@ -43,13 +43,22 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     );
   }
 
-  void _handleDeepLink(Uri uri) {
+  void _handleDeepLink(Uri uri) async {
     // Handle atlasapp:// and https://app.atlasapp.app
     if (uri.scheme == 'atlasapp' || uri.host == 'app.atlasapp.app') {
+      // First, ensure user is initialized
+      final user = await ref.read(userState.notifier).initlizeUser();
+
       // Extract path (e.g., /comicPage/123)
       final path = uri.path;
-      // Navigate using GoRouter
-      ref.read(routerProvider).push(path);
+
+      // Only navigate if the user is authenticated, otherwise let normal redirect handle it
+      if (user != null) {
+        ref.read(routerProvider).push(path);
+      } else {
+        // User isn't authenticated, let the normal flow handle it
+        ref.read(routerProvider).go(Routes.onboardingPage);
+      }
     }
   }
 
@@ -87,7 +96,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     return RepaintBoundary(
       child: Scaffold(
         body: Stack(
-          children: [Center(child: Image.asset('assets/images/logo_atlas.png', width: 200))],
+          children: [Center(child: Image.asset('assets/images/logo_at.png', width: 300))],
         ),
       ),
     );
