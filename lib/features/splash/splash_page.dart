@@ -5,7 +5,6 @@ import 'dart:developer';
 
 import 'package:app_links/app_links.dart';
 import 'package:atlas_app/imports.dart';
-import 'package:atlas_app/router.dart';
 import 'package:no_screenshot/no_screenshot.dart';
 
 class SplashPage extends ConsumerStatefulWidget {
@@ -43,13 +42,6 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     );
   }
 
-  void _handleDeepLink(Uri uri) {
-    if (uri.scheme == 'atlasapp' || uri.host == 'app.atlasapp.app') {
-      final path = uri.path;
-      ref.read(routerProvider).push(path); // Navigate to the deep link path
-    }
-  }
-
   @override
   void dispose() {
     _linkSubscription?.cancel();
@@ -60,26 +52,68 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     await _noScreenshot.screenshotOn();
   }
 
+  void _handleDeepLink(BuildContext context, Uri uri) {
+    // Pass context
+    log("Handling deep link: $uri");
+    // Check scheme and host if necessary, though path might be enough if using goRouter
+    final path = uri.path;
+    // Use 'go' to replace the splash page entirely with the deep link destination
+    if (path.isNotEmpty && path != '/') {
+      // Avoid navigating to "/"
+      log("Navigating via context.go to: $path");
+      // Ensure the router provider is accessed safely if needed, but context.go is preferred
+      context.go(path);
+    } else {
+      log("Deep link path is empty or root, navigating home.");
+      context.go(Routes.home); // Fallback to home if path is invalid/empty
+    }
+  }
+
   @override
   void initState() {
+    super.initState(); // Call super.initState first
     initAppLinks();
     enableScreenshot();
     log("==============");
     log("on splash");
     log("==============");
 
-    super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final user = await ref.read(userState.notifier).initlizeUser();
-      if (user != null) {
-        // If there's a pending deep link, navigate to it
-        if (_pendingDeepLink != null) {
-          _handleDeepLink(_pendingDeepLink!);
-        } else {
-          context.go(Routes.home);
+      log("Splash: Post frame callback started.");
+      try {
+        // Initialize user and wait for it to complete
+        final user = await ref.read(userState.notifier).initlizeUser();
+        log("Splash: User initialization complete. User: ${user?.userId}");
+
+        // Ensure the widget is still mounted before navigating
+        if (!mounted) {
+          log("Splash: Widget unmounted before navigation.");
+          return;
         }
-      } else {
-        context.go(Routes.onboardingPage);
+
+        if (user != null) {
+          // User is logged in
+          log("Splash: User is logged in.");
+          if (_pendingDeepLink != null) {
+            log("Splash: Pending deep link found: $_pendingDeepLink");
+            // Handle the deep link using context.go
+            _handleDeepLink(context, _pendingDeepLink!);
+            _pendingDeepLink = null; // Clear the pending link after handling
+          } else {
+            log("Splash: No pending deep link, navigating home.");
+            context.go(Routes.home);
+          }
+        } else {
+          // User is not logged in
+          log("Splash: User is not logged in, navigating to onboarding.");
+          context.go(Routes.onboardingPage);
+        }
+      } catch (e) {
+        log("Splash: Error during initialization or navigation: $e");
+        // Optionally navigate to an error page or onboarding as a fallback
+        if (mounted) {
+          context.go(Routes.onboardingPage);
+        }
       }
     });
   }

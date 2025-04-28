@@ -184,7 +184,7 @@ class ComicModel {
       status: map[KeyNames.status] ?? "",
       views: map[KeyNames.view_count] ?? 0,
       posts_count: map[KeyNames.mentioned_posts] ?? 0,
-      score: map[KeyNames.score] ?? 0.0,
+      score: map[KeyNames.score] == null ? 0.0 : map[KeyNames.score]?.toDouble() ?? 0.0,
       characters:
           map[TableNames.comic_characters] == null
               ? []

@@ -67,12 +67,12 @@ class ComicsDb {
 
   Future<void> viewComic({required String userId, required String comicId}) async {
     try {
-      final currentComic = _ref.read(selectedComicProvider)!;
+      // final currentComic = _ref.read(selectedComicProvider)!;
       await _comicsViewsTable.insert({KeyNames.userId: userId, KeyNames.comic_id: comicId});
-      _ref.read(selectedComicProvider.notifier).state = currentComic.copyWith(
-        views: currentComic.views + 1,
-        is_viewed: true,
-      );
+      // _ref.read(selectedComicProvider.notifier).state = currentComic.copyWith(
+      //   views: currentComic.views + 1,
+      //   is_viewed: true,
+      // );
     } catch (e) {
       log(e.toString());
       rethrow;
