@@ -26,4 +26,5 @@ class FunctionNames {
   static const get_novel_review_averages = 'get_novel_review_averages';
   static const toggle_favorite_comic = 'toggle_favorite_comic';
   static const toggle_follow_user = 'toggle_follow_user';
+  static const get_random_comic_ids = 'get_random_comic_ids';
 }

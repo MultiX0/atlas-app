@@ -1,13 +1,17 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:atlas_app/core/common/constants/function_names.dart';
 import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/core/common/constants/view_names.dart';
 import 'package:atlas_app/core/common/enum/hashtag_enum.dart';
+import 'package:atlas_app/core/common/utils/encrypt.dart';
 import 'package:atlas_app/core/common/utils/extract_key_words.dart';
 import 'package:atlas_app/core/common/widgets/slash_parser.dart';
 import 'package:atlas_app/features/hashtags/db/hashtags_db.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 final postsDbProvider = Provider<PostsDb>((ref) {
   return PostsDb();
@@ -22,6 +26,7 @@ class PostsDb {
   SupabaseQueryBuilder get _pinnedPostsTable => _client.from(TableNames.pinned_posts);
   SupabaseQueryBuilder get _savedPostsTable => _client.from(TableNames.saved_posts);
 
+  static Dio get _dio => Dio();
   HashtagsDb get hashtagDb => HashtagsDb();
 
   Future<List<PostModel>> getUserPosts({
@@ -233,6 +238,68 @@ class PostsDb {
 
       final data = await query;
       return data.map((post) => PostModel.fromMap(post)).toList();
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<List<String>> fetchUserRecommendation({required String userId, required int page}) async {
+    try {
+      final url = '${appAPI}recommend-posts?user_id=$userId&page=$page';
+      final headers = await generateAuthHeaders();
+      final options = Options(headers: headers);
+      final res = await _dio.get(url, options: options);
+      if (res.statusCode != null && res.statusCode! >= 200 && res.statusCode! <= 299) {
+        if (res.data == null) {
+          log('Error: Response data is null');
+          return [];
+        }
+
+        log('Response data: ${res.data.toString()}');
+
+        final data = jsonDecode(res.data.toString());
+
+        if (data is List) {
+          return List<String>.from(
+            data.where((item) => item != null).map((item) => item.toString()),
+          );
+        } else {
+          log('Error: Expected a List but got ${data.runtimeType}');
+          return [];
+        }
+      }
+      return [];
+    } catch (e) {
+      log(e.toString());
+      return [];
+    }
+  }
+
+  Future<List<PostModel>> getMainFeeds({
+    required String userId,
+    required int page,
+    required int startAt,
+    required int pageSize,
+  }) async {
+    try {
+      final ids = await fetchUserRecommendation(userId: userId, page: page);
+      var query = _postsView.select("*");
+
+      if (ids.isNotEmpty) {
+        log("there is recommendation data");
+        log(ids.toString());
+        query = query.inFilter(KeyNames.post_id, ids);
+        if (!kDebugMode) {
+          //remove personal posts from the feeds in prod
+          query = query.neq(KeyNames.userId, userId);
+        }
+      } else {
+        query.range(startAt, startAt + pageSize - 1);
+      }
+
+      final data = await query;
+      return data.map((p) => PostModel.fromMap(p)).toList();
     } catch (e) {
       log(e.toString());
       rethrow;

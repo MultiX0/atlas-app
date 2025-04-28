@@ -14,6 +14,7 @@ import 'package:atlas_app/features/hashtags/providers/providers.dart';
 import 'package:atlas_app/features/novels/providers/novel_reviews_state.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/features/posts/db/posts_db.dart';
+import 'package:atlas_app/features/posts/providers/main_feed_state.dart';
 import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/features/profile/provider/profile_posts_state.dart';
 import 'package:atlas_app/imports.dart';
@@ -154,6 +155,10 @@ class PostsController extends StateNotifier<bool> {
           _ref.read(hashtagStateProvider(post.userId).notifier).likePost(postModel: newPost);
           break;
         case PostLikeEnum.GENERAL:
+          _ref.read(mainFeedStateProvider(post.userId).notifier).likePost(postModel: newPost);
+          log("After state update: expecting userLiked = ${newPost.userLiked}");
+          await db.handleUserLike(post, userId);
+          _ref.read(mainFeedStateProvider(post.userId).notifier).likePost(postModel: newPost);
           break;
       }
     } catch (e) {
@@ -166,8 +171,12 @@ class PostsController extends StateNotifier<bool> {
               .likePost(postModel: post);
           break;
         case PostLikeEnum.PROFILE:
+          _ref.read(hashtagStateProvider(post.userId).notifier).likePost(postModel: post);
+
           break;
         case PostLikeEnum.GENERAL:
+          _ref.read(mainFeedStateProvider(post.userId).notifier).likePost(postModel: post);
+
           break;
       }
       rethrow;
@@ -201,13 +210,13 @@ class PostsController extends StateNotifier<bool> {
     final me = _ref.read(userState.select((user) => user.user!));
     try {
       _ref
-          .read(profilePostsStateProvider(me.userId).notifier)
+          .read(profilePostsStateProvider(post.userId).notifier)
           .updatePost(post.copyWith(isSaved: !post.isSaved));
       await db.handlePostSave(post, me.userId);
     } catch (e) {
       log(e.toString());
       _ref
-          .read(profilePostsStateProvider(me.userId).notifier)
+          .read(profilePostsStateProvider(post.userId).notifier)
           .updatePost(post.copyWith(isSaved: post.isSaved));
       CustomToast.error(errorMsg);
       rethrow;

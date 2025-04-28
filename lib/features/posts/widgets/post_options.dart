@@ -103,7 +103,7 @@ class _PostOptionsSheetState extends State<PostOptions> {
                 },
               ),
               buildTile(
-                visible: isOwner,
+                visible: (isOwner && profile),
 
                 "حذف",
                 LucideIcons.trash_2,

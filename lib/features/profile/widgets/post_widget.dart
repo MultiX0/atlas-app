@@ -19,11 +19,14 @@ class PostWidget extends ConsumerWidget {
     required this.onComment,
     required this.onShare,
     required this.postLikeType,
+    this.profileNav = true,
+
     this.hashtag,
   }) : hasArabic = Bidi.hasAnyRtl(post.content);
 
   final PostModel post;
   final bool hasArabic;
+  final bool profileNav;
   final PostLikeEnum postLikeType;
   final VoidCallback? onComment;
   final VoidCallback? onShare;
@@ -47,7 +50,7 @@ class PostWidget extends ConsumerWidget {
               const SizedBox(height: 8),
             ],
 
-            PostHeaderWidget(post: post),
+            PostHeaderWidget(post: post, profileNav: profileNav),
             PostBodyWidget(
               post: post,
               hashtag: hashtag,

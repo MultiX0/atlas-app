@@ -13,10 +13,10 @@ class CachedAvatar extends StatelessWidget {
       backgroundColor: AppColors.blackColor,
       child: CachedNetworkImage(
         imageUrl: avatar,
-        memCacheWidth: 24,
-        memCacheHeight: 24,
-        maxHeightDiskCache: 24,
-        maxWidthDiskCache: 24,
+        memCacheWidth: 100,
+        memCacheHeight: 100,
+        maxHeightDiskCache: 100,
+        maxWidthDiskCache: 100,
         imageBuilder:
             (context, image) => CircleAvatar(
               backgroundImage: image,

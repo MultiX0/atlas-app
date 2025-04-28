@@ -1,15 +1,19 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:atlas_app/core/common/constants/function_names.dart';
 import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/core/common/constants/view_names.dart';
+import 'package:atlas_app/core/common/utils/encrypt.dart';
 import 'package:atlas_app/features/novels/models/chapter_draft_model.dart';
 import 'package:atlas_app/features/novels/models/chapter_model.dart';
 import 'package:atlas_app/features/novels/models/novel_chapter_comment_model.dart';
 import 'package:atlas_app/features/novels/models/novel_chapter_comment_reply_model.dart';
 import 'package:atlas_app/features/novels/models/novel_model.dart';
+import 'package:atlas_app/features/novels/models/novel_preview_model.dart';
 import 'package:atlas_app/features/novels/models/novels_genre_model.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:dio/dio.dart';
 
 final novelsDbProvider = Provider<NovelsDb>((ref) {
   return NovelsDb();
@@ -36,6 +40,8 @@ class NovelsDb {
 
   SupabaseQueryBuilder get _novelChapterCommentRepliesTable =>
       _client.from(TableNames.novel_chapter_comment_replies);
+
+  static Dio get _dio => Dio();
 
   // SupabaseQueryBuilder get _novelsFavoriteTable => _client.from(TableNames.users_favorite_novels);
 
@@ -478,6 +484,76 @@ class NovelsDb {
       await insertNovel(data);
       await insertNovelGenreses(newOnlyGenres, id);
       return newOnlyGenres;
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<List<String>> fetchUserRecommendation({required String userId, required int page}) async {
+    try {
+      final url = '${appAPI}recommend-novels?user_id=$userId&page=$page';
+      final headers = await generateAuthHeaders();
+      final options = Options(headers: headers);
+      final res = await _dio.get(url, options: options);
+      if (res.statusCode != null && res.statusCode! >= 200 && res.statusCode! <= 299) {
+        if (res.data == null) {
+          log('Error: Response data is null');
+          return [];
+        }
+
+        log('Response data: ${res.data.toString()}');
+
+        final data = jsonDecode(res.data.toString());
+
+        if (data is List) {
+          return List<String>.from(
+            data.where((item) => item != null).map((item) => item.toString()),
+          );
+        } else {
+          log('Error: Expected a List but got ${data.runtimeType}');
+          return [];
+        }
+      }
+      return [];
+    } catch (e) {
+      log(e.toString());
+      return [];
+    }
+  }
+
+  Future<List<NovelPreviewModel>> getNovelExplore({
+    required String userId,
+    required int page,
+    required int startAt,
+    required int pageSize,
+  }) async {
+    try {
+      final ids = await fetchUserRecommendation(userId: userId, page: page);
+      var query = _novelsTable.select("*");
+
+      if (ids.isNotEmpty) {
+        log("there is recommendation data");
+        log(ids.toString());
+        query = query.inFilter(KeyNames.id, ids);
+      } else {
+        query.range(startAt, startAt + pageSize - 1);
+      }
+
+      final novelData = await query;
+      novelData.toString();
+      return novelData
+          .map(
+            (n) => NovelPreviewModel(
+              id: n[KeyNames.id],
+              title: n[KeyNames.title],
+              poster: n[KeyNames.poster],
+              banner: n[KeyNames.banner] ?? "",
+              description: n[KeyNames.story],
+              color: n[KeyNames.color] ?? "0084ff",
+            ),
+          )
+          .toList();
     } catch (e) {
       log(e.toString());
       rethrow;

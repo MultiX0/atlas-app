@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:atlas_app/core/common/enum/post_like_enum.dart';
+import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/core/common/widgets/app_refresh.dart';
 import 'package:atlas_app/features/profile/provider/profile_posts_state.dart';
@@ -127,10 +128,11 @@ class _ProfilePostsPageState extends ConsumerState<ProfilePostsPage> {
                     final post = posts[i];
                     return PostWidget(
                       key: ValueKey(post.postId),
+                      profileNav: false,
                       post: post,
-                      onComment: () {},
+                      onComment: () => CustomToast.soon(),
                       postLikeType: PostLikeEnum.PROFILE,
-                      onShare: () {},
+                      onShare: () => CustomToast.soon(),
                     );
                   },
                 ),

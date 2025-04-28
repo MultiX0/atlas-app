@@ -46,6 +46,7 @@ class ComicsController extends StateNotifier<bool> {
 
   Future<void> handleComicUpdate(ComicModel comic, bool fromSearch) async {
     try {
+      log("from search: $fromSearch");
       final updatedComic = await db.handleUpdateComic(comic, fromSearch);
       if (updatedComic != null) {
         _ref.read(comicViewsStateProvider.notifier).updateComic(updatedComic);

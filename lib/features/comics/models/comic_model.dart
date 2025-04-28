@@ -169,7 +169,7 @@ class ComicModel {
     }
 
     return ComicModel(
-      comicId: map[KeyNames.comic_id] ?? "",
+      comicId: map[KeyNames.comic_id] ?? map[KeyNames.id] ?? "",
       aniId: map[KeyNames.ani_id] ?? -1,
       lastUpdateAt:
           map[KeyNames.last_update_at] == null
@@ -201,9 +201,12 @@ class ComicModel {
               ).toList()
               : null,
       banner: map[KeyNames.banner],
-      publishedDate: ComicPublishedModel.fromMap(
-        map['published'] ?? map[TableNames.comic_published_dates],
-      ),
+      publishedDate:
+          (map['published'] == null && map[TableNames.comic_published_dates] == null)
+              ? ComicPublishedModel(from: DateTime.now(), string: "")
+              : ComicPublishedModel.fromMap(
+                map['published'] ?? map[TableNames.comic_published_dates],
+              ),
       synopsis: map[KeyNames.synopsis] ?? "",
       title_synonyms: List<dynamic>.from((map[KeyNames.title_synonyms])),
       titles: List<ComicTitlesModel>.from(

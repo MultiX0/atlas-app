@@ -61,9 +61,9 @@ class CustomToast {
     );
   }
 
-  static void soon() {
+  static void soon({String? text}) {
     CustomToast.get(
-      text: "قادم قريبا...",
+      text: text ?? "قادم قريبا...",
       icon: LucideIcons.badge_info,
       type: ToastificationType.info,
       style: ToastificationStyle.simple,

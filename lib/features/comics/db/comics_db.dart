@@ -4,7 +4,9 @@ import 'package:atlas_app/core/common/constants/function_names.dart';
 import 'package:atlas_app/core/common/constants/genres_json.dart';
 import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/core/common/constants/view_names.dart';
+import 'package:atlas_app/core/common/utils/encrypt.dart';
 import 'package:atlas_app/features/characters/db/characters_db.dart';
+import 'package:atlas_app/features/comics/models/comic_preview_model.dart';
 import 'package:atlas_app/features/comics/models/genres_model.dart';
 import 'package:atlas_app/features/search/providers/manhwa_search_state.dart';
 import 'package:atlas_app/features/search/providers/providers.dart';
@@ -28,6 +30,8 @@ class ComicsDb {
   // SupabaseQueryBuilder get _comicsGenresTable => client.from(TableNames.comic_genres);
   SupabaseQueryBuilder get _comicReviewsTable => client.from(TableNames.comic_reviews);
   SupabaseQueryBuilder get _comicsView => client.from(ViewNames.comic_details_with_views);
+  SupabaseQueryBuilder get _comicsTable => client.from(TableNames.comics);
+
   SupabaseQueryBuilder get _comicsViewsTable => client.from(TableNames.comic_views);
 
   TranslationService get _translationService => TranslationService();
@@ -40,9 +44,10 @@ class ComicsDb {
 
   Future<dynamic> _apiRequest(String endpoint, Map<String, dynamic> body) async {
     try {
+      final authHeaders = await generateAuthHeaders();
       final response = await Dio().post(
-        '$_apiBaseUrl/$endpoint',
-        options: Options(headers: {'Content-Type': 'application/json'}),
+        '$_apiBaseUrl$endpoint',
+        options: Options(headers: authHeaders),
         data: jsonEncode(body),
       );
 
@@ -63,7 +68,7 @@ class ComicsDb {
   Future<void> viewComic({required String userId, required String comicId}) async {
     try {
       final currentComic = _ref.read(selectedComicProvider)!;
-      await _comicsViewsTable.upsert({KeyNames.userId: userId, KeyNames.comic_id: comicId});
+      await _comicsViewsTable.insert({KeyNames.userId: userId, KeyNames.comic_id: comicId});
       _ref.read(selectedComicProvider.notifier).state = currentComic.copyWith(
         views: currentComic.views + 1,
         is_viewed: true,
@@ -172,8 +177,8 @@ class ComicsDb {
       }
 
       log("Successfully sent ${comicsData.length} comics to API for insertion");
-    } catch (e) {
-      log("Error sending comics to API: ${e.toString()}");
+    } catch (e, trace) {
+      log("Error sending comics to API: ${e.toString()}", stackTrace: trace);
       rethrow;
     }
   }
@@ -189,15 +194,14 @@ class ComicsDb {
 
   Future<void> updateComic(ComicModel comic, List<Map<String, dynamic>> characters) async {
     try {
-      Map<String, dynamic> map = comic.toMap();
-      map.remove(KeyNames.id);
+      ComicModel _comic = comic;
       if (comic.ar_synopsis.isEmpty) {
         final translated = await translateComics([comic]);
-        map[KeyNames.ar_synopsis] = translated.first.ar_synopsis;
+        _comic.copyWith(ar_synopsis: translated.first.ar_synopsis);
       }
 
       await Future.wait([
-        insertComics([ComicModel.fromMap(map)], characters),
+        insertComics([_comic], characters),
       ]);
     } catch (e) {
       log(e.toString());
@@ -897,5 +901,41 @@ characters {
           },
         )
         .toList();
+  }
+
+  Future<List<ComicPreviewModel>> getExploreComics({required int pageSize}) async {
+    try {
+      final idsRaw = await client.rpc(
+        FunctionNames.get_random_comic_ids,
+        params: {'limit_num': pageSize},
+      );
+
+      final ids =
+          (idsRaw as List)
+              .whereType<Map<String, dynamic>>()
+              .map((row) => row['id']?.toString())
+              .whereType<String>()
+              .toList();
+
+      final data = await _comicsTable.select("*").inFilter(KeyNames.id, ids);
+      return data
+          .map(
+            (c) => ComicPreviewModel(
+              id: c[KeyNames.id],
+              title: c[KeyNames.title_english],
+              poster: c[KeyNames.image],
+              banner: c[KeyNames.banner] ?? "",
+              description:
+                  c[KeyNames.ar_synopsis].toString().isEmpty
+                      ? "سيتم اضافة القصة في وقت لاحق"
+                      : c[KeyNames.ar_synopsis],
+              color: c[KeyNames.theme_color] ?? '0084ff',
+            ),
+          )
+          .toList();
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
   }
 }

@@ -6,9 +6,11 @@ class NovelPreviewModel {
   final String poster;
   final String banner;
   final String description;
+  final String color;
   NovelPreviewModel({
     required this.id,
     required this.title,
+    this.color = "0084ff",
     required this.poster,
     required this.banner,
     required this.description,
@@ -20,6 +22,7 @@ class NovelPreviewModel {
     String? poster,
     String? banner,
     String? description,
+    String? color,
   }) {
     return NovelPreviewModel(
       id: id ?? this.id,
@@ -27,6 +30,7 @@ class NovelPreviewModel {
       poster: poster ?? this.poster,
       banner: banner ?? this.banner,
       description: description ?? this.description,
+      color: color ?? this.color,
     );
   }
 

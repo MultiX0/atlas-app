@@ -4,6 +4,7 @@ import 'package:atlas_app/core/common/enum/reviews_enum.dart';
 import 'package:atlas_app/features/assistant/pages/chat_page.dart';
 import 'package:atlas_app/features/auth/db/auth_db.dart';
 import 'package:atlas_app/features/auth/pages/forget_password/confirm_email_page.dart';
+import 'package:atlas_app/features/posts/pages/main_feed_page.dart';
 import 'package:atlas_app/features/settings/pages/email_field_page.dart';
 import 'package:atlas_app/features/auth/pages/forget_password/update_password.dart';
 import 'package:atlas_app/features/auth/pages/login_page.dart';
@@ -88,7 +89,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       StatefulShellRoute.indexedStack(
         branches: [
           StatefulShellBranch(
-            routes: [buildRoute(path: Routes.home, child: const SizedBox(), fade: true)],
+            routes: [buildRoute(path: Routes.home, child: const MainFeedPage(), fade: true)],
           ),
           StatefulShellBranch(
             routes: [buildRoute(path: Routes.aiPage, child: const AssistantChatPage(), fade: true)],
