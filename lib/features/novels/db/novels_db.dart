@@ -396,6 +396,11 @@ class NovelsDb {
           userId: data[KeyNames.userId],
         ),
       ]);
+      final authHeaders = await generateAuthHeaders();
+      await _dio.post(
+        '${appAPI}update-user-embedding?user_id=${data[KeyNames.userId]}',
+        options: Options(headers: authHeaders),
+      );
     } catch (e) {
       log(e.toString());
       rethrow;

@@ -81,6 +81,11 @@ class PostsDb {
         hashtagDb.insertPostHashTag(hashtags, postId),
         insertEmbedding(id: postId, content: post, userId: userId),
       ]);
+      final authHeaders = await generateAuthHeaders();
+      await _dio.post(
+        '${appAPI}update-user-embedding?user_id=$userId',
+        options: Options(headers: authHeaders),
+      );
     } catch (e) {
       log(e.toString());
       rethrow;
