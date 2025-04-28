@@ -1,3 +1,5 @@
+import 'package:atlas_app/features/library/pages/user_favorite_page.dart';
+import 'package:atlas_app/features/novels/pages/profile_user_novels.dart';
 import 'package:atlas_app/features/profile/pages/posts_page.dart';
 import 'package:atlas_app/imports.dart';
 
@@ -19,8 +21,8 @@ class _ProfileBodyState extends ConsumerState<ProfileBody> with SingleTickerProv
       controller: widget.controller,
       children: [
         ProfilePostsPage(user: widget.user),
-        const SizedBox(),
-        if (!widget.isMe) const SizedBox(),
+        if (!widget.isMe) UserFavoritePage(userId: widget.user.userId),
+        if (!widget.isMe) ProfileUserNovels(userId: widget.user.userId),
       ],
     );
   }

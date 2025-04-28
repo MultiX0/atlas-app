@@ -39,13 +39,18 @@ class ProfileHeader extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            user.fullName,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              fontFamily: accentFont,
-            ),
+          Row(
+            children: [
+              Text(
+                user.fullName,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: accentFont,
+                ),
+              ),
+              const Visibility(visible: false, child: Icon(LucideIcons.badge_check)),
+            ],
           ),
           Text(
             "@${user.username}",

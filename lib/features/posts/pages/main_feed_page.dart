@@ -4,6 +4,7 @@ import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/core/common/widgets/app_refresh.dart';
 import 'package:atlas_app/features/novels/widgets/empty_chapters.dart';
 import 'package:atlas_app/features/posts/providers/main_feed_state.dart';
+import 'package:atlas_app/features/posts/widgets/main_feed_appbar.dart';
 import 'package:atlas_app/features/profile/widgets/post_widget.dart';
 import 'package:atlas_app/imports.dart';
 
@@ -104,49 +105,33 @@ class _MainFeedPageState extends ConsumerState<MainFeedPage> {
           physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
           cacheExtent: MediaQuery.sizeOf(context).height * 1.5,
           slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              sliver: Directionality(
-                textDirection: TextDirection.rtl,
-                child: SliverAppBar(
-                  title: const Text('أطلس'),
-                  pinned: false,
-                  floating: true,
-                  actions: [
-                    IconButton(
-                      onPressed: () => CustomToast.soon(),
-                      icon: Icon(LucideIcons.bell, color: AppColors.whiteColor),
-                    ),
-                  ],
-                  backgroundColor: AppColors.scaffoldBackground,
-                ),
+            const MainFeedAppbar(),
+            if (state.isLoading)
+              const SliverFillRemaining(child: Loader())
+            else
+              SliverList.builder(
+                addRepaintBoundaries: true,
+                addSemanticIndexes: true,
+                itemCount: posts.isEmpty ? 1 : posts.length + (state.loadingMore ? 1 : 0),
+                itemBuilder: (context, i) {
+                  if (posts.isEmpty && i == 0) {
+                    return const EmptyChapters(text: "لايوجد هنالك محتوى");
+                  }
+
+                  if (i == posts.length && state.loadingMore) {
+                    return const Loader();
+                  }
+
+                  final post = posts[i];
+                  return PostWidget(
+                    key: ValueKey(post.postId),
+                    post: post,
+                    onComment: () => CustomToast.soon(),
+                    onShare: () => CustomToast.soon(),
+                    postLikeType: PostLikeEnum.GENERAL,
+                  );
+                },
               ),
-            ),
-            state.isLoading
-                ? const SliverFillRemaining(child: Loader())
-                : SliverList.builder(
-                  addRepaintBoundaries: true,
-                  addSemanticIndexes: true,
-                  itemCount: posts.isEmpty ? 1 : posts.length + (state.loadingMore ? 1 : 0),
-                  itemBuilder: (context, i) {
-                    if (posts.isEmpty && i == 0) {
-                      return const EmptyChapters(text: "لايوجد هنالك محتوى");
-                    }
-
-                    if (i == posts.length && state.loadingMore) {
-                      return const Loader();
-                    }
-
-                    final post = posts[i];
-                    return PostWidget(
-                      key: ValueKey(post.postId),
-                      post: post,
-                      onComment: () => CustomToast.soon(),
-                      onShare: () => CustomToast.soon(),
-                      postLikeType: PostLikeEnum.GENERAL,
-                    );
-                  },
-                ),
           ],
         ),
       ),

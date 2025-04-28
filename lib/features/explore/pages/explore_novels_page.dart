@@ -102,7 +102,7 @@ class _ExploreNovelsPageState extends ConsumerState<ExploreNovelsPage> {
       child: ListView.builder(
         controller: _scrollController,
         physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-        padding: const EdgeInsets.fromLTRB(10, 0, 10, 15),
+        padding: const EdgeInsets.fromLTRB(10, 10, 10, 5),
         cacheExtent: MediaQuery.sizeOf(context).height * 1.5,
         addRepaintBoundaries: true,
         addSemanticIndexes: true,

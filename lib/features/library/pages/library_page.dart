@@ -40,7 +40,18 @@ class _LibraryPageState extends ConsumerState<LibraryPage> with SingleTickerProv
           tabs: const [Tab(text: "أعمالي"), Tab(text: "المفضلة")],
         ),
       ),
-      body: TabBarView(controller: _controller, children: const [MyWork(), UserFavoritePage()]),
+      body: TabBarView(
+        controller: _controller,
+        children: [
+          const MyWork(),
+          Consumer(
+            builder: (context, ref, _) {
+              final me = ref.watch(userState.select((s) => s.user!));
+              return UserFavoritePage(userId: me.userId);
+            },
+          ),
+        ],
+      ),
     );
   }
 }

@@ -19,22 +19,22 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   final _noScreenshot = NoScreenshot.instance;
   final _appLinks = AppLinks();
   StreamSubscription<Uri>? _linkSubscription;
+  Uri? _pendingDeepLink; // Store the deep link temporarily
 
   Future<void> initAppLinks() async {
     try {
       final initialUri = await _appLinks.getInitialLink();
       if (initialUri != null) {
-        _handleDeepLink(initialUri);
+        _pendingDeepLink = initialUri; // Store initial deep link
       }
     } catch (e) {
       log('Error getting initial link: $e');
     }
 
-    // Listen for links while app is running
     _linkSubscription = _appLinks.uriLinkStream.listen(
       (Uri? uri) {
         if (uri != null) {
-          _handleDeepLink(uri);
+          _pendingDeepLink = uri; // Store incoming deep link
         }
       },
       onError: (err) {
@@ -43,22 +43,10 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     );
   }
 
-  void _handleDeepLink(Uri uri) async {
-    // Handle atlasapp:// and https://app.atlasapp.app
+  void _handleDeepLink(Uri uri) {
     if (uri.scheme == 'atlasapp' || uri.host == 'app.atlasapp.app') {
-      // First, ensure user is initialized
-      final user = await ref.read(userState.notifier).initlizeUser();
-
-      // Extract path (e.g., /comicPage/123)
       final path = uri.path;
-
-      // Only navigate if the user is authenticated, otherwise let normal redirect handle it
-      if (user != null) {
-        ref.read(routerProvider).push(path);
-      } else {
-        // User isn't authenticated, let the normal flow handle it
-        ref.read(routerProvider).go(Routes.onboardingPage);
-      }
+      ref.read(routerProvider).push(path); // Navigate to the deep link path
     }
   }
 
@@ -84,7 +72,12 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final user = await ref.read(userState.notifier).initlizeUser();
       if (user != null) {
-        context.go(Routes.home);
+        // If there's a pending deep link, navigate to it
+        if (_pendingDeepLink != null) {
+          _handleDeepLink(_pendingDeepLink!);
+        } else {
+          context.go(Routes.home);
+        }
       } else {
         context.go(Routes.onboardingPage);
       }

@@ -27,4 +27,5 @@ class FunctionNames {
   static const toggle_favorite_comic = 'toggle_favorite_comic';
   static const toggle_follow_user = 'toggle_follow_user';
   static const get_random_comic_ids = 'get_random_comic_ids';
+  static const upsert_user_fcm_token = 'upsert_user_fcm_token';
 }

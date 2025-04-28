@@ -5,7 +5,8 @@ import 'package:atlas_app/features/library/widgets/work_poster.dart';
 import 'package:atlas_app/imports.dart';
 
 class UserFavoritePage extends ConsumerStatefulWidget {
-  const UserFavoritePage({super.key});
+  final String userId;
+  const UserFavoritePage({super.key, required this.userId});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _MyWorkState();
@@ -39,8 +40,7 @@ class _MyWorkState extends ConsumerState<UserFavoritePage> {
       _debouncer.debounce(
         duration: duration,
         onDebounce: () {
-          final me = ref.read(userState.select((state) => state.user!));
-          ref.read(userFavoriteState(me.userId).notifier).fetchData();
+          ref.read(userFavoriteState(widget.userId).notifier).fetchData();
         },
       );
     }
@@ -57,8 +57,7 @@ class _MyWorkState extends ConsumerState<UserFavoritePage> {
 
   void fetchData() async {
     await Future.microtask(() {
-      final me = ref.read(userState.select((state) => state.user!));
-      ref.read(userFavoriteState(me.userId).notifier).fetchData();
+      ref.read(userFavoriteState(widget.userId).notifier).fetchData();
       setState(() {
         fetched = true;
       });
@@ -67,8 +66,7 @@ class _MyWorkState extends ConsumerState<UserFavoritePage> {
 
   void refresh() async {
     await Future.delayed(const Duration(milliseconds: 400), () {
-      final me = ref.read(userState.select((state) => state.user!));
-      ref.read(userFavoriteState(me.userId).notifier).fetchData(refresh: true);
+      ref.read(userFavoriteState(widget.userId).notifier).fetchData(refresh: true);
     });
   }
 
@@ -84,14 +82,12 @@ class _MyWorkState extends ConsumerState<UserFavoritePage> {
     return Scaffold(
       body: Consumer(
         builder: (context, ref, _) {
-          final me = ref.read(userState.select((state) => state.user!));
-
-          final works = ref.watch(userFavoriteState(me.userId).select((state) => state.works));
+          final works = ref.watch(userFavoriteState(widget.userId).select((state) => state.works));
           final isLoading = ref.watch(
-            userFavoriteState(me.userId).select((state) => state.isLoading),
+            userFavoriteState(widget.userId).select((state) => state.isLoading),
           );
           final loadingMore = ref.watch(
-            userFavoriteState(me.userId).select((state) => state.loadingMore),
+            userFavoriteState(widget.userId).select((state) => state.loadingMore),
           );
 
           if (isLoading) {
@@ -109,7 +105,7 @@ class _MyWorkState extends ConsumerState<UserFavoritePage> {
                 padding: const EdgeInsets.fromLTRB(13, 15, 13, 15),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: works.isEmpty ? 1 : 3,
-                  childAspectRatio: 1 / 1.75,
+                  childAspectRatio: works.isEmpty ? 1 : 1 / 1.75,
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 10,
                 ),

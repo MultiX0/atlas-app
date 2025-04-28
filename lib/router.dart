@@ -38,49 +38,53 @@ final navigationShellProvider = Provider<StatefulNavigationShell>((ref) {
   throw UnimplementedError();
 });
 
-final auth = Supabase.instance.client.auth;
 final routerProvider = Provider<GoRouter>((ref) {
+  var userId = Supabase.instance.client.auth.currentSession?.user.id ?? "";
   final authState = ValueNotifier<bool>(ref.read(isLoggedProvider));
 
-  // Subscribe to auth state changes
   ref.listen<bool>(isLoggedProvider, (_, isLoggedIn) {
     authState.value = isLoggedIn;
+    if (isLoggedIn) {
+      userId = Supabase.instance.client.auth.currentSession!.user.id;
+    }
   });
 
   return GoRouter(
     initialLocation: Routes.splashPage,
-    refreshListenable: authState, // This makes the router rebuild when auth state changes
-
+    refreshListenable: authState,
     redirect: (context, state) {
       final splashRoute = state.uri.toString() == Routes.splashPage;
       if (splashRoute) {
-        return null;
+        return null; // Always allow splash page
       }
 
-      // log("user state is $userStateValue");
       final isUserLoggedIn = authState.value;
-
       final loginRoute = state.uri.toString() == Routes.loginPage;
       final registerRoute = state.uri.toString() == Routes.registerPage;
-      final forgetPasswordPage =
-          state.uri.toString() == Routes.forgotPasswordConfirmEmailPage ||
-          state.uri.toString() == Routes.forgotPasswordEmailPage ||
-          state.uri.toString() == Routes.updatePasswordPage ||
-          state.uri.toString() == Routes.forgotPassword;
+      final forgetPasswordPage = [
+        Routes.forgotPasswordConfirmEmailPage,
+        Routes.forgotPasswordEmailPage,
+        Routes.updatePasswordPage,
+        Routes.forgotPassword,
+      ].contains(state.uri.toString());
       final firstPageRoute = state.uri.toString() == Routes.onboardingPage;
 
+      // Allow deep links to proceed if user is logged in
+      if (isUserLoggedIn) {
+        if (loginRoute || registerRoute || firstPageRoute) {
+          return Routes.home; // Redirect to home if trying to access login/register/onboarding
+        }
+        return null; // Allow all other routes (including deep links)
+      }
+
+      // If not logged in, redirect to onboarding unless on allowed routes
       if (!isUserLoggedIn) {
         log("user is not logged in");
         log(state.uri.toString());
         if (loginRoute || registerRoute || forgetPasswordPage || firstPageRoute) {
           return null;
-        } else {
-          return Routes.onboardingPage;
         }
-      }
-
-      if (isUserLoggedIn && (loginRoute || registerRoute || firstPageRoute)) {
-        return Routes.home;
+        return Routes.onboardingPage;
       }
 
       return null;
@@ -107,13 +111,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [buildRoute(path: Routes.library, child: const LibraryPage(), fade: true)],
           ),
           StatefulShellBranch(
-            routes: [
-              buildRoute(
-                path: Routes.user,
-                child: ProfilePage(userId: auth.currentSession?.user.id ?? ""),
-                fade: true,
-              ),
-            ],
+            routes: [buildRoute(path: Routes.user, child: ProfilePage(userId: userId), fade: true)],
           ),
         ],
         builder: (state, context, shell) {

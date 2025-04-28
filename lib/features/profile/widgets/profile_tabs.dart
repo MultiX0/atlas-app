@@ -26,7 +26,7 @@ class ProfileTabs extends ConsumerWidget {
 
           tabs: [
             const Tab(text: 'المنشورات'),
-            const Tab(text: 'المفضلة'),
+            if (!isMe) const Tab(text: 'المفضلة'),
             if (!isMe) const Tab(text: 'أعمال أصلية'),
           ],
         ),

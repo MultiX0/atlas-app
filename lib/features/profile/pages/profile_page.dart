@@ -19,8 +19,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
   @override
   void initState() {
     final me = ref.read(userState).user!;
-    bool isMe = me.userId == widget.userId;
-    _controller = TabController(length: isMe ? 2 : 3, vsync: this);
+    bool isMe = (me.userId == widget.userId) || widget.userId.trim().isEmpty;
+
+    _controller = TabController(length: isMe ? 1 : 3, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) => handleInit());
     super.initState();
   }
@@ -28,7 +29,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
   void handleInit() {
     Future.microtask(() {
       final me = ref.read(userState).user!;
-      bool isMe = me.userId == widget.userId;
+      bool isMe = (me.userId == widget.userId) || widget.userId.trim().isEmpty;
       if (isMe) {
         ref.read(selectedUserProvider.notifier).state = me;
       }
@@ -43,7 +44,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
   Widget buildBodyController() {
     final me = ref.watch(userState).user!;
     final userId = widget.userId;
-    bool isMe = me.userId == userId;
+    bool isMe = (me.userId == widget.userId) || widget.userId.trim().isEmpty;
 
     if (isMe) {
       return buildBody(me, isMe);

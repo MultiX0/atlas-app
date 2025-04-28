@@ -3,6 +3,7 @@ allprojects {
         google()
         mavenCentral()
         maven { url = uri("https://jitpack.io") }
+        maven { url = uri("https://storage.googleapis.com/download.flutter.io") }
     }
 }
 

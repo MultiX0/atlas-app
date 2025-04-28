@@ -77,7 +77,30 @@ class PostsDb {
       }
 
       await Future.wait([hashtagDb.insertNewHashTag(hashtags), insertMentions(mentions, postId)]);
-      await hashtagDb.insertPostHashTag(hashtags, postId);
+      await Future.wait([
+        hashtagDb.insertPostHashTag(hashtags, postId),
+        insertEmbedding(id: postId, content: post, userId: userId),
+      ]);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> insertEmbedding({
+    required String id,
+    required String content,
+    required String userId,
+  }) async {
+    try {
+      final body = jsonEncode({
+        "type": "post",
+        "content": content,
+        "content_id": id,
+        "user_id": userId,
+      });
+      final headers = await generateAuthHeaders();
+      await _dio.post('${appAPI}embedding', options: Options(headers: headers), data: body);
     } catch (e) {
       log(e.toString());
       rethrow;

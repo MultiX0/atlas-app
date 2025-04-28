@@ -40,4 +40,5 @@ class TableNames {
   static const novel_reviews = 'novel_reviews';
   static const novel_review_likes = 'novel_review_likes';
   static const user_reports = 'user_reports';
+  static const user_fcm_tokens = 'user_fcm_tokens';
 }

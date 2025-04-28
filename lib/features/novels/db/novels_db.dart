@@ -388,7 +388,14 @@ class NovelsDb {
 
   Future<void> insertNovel(Map<String, dynamic> data) async {
     try {
-      await _novelsTable.upsert(data, ignoreDuplicates: false, onConflict: KeyNames.id);
+      await Future.wait([
+        _novelsTable.upsert(data, ignoreDuplicates: false, onConflict: KeyNames.id),
+        insertEmbedding(
+          content: "${data[KeyNames.title]}\n${data[KeyNames.story]}",
+          id: data[KeyNames.id],
+          userId: data[KeyNames.userId],
+        ),
+      ]);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -535,14 +542,60 @@ class NovelsDb {
       if (ids.isNotEmpty) {
         log("there is recommendation data");
         log(ids.toString());
-        query = query.inFilter(KeyNames.id, ids);
+        query = query.inFilter(KeyNames.id, ids).filter(KeyNames.published_at, 'not.is', null);
       } else {
-        query.range(startAt, startAt + pageSize - 1);
+        query.filter(KeyNames.published_at, 'not.is', null).range(startAt, startAt + pageSize - 1);
       }
 
       final novelData = await query;
       novelData.toString();
       return novelData
+          .map(
+            (n) => NovelPreviewModel(
+              id: n[KeyNames.id],
+              title: n[KeyNames.title],
+              poster: n[KeyNames.poster],
+              banner: n[KeyNames.banner] ?? "",
+              description: n[KeyNames.story],
+              color: n[KeyNames.color] ?? "0084ff",
+            ),
+          )
+          .toList();
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> insertEmbedding({
+    required String id,
+    required String content,
+    required String userId,
+  }) async {
+    try {
+      final body = jsonEncode({
+        "type": "novel",
+        "content": content,
+        "content_id": id,
+        "user_id": userId,
+      });
+      final headers = await generateAuthHeaders();
+      await _dio.post('${appAPI}embedding', options: Options(headers: headers), data: body);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<List<NovelPreviewModel>> getUserNovels(String userId) async {
+    try {
+      final data = await _novelsTable
+          .select("*")
+          .eq(KeyNames.userId, userId)
+          .filter(KeyNames.published_at, 'not.is', null)
+          .order(KeyNames.published_at, ascending: false);
+
+      return data
           .map(
             (n) => NovelPreviewModel(
               id: n[KeyNames.id],
