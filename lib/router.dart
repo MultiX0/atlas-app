@@ -111,7 +111,9 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [buildRoute(path: Routes.library, child: const LibraryPage(), fade: true)],
           ),
           StatefulShellBranch(
-            routes: [buildRoute(path: Routes.user, child: ProfilePage(userId: userId), fade: true)],
+            routes: [
+              buildRoute(path: Routes.profile, child: ProfilePage(userId: userId), fade: true),
+            ],
           ),
         ],
         builder: (state, context, shell) {

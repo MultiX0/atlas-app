@@ -89,8 +89,9 @@ class AuthDb {
 
       await _usersTable.insert(user0.toMap());
       await _usersMetadataTable.insert(user0.metadata!.toMap());
+      final _user = await getUserData(user0.userId);
 
-      return user0;
+      return _user;
     } catch (e) {
       log(e.toString());
       rethrow;

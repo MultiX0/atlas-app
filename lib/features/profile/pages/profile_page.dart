@@ -42,18 +42,26 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
   }
 
   Widget buildBodyController() {
-    final me = ref.watch(userState).user!;
+    final me = ref.read(userState).user!;
     final userId = widget.userId;
     bool isMe = (me.userId == widget.userId) || widget.userId.trim().isEmpty;
 
     if (isMe) {
-      return buildBody(me, isMe);
+      return Consumer(
+        builder: (context, ref, _) {
+          final me = ref.watch(userState).user!;
+          return buildBody(me, isMe);
+        },
+      );
     }
 
     return ref
         .watch(getUserByIdProvider(userId))
         .when(
           data: (user) {
+            Future.microtask(() {
+              ref.read(selectedUserProvider.notifier).state = user;
+            });
             return buildBody(user, isMe);
           },
           error: (error, _) => Center(child: ErrorWidget(error)),
