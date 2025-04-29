@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:atlas_app/features/auth/pages/registeration/email_page.dart';
 import 'package:atlas_app/features/auth/pages/registeration/final_register_page.dart';
 import 'package:atlas_app/features/auth/pages/registeration/metadata_page.dart';
-import 'package:atlas_app/features/auth/pages/registeration/pin_code_confirm_page.dart';
 import 'package:atlas_app/imports.dart';
 
 class RegisterPage extends ConsumerStatefulWidget {
@@ -37,7 +36,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       controller: _controller,
       children: [
         EmailPage(next: next, prevs: prevs),
-        PinCodeConfirmPage(next: next, prevs: prevs),
+        // PinCodeConfirmPage(next: next, prevs: prevs),
         MetadataPage(next: next, prevs: prevs),
         FinalRegisterPage(next: next, prevs: prevs),
       ],

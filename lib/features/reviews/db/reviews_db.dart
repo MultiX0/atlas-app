@@ -3,8 +3,11 @@ import 'dart:developer';
 import 'package:atlas_app/core/common/constants/function_names.dart';
 import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/core/common/constants/view_names.dart';
+import 'package:atlas_app/core/common/widgets/slash_parser.dart';
 import 'package:atlas_app/features/novels/models/novel_review_model.dart';
+import 'package:atlas_app/features/posts/db/posts_db.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:uuid/uuid.dart';
 
 final reviewsDBProvider = Provider<ReviewsDb>((ref) {
   return ReviewsDb(ref: ref);
@@ -22,10 +25,19 @@ class ReviewsDb {
   SupabaseQueryBuilder get _novelReviewsView => _client.from(ViewNames.novel_reviews_with_likes);
   SupabaseQueryBuilder get _novelReviewsTable => _client.from(TableNames.novel_reviews);
   SupabaseQueryBuilder get _novelReviewLikesTable => _client.from(TableNames.novel_review_likes);
+  final uuid = const Uuid();
+
+  PostsDb get _postsDb => PostsDb();
 
   Future<void> insertComicReview(ComicReviewModel review) async {
     try {
-      await _comicReviewsTable.insert(review.toMap());
+      final postId = uuid.v4();
+      await Future.wait([
+        _comicReviewsTable.insert(review.toMap()),
+        _postsDb.insertPost(postId, review.review, review.userId, []),
+      ]);
+
+      await _postsDb.insertMentions([SlashEntity('comic', review.comicId, "")], postId);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -34,7 +46,12 @@ class ReviewsDb {
 
   Future<void> insertNovelReview(NovelReviewModel review) async {
     try {
-      await _novelReviewsTable.insert(review.toMap());
+      final postId = uuid.v4();
+      await Future.wait([
+        _novelReviewsTable.insert(review.toMap()),
+        _postsDb.insertPost(postId, review.review, review.userId, []),
+        _postsDb.insertMentions([SlashEntity('novel', review.novelId, "")], postId),
+      ]);
     } catch (e) {
       log(e.toString());
       rethrow;

@@ -28,4 +28,6 @@ class FunctionNames {
   static const toggle_follow_user = 'toggle_follow_user';
   static const get_random_comic_ids = 'get_random_comic_ids';
   static const upsert_user_fcm_token = 'upsert_user_fcm_token';
+  static const upsert_hashtag = 'upsert_hashtag';
+  static const upsert_post_mention = 'upsert_post_mention';
 }

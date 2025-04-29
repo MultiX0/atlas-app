@@ -194,7 +194,7 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
       final novel = ref.watch(selectedNovelProvider)!;
       color = colorToStirng(novel.color);
     } else {
-      color = colorToStirng(AppColors.primary);
+      color ??= colorToStirng(AppColors.primary);
     }
 
     final overAllColor = HexColor(color);
@@ -440,11 +440,11 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
       color = comic.color;
     }
 
-    if (widget.reviewType == ReviewsEnum.comic) {
+    if (widget.reviewType == ReviewsEnum.novel) {
       final novel = ref.watch(selectedNovelProvider)!;
       color = colorToStirng(novel.color);
     } else {
-      color = colorToStirng(AppColors.primary);
+      color ??= colorToStirng(AppColors.primary);
     }
 
     final starColor = HexColor(color);

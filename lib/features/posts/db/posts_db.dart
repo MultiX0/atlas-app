@@ -188,17 +188,12 @@ class PostsDb {
 
   Future<void> insertMentions(List<SlashEntity> mentions, String postId) async {
     try {
-      final data =
-          mentions
-              .map(
-                (mention) => {
-                  KeyNames.entity_id: mention.id,
-                  KeyNames.mention_type: mention.type == 'char' ? "character" : mention.type,
-                  KeyNames.post_id: postId,
-                },
-              )
-              .toList();
-      await _mentionsTable.upsert(data);
+      for (final mention in mentions) {
+        await _client.rpc(
+          FunctionNames.upsert_post_mention,
+          params: {"p_post_id": postId, "p_entity_id": mention.id, "p_mention_type": mention.type},
+        );
+      }
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -315,8 +310,10 @@ class PostsDb {
       var query = _postsView.select("*");
 
       if (ids.isNotEmpty) {
-        log("there is recommendation data");
-        log(ids.toString());
+        if (kDebugMode) {
+          print("there is recommendation data");
+          print(ids.toString());
+        }
         query = query.inFilter(KeyNames.post_id, ids);
         if (!kDebugMode) {
           //remove personal posts from the feeds in prod
