@@ -3,16 +3,18 @@ import 'dart:developer';
 import 'package:atlas_app/features/novels/models/novels_genre_model.dart';
 import 'package:atlas_app/imports.dart';
 
+// 1. First, let's modify the GenreSelectionSheet class to properly handle selection and deselection
+
 class GenreSelectionSheet extends StatefulWidget {
   final List<NovelsGenreModel> genres;
-  final List<NovelsGenreModel> selectedGenreses;
-  final void Function(NovelsGenreModel selectedGenre) onSelect;
+  final List<NovelsGenreModel> selectedGenres;
+  final void Function(List<NovelsGenreModel> updatedGenres) onUpdate;
 
   const GenreSelectionSheet({
     super.key,
     required this.genres,
-    required this.onSelect,
-    required this.selectedGenreses,
+    required this.onUpdate,
+    required this.selectedGenres,
   });
 
   @override
@@ -20,12 +22,12 @@ class GenreSelectionSheet extends StatefulWidget {
 }
 
 class _GenreSelectionSheetState extends State<GenreSelectionSheet> {
-  List<NovelsGenreModel> selectedGenreses = [];
+  late List<NovelsGenreModel> selectedGenres;
+
   @override
   void initState() {
-    setState(() {
-      selectedGenreses = List.from(widget.selectedGenreses);
-    });
+    // Create a deep copy of the selected genres list
+    selectedGenres = List.from(widget.selectedGenres);
     super.initState();
   }
 
@@ -68,14 +70,13 @@ class _GenreSelectionSheetState extends State<GenreSelectionSheet> {
         itemCount: widget.genres.length,
         itemBuilder: (context, index) {
           final genre = widget.genres[index];
+          final isSelected = selectedGenres.any((g) => g.name == genre.name);
+
           return ListTile(
             title: Row(
               children: [
                 Text(genre.name, style: const TextStyle(fontFamily: arabicPrimaryFont)),
-                if (selectedGenreses.any((g) => g.name == genre.name)) ...[
-                  const Spacer(),
-                  const Icon(LucideIcons.check),
-                ],
+                if (isSelected) ...[const Spacer(), const Icon(LucideIcons.check)],
               ],
             ),
             subtitle: Text(
@@ -84,18 +85,21 @@ class _GenreSelectionSheetState extends State<GenreSelectionSheet> {
             ),
             leading: const Icon(LucideIcons.book_open_text, color: AppColors.mutedSilver),
             onTap: () {
-              widget.onSelect(genre);
-
               setState(() {
                 log("state updated");
-                if (selectedGenreses.any((g) => g.name == genre.name)) {
-                  selectedGenreses.remove(genre);
+                if (isSelected) {
+                  // Remove genre if already selected
+                  selectedGenres.removeWhere((g) => g.name == genre.name);
                 } else {
-                  if (selectedGenreses.length >= 3) {
+                  // Add genre if not already selected and less than 3 genres selected
+                  if (selectedGenres.length >= 3) {
                     return;
                   }
-                  selectedGenreses.add(genre);
+                  selectedGenres.add(genre);
                 }
+
+                // Notify parent with the updated list
+                widget.onUpdate(selectedGenres);
               });
             },
           );

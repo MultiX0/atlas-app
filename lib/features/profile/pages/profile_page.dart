@@ -2,6 +2,7 @@ import 'package:atlas_app/features/profile/controller/profile_controller.dart';
 import 'package:atlas_app/features/profile/provider/providers.dart';
 import 'package:atlas_app/features/profile/widgets/profile_body.dart';
 import 'package:atlas_app/features/profile/widgets/profile_header_widget.dart';
+import 'package:atlas_app/features/profile/widgets/profile_loadig.dart';
 import 'package:atlas_app/features/profile/widgets/profile_tabs.dart';
 // import 'package:atlas_app/features/profile/widgets/profile_top_info_widget.dart';
 import 'package:atlas_app/imports.dart';
@@ -65,7 +66,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
             return buildBody(user, isMe);
           },
           error: (error, _) => Center(child: ErrorWidget(error)),
-          loading: () => const Loader(),
+          loading: () => const ProfileHeaderShimmer(),
         );
   }
 

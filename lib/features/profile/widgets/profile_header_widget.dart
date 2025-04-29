@@ -37,26 +37,23 @@ class ProfileHeader extends ConsumerWidget {
 
     final double totalExpandedHeight = topHeaderHeight + bottomHeaderEstimatedHeight;
 
-    return AppRefresh(
-      onRefresh: () async {},
-      child: SliverAppBar(
-        expandedHeight: totalExpandedHeight,
-        flexibleSpace: FlexibleSpaceBar(
-          collapseMode: CollapseMode.parallax,
-          background: Material(
-            color: AppColors.scaffoldBackground,
-            child: Column(
-              children: [
-                buildTopHeader(size, isMe, _user, bannerHeight, topHeaderHeight, ref),
-                buildBottomHeader(_user),
-              ],
-            ),
+    return SliverAppBar(
+      expandedHeight: totalExpandedHeight,
+      flexibleSpace: FlexibleSpaceBar(
+        collapseMode: CollapseMode.parallax,
+        background: Material(
+          color: AppColors.scaffoldBackground,
+          child: Column(
+            children: [
+              buildTopHeader(size, isMe, _user, bannerHeight, topHeaderHeight, ref),
+              buildBottomHeader(_user),
+            ],
           ),
         ),
-        pinned: false,
-        floating: true,
-        snap: false,
       ),
+      pinned: false,
+      floating: true,
+      snap: false,
     );
   }
 
@@ -68,102 +65,116 @@ class ProfileHeader extends ConsumerWidget {
     double totalTopHeaderHeight,
     WidgetRef ref,
   ) {
-    return Builder(
-      // Use Builder to get context for navigation/sheets
-      builder: (context) {
-        return SizedBox(
-          height: totalTopHeaderHeight,
-          child: Stack(
-            children: [
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                height: bannerHeight,
-                child: Opacity(
-                  opacity: .75,
-                  child: FancyShimmerImage(
-                    imageUrl: currentUser.banner,
-                    boxFit: BoxFit.cover,
-                    errorWidget: Container(color: Colors.grey[300]),
-                  ),
-                ),
-              ),
-              Positioned(
-                top: bannerHeight - (avatarRadius + avatarBorder),
-                left: 10,
-                child: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.scaffoldBackground, width: avatarBorder),
-                  ),
-                  child: CircleAvatar(
-                    backgroundColor: AppColors.primaryAccent,
-                    backgroundImage: CachedNetworkImageProvider(currentUser.avatar),
-                    radius: avatarRadius,
-                  ),
-                ),
-              ),
-              Positioned(
-                bottom: 5,
-                right: 15,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    if (isMe) ...[
-                      InkWell(
-                        onTap: () => context.push(Routes.editProfile),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withAlpha(128), // Use withAlpha for clarity
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Center(child: Icon(TablerIcons.edit, size: 20)),
-                        ),
-                      ),
-                    ] else ...[
-                      InkWell(
-                        onTap:
-                            () => ref
-                                .read(profileControllerProvider.notifier)
-                                .handleUserFollow(currentUser.userId),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withAlpha(128),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Center(
-                            child: Icon(
-                              currentUser.followed == true ? Icons.favorite : Icons.favorite_border,
-                              size: 20,
-                              color:
-                                  currentUser.followed == true ? Colors.pink : AppColors.whiteColor,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                    const SizedBox(width: 8),
-                    InkWell(
-                      onTap: () => openMoreSheet(context, currentUser),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-                        decoration: BoxDecoration(
-                          color: AppColors.scaffoldForeground,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Center(child: Icon(Icons.more_vert, size: 20)),
+    return AppRefresh(
+      onRefresh: () async {},
+      child: SingleChildScrollView(
+        child: Builder(
+          // Use Builder to get context for navigation/sheets
+          builder: (context) {
+            return SizedBox(
+              height: totalTopHeaderHeight,
+              child: Stack(
+                children: [
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: bannerHeight,
+                    child: Opacity(
+                      opacity: .75,
+                      child: FancyShimmerImage(
+                        imageUrl: currentUser.banner,
+                        boxFit: BoxFit.cover,
+                        errorWidget: Container(color: Colors.grey[300]),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  Positioned(
+                    top: bannerHeight - (avatarRadius + avatarBorder),
+                    left: 10,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppColors.scaffoldBackground,
+                          width: avatarBorder,
+                        ),
+                      ),
+                      child: CircleAvatar(
+                        backgroundColor: AppColors.primaryAccent,
+                        backgroundImage: CachedNetworkImageProvider(currentUser.avatar),
+                        radius: avatarRadius,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 5,
+                    right: 15,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        if (isMe) ...[
+                          InkWell(
+                            onTap: () => context.push(Routes.editProfile),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withAlpha(
+                                  128,
+                                ), // Use withAlpha for clarity
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Center(child: Icon(TablerIcons.edit, size: 20)),
+                            ),
+                          ),
+                        ] else ...[
+                          InkWell(
+                            onTap:
+                                () => ref
+                                    .read(profileControllerProvider.notifier)
+                                    .handleUserFollow(currentUser.userId),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withAlpha(128),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  currentUser.followed == true
+                                      ? Icons.favorite
+                                      : Icons.favorite_border,
+                                  size: 20,
+                                  color:
+                                      currentUser.followed == true
+                                          ? Colors.pink
+                                          : AppColors.whiteColor,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                        const SizedBox(width: 8),
+                        InkWell(
+                          onTap: () => openMoreSheet(context, currentUser),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+                            decoration: BoxDecoration(
+                              color: AppColors.scaffoldForeground,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Center(child: Icon(Icons.more_vert, size: 20)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        );
-      },
+            );
+          },
+        ),
+      ),
     );
   }
 
