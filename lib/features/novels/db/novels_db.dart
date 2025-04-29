@@ -227,7 +227,8 @@ class NovelsDb {
 
   Future<void> publishNovel(String novelId) async {
     try {
-      await _novelsTable.update({KeyNames.id: novelId}).eq(KeyNames.id, novelId);
+      final now = DateTime.now().toUtc().toIso8601String();
+      await _novelsTable.update({KeyNames.published_at: now}).eq(KeyNames.id, novelId);
     } catch (e) {
       log(e.toString());
       rethrow;
