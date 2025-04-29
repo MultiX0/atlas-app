@@ -88,7 +88,7 @@ class PostHeaderWidget extends StatelessWidget {
           ),
           Consumer(
             builder: (context, ref, _) {
-              final me = ref.watch(userState.select((state) => state.user!));
+              final me = ref.watch(userState).user!;
               return IconButton(
                 onPressed: () => postOptions(context, me, ref),
                 icon: const Icon(TablerIcons.dots, color: AppColors.mutedSilver),

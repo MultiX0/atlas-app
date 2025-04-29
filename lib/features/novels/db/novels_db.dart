@@ -5,6 +5,7 @@ import 'package:atlas_app/core/common/constants/function_names.dart';
 import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/core/common/constants/view_names.dart';
 import 'package:atlas_app/core/common/utils/encrypt.dart';
+import 'package:atlas_app/core/services/user_vector_service.dart';
 import 'package:atlas_app/features/novels/models/chapter_draft_model.dart';
 import 'package:atlas_app/features/novels/models/chapter_model.dart';
 import 'package:atlas_app/features/novels/models/novel_chapter_comment_model.dart';
@@ -226,7 +227,7 @@ class NovelsDb {
 
   Future<void> publishNovel(String novelId) async {
     try {
-      await _novelsTable.update({KeyNames.novel_id: novelId}).eq(KeyNames.id, novelId);
+      await _novelsTable.update({KeyNames.id: novelId}).eq(KeyNames.id, novelId);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -254,6 +255,7 @@ class NovelsDb {
       final data = await _draftChaptersTable
           .select("*")
           .eq(KeyNames.novel_id, novelId)
+          .eq(KeyNames.is_deleted, false)
           .order(KeyNames.updated_at, ascending: false)
           .range(startIndex, (startIndex + pageSize - 1));
 
@@ -285,7 +287,7 @@ class NovelsDb {
 
   Future<void> deleteDraft(ChapterDraftModel draft) async {
     try {
-      await _draftChaptersTable.delete().eq(KeyNames.id, draft.id);
+      await _draftChaptersTable.update({KeyNames.is_deleted: true}).eq(KeyNames.id, draft.id);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -396,11 +398,7 @@ class NovelsDb {
           userId: data[KeyNames.userId],
         ),
       ]);
-      final authHeaders = await generateAuthHeaders();
-      await _dio.post(
-        '${appAPI}update-user-embedding?user_id=${data[KeyNames.userId]}',
-        options: Options(headers: authHeaders),
-      );
+      await updateUserVector(data[KeyNames.userId]);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -553,7 +551,13 @@ class NovelsDb {
       }
 
       final novelData = await query;
-      novelData.toString();
+      final idIndexMap = {for (var i = 0; i < ids.length; i++) ids[i]: i};
+      novelData.sort(
+        (a, b) => (idIndexMap[a[KeyNames.post_id]] ?? ids.length).compareTo(
+          idIndexMap[b[KeyNames.post_id]] ?? ids.length,
+        ),
+      );
+
       return novelData
           .map(
             (n) => NovelPreviewModel(

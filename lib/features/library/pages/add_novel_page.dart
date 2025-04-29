@@ -107,8 +107,8 @@ class _AddNovelPageState extends ConsumerState<AddNovelPage> {
       return;
     }
 
-    if (story.length < 100 && !kDebugMode) {
-      CustomToast.error("على الملخص على الأقل أن يحتوي على 100 حرف");
+    if (story.length < 60 && !kDebugMode) {
+      CustomToast.error("على الملخص على الأقل أن يحتوي على 60 حرف");
       return;
     }
 

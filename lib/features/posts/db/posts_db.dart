@@ -8,7 +8,9 @@ import 'package:atlas_app/core/common/enum/hashtag_enum.dart';
 import 'package:atlas_app/core/common/utils/encrypt.dart';
 import 'package:atlas_app/core/common/utils/extract_key_words.dart';
 import 'package:atlas_app/core/common/widgets/slash_parser.dart';
+import 'package:atlas_app/core/services/user_vector_service.dart';
 import 'package:atlas_app/features/hashtags/db/hashtags_db.dart';
+import 'package:atlas_app/features/posts/models/post_interaction_model.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -25,6 +27,7 @@ class PostsDb {
   SupabaseQueryBuilder get _mentionsTable => _client.from(TableNames.post_mentions);
   SupabaseQueryBuilder get _pinnedPostsTable => _client.from(TableNames.pinned_posts);
   SupabaseQueryBuilder get _savedPostsTable => _client.from(TableNames.saved_posts);
+  SupabaseQueryBuilder get _postInteractionsTable => _client.from(TableNames.post_interactions);
 
   static Dio get _dio => Dio();
   HashtagsDb get hashtagDb => HashtagsDb();
@@ -81,11 +84,7 @@ class PostsDb {
         hashtagDb.insertPostHashTag(hashtags, postId),
         insertEmbedding(id: postId, content: post, userId: userId),
       ]);
-      final authHeaders = await generateAuthHeaders();
-      await _dio.post(
-        '${appAPI}update-user-embedding?user_id=$userId',
-        options: Options(headers: authHeaders),
-      );
+      await updateUserVector(userId);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -310,10 +309,6 @@ class PostsDb {
       var query = _postsView.select("*");
 
       if (ids.isNotEmpty) {
-        if (kDebugMode) {
-          print("there is recommendation data");
-          print(ids.toString());
-        }
         query = query.inFilter(KeyNames.post_id, ids);
         if (!kDebugMode) {
           //remove personal posts from the feeds in prod
@@ -324,7 +319,31 @@ class PostsDb {
       }
 
       final data = await query;
+      final idIndexMap = {for (var i = 0; i < ids.length; i++) ids[i]: i};
+      data.sort(
+        (a, b) => (idIndexMap[a[KeyNames.post_id]] ?? ids.length).compareTo(
+          idIndexMap[b[KeyNames.post_id]] ?? ids.length,
+        ),
+      );
       return data.map((p) => PostModel.fromMap(p)).toList();
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> insetPostInteraction(PostInteractionModel interactionModel) async {
+    try {
+      await _postInteractionsTable.insert(interactionModel.toMap());
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> updateInteractionModel(PostInteractionModel interactionModel) async {
+    try {
+      await _postInteractionsTable.insert(interactionModel.toMap());
     } catch (e) {
       log(e.toString());
       rethrow;

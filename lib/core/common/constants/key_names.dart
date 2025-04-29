@@ -61,6 +61,7 @@ class KeyNames {
   static const log_novel_view = 'log_novel_view';
   static const theme_color = 'theme_color';
   static const color = 'color';
+  static const interaction = 'interaction';
   static const writing_quality = 'writing_quality';
   static const story_development = 'story_development';
   static const character_design = 'character_design';
@@ -125,6 +126,9 @@ class KeyNames {
   static const number = 'number';
   static const likes_count = 'likes_count';
   static const is_liked = 'is_liked';
+  static const liked = 'liked';
+  static const favorited = 'favorited';
+  static const shared = 'shared';
   static const comment_count = 'comment_count';
   static const comment_id = 'comment_id';
   static const parent_comment_author_id = 'parent_comment_author_id';

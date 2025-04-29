@@ -135,6 +135,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       buildRoute(path: Routes.novelReadChapter, child: const ChapterReadingPage(), fade: true),
       buildRoute(path: Routes.chapterCommentsPage, child: const ChapterCommentsPage(), fade: true),
       buildRoute(path: Routes.editProfile, child: const EditProfileScreen(), fade: true),
+      buildRoute(path: Routes.addNovelPage, child: const AddNovelPage(edit: false), fade: true),
 
       GoRoute(
         path: Routes.forgotPassword,
@@ -179,7 +180,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           );
         },
       ),
-
       GoRoute(
         path: "${Routes.addNovelPage}/:edit",
         pageBuilder: (context, state) {

@@ -26,7 +26,7 @@ class AuthController extends StateNotifier<bool> {
       state = false;
       log(e.toString());
       if (e.toString().toLowerCase().contains(("Invalid login credentials").toLowerCase())) {
-        CustomToast.error("email or password is incorrect");
+        CustomToast.error("البريد الإلكتروني أو كلمة المرور غير صحيحة");
       } else {
         CustomToast.error(e);
       }
@@ -38,8 +38,13 @@ class AuthController extends StateNotifier<bool> {
     try {
       state = true;
       final localUser = _ref.read(localUserModel);
-      final user = await _db.signUp(localUser!);
-      CustomToast.success("Welcome to Atlas! Your journey starts now.");
+      final user = await _db.signUp(
+        localUser!.copyWith(
+          banner:
+              'https://ijetdkekpdlnbyrnirfe.supabase.co/storage/v1/object/public/public_stotage//mitpmcvgd31mtbykbjud.avif',
+        ),
+      );
+      CustomToast.success("أهلاً بكم في أطلس! رحلتكم تبدأ الآن.");
       _ref.read(userState.notifier).updateState(user);
       _ref.read(isLoggedProvider.notifier).updateState(true);
 

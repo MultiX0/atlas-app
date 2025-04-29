@@ -4,7 +4,6 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
-import 'package:atlas_app/core/common/utils/image_to_avif_convert.dart';
 import 'package:atlas_app/core/common/utils/upload_storage.dart';
 import 'package:atlas_app/features/auth/controller/auth_controller.dart';
 import 'package:atlas_app/features/auth/db/auth_db.dart';
@@ -130,21 +129,12 @@ class ProfileController extends StateNotifier<bool> {
   Future<String> uploadImage(File image, String userId, {required bool avatar}) async {
     try {
       String link;
-      final avifImage = !avatar ? null : await AvifConverter.convertToAvif(image, quality: 80);
-      if (avifImage != null) {
-        link = await UploadStorage.uploadImages(
-          image: avifImage,
-          path:
-              '/users/$userId/${avatar ? 'avatar-${uuid.v4()}.avif' : 'banner-${uuid.v4()}.avif'}',
-          quiality: 80,
-        );
-      } else {
-        link = await UploadStorage.uploadImages(
-          image: image,
-          path: '/users/$userId/${avatar ? 'avatar-${uuid.v4()}.png' : 'banner-${uuid.v4()}.png'}',
-          quiality: 80,
-        );
-      }
+
+      link = await UploadStorage.uploadImages(
+        image: image,
+        path: '/users/$userId/${avatar ? 'avatar-${uuid.v4()}.png' : 'banner-${uuid.v4()}.png'}',
+        quiality: 60,
+      );
 
       return link;
     } catch (e, trace) {
