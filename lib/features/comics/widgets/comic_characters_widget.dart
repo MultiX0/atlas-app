@@ -9,6 +9,12 @@ class ComicCharactersWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final _characters = [
+      ...characters.where(
+        (c) => mainCharacters ? c.role.toLowerCase() == 'main' : c.role.toLowerCase() != 'main',
+      ),
+    ];
+    if (_characters.isEmpty) return const SizedBox.shrink();
     return buildCard(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
       child: Column(

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:math';
 
 final _key = dotenv.env['ENCRYPT_KEY'] ?? '';
+final _apiKey = dotenv.env['API_KEY'] ?? "";
 
 String encryptMessage(String message) {
   final keyBytes = encrypt.Key(Uint8List.fromList(hex.decode(_key)));
@@ -30,15 +31,20 @@ String decryptMessage(String encryptedMessage) {
   return utf8.decode(decrypted);
 }
 
-Future<Map<String, String>> generateAuthHeaders(String apiKey) async {
+Future<Map<String, String>> generateAuthHeaders() async {
   final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
   final nonce = _generateNonce(16);
   final message = '$timestamp:$nonce';
 
-  final hmac = Hmac(sha256, utf8.encode(apiKey));
+  final hmac = Hmac(sha256, utf8.encode(_apiKey));
   final hash = hmac.convert(utf8.encode(message)).toString();
 
-  return {'x-timestamp': timestamp, 'x-nonce': nonce, 'x-hash': hash};
+  return {
+    'x-timestamp': timestamp,
+    'x-nonce': nonce,
+    'x-hash': hash,
+    'Content-Type': 'application/json',
+  };
 }
 
 String _generateNonce(int length) {

@@ -319,6 +319,8 @@ class _AddChapterState extends ConsumerState<AddChapterPage> {
                           showQuote: false,
                           showLink: false,
                           showHeaderStyle: true,
+                          showUndo: false,
+                          showRedo: false,
                         ),
                       ),
                     ),

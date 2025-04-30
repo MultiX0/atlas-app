@@ -144,8 +144,6 @@ class ComicModel {
       KeyNames.tags: tags,
       KeyNames.last_update_at: lastUpdateAt?.toIso8601String(),
       KeyNames.external_links: externalLinks?.map((external) => external.toMap()).toList(),
-      // 'titles': titles.map((x) => x.toMap()).toList(),
-      // 'genres': genres.map((x) => x.toMap()).toList(),
       KeyNames.image: image,
     };
   }
@@ -171,7 +169,7 @@ class ComicModel {
     }
 
     return ComicModel(
-      comicId: map[KeyNames.comic_id] ?? "",
+      comicId: map[KeyNames.comic_id] ?? map[KeyNames.id] ?? "",
       aniId: map[KeyNames.ani_id] ?? -1,
       lastUpdateAt:
           map[KeyNames.last_update_at] == null
@@ -186,7 +184,7 @@ class ComicModel {
       status: map[KeyNames.status] ?? "",
       views: map[KeyNames.view_count] ?? 0,
       posts_count: map[KeyNames.mentioned_posts] ?? 0,
-      score: map[KeyNames.score] ?? 0.0,
+      score: map[KeyNames.score] == null ? 0.0 : map[KeyNames.score]?.toDouble() ?? 0.0,
       characters:
           map[TableNames.comic_characters] == null
               ? []
@@ -203,9 +201,12 @@ class ComicModel {
               ).toList()
               : null,
       banner: map[KeyNames.banner],
-      publishedDate: ComicPublishedModel.fromMap(
-        map['published'] ?? map[TableNames.comic_published_dates],
-      ),
+      publishedDate:
+          (map['published'] == null && map[TableNames.comic_published_dates] == null)
+              ? ComicPublishedModel(from: DateTime.now(), string: "")
+              : ComicPublishedModel.fromMap(
+                map['published'] ?? map[TableNames.comic_published_dates],
+              ),
       synopsis: map[KeyNames.synopsis] ?? "",
       title_synonyms: List<dynamic>.from((map[KeyNames.title_synonyms])),
       titles: List<ComicTitlesModel>.from(

@@ -1,6 +1,8 @@
 import 'package:atlas_app/core/common/widgets/manhwa_poster.dart';
+import 'package:atlas_app/features/novels/widgets/empty_chapters.dart';
 import 'package:atlas_app/features/search/providers/manhwa_search_state.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:flutter/foundation.dart';
 
 class ManhwaSearchPage extends ConsumerWidget {
   const ManhwaSearchPage({super.key});
@@ -15,7 +17,10 @@ class ManhwaSearchPage extends ConsumerWidget {
     }
 
     if (state.error != null) {
-      return Center(child: ErrorWidget(Exception(state.error)));
+      if (kDebugMode) {
+        return Center(child: ErrorWidget(Exception(state.error)));
+      }
+      return const EmptyChapters(text: "حدث خطأ الرجاء المحاولة لاحقا");
     }
 
     if (comics.isEmpty) {

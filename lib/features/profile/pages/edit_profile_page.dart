@@ -320,6 +320,7 @@ class EditBody extends StatelessWidget {
             child: TextField(
               controller: bioController,
               minLines: 1,
+              maxLength: 150,
               maxLines: null,
               decoration: InputDecoration(
                 labelText: "البايو",

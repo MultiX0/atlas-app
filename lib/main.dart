@@ -12,6 +12,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await _initEnv();
   await Future.wait([langdetect.initLangDetect(), _supabaseInit(), _firebaseInit()]);
+
   editChromeSystem();
 
   runApp(const ProviderScope(child: App()));

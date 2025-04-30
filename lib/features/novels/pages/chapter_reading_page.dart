@@ -8,59 +8,56 @@ import 'package:atlas_app/features/novels/widgets/chapter_interactions.dart';
 import 'package:atlas_app/features/novels/widgets/share_widget.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:no_screenshot/no_screenshot.dart';
 
-class ChapterReadingPage extends ConsumerStatefulWidget {
+// Provider for memoizing parsed segments
+final segmentsProvider = Provider.family<List<List<Line>>, String>((ref, chapterId) {
+  final chapter = ref.watch(selectedChapterProvider)!;
+  final operations = chapter.content;
+  final lines = parseDelta(operations);
+  return groupLinesIntoSegments(lines);
+});
+
+class ChapterReadingPage extends HookConsumerWidget {
   const ChapterReadingPage({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _ChapterReadingPageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Initialize screenshot handling
+    final noScreenshot = useMemoized(() => NoScreenshot.instance);
+    useEffect(() {
+      if (!kDebugMode) {
+        noScreenshot.screenshotOff();
+      }
+      return () {
+        noScreenshot.screenshotOn();
+      };
+    }, []);
 
-class _ChapterReadingPageState extends ConsumerState<ChapterReadingPage> {
-  final _noScreenshot = NoScreenshot.instance;
-  late ScrollController _scrollController;
+    // Scroll controller
+    final scrollController = useScrollController();
 
-  @override
-  void initState() {
-    if (!kDebugMode) {
-      disableScreenshot();
+    // Handle chapter view
+    useEffect(() {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Future.microtask(() {
+          ref.read(novelsControllerProvider.notifier).handleChapterView();
+        });
+      });
+      return null;
+    }, []);
+
+    // Page change callback
+    void onPageChange() {
+      scrollController.jumpTo(0);
     }
-    _scrollController = ScrollController();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      handleView();
-    });
-    super.initState();
-  }
 
-  void enableScreenshot() async {
-    await _noScreenshot.screenshotOn();
-  }
-
-  void disableScreenshot() async {
-    await _noScreenshot.screenshotOff();
-  }
-
-  void handleView() {
-    ref.read(novelsControllerProvider.notifier).handleChapterView();
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void onPageChange() {
-    _scrollController.jumpTo(0);
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return PopScope(
       canPop: true,
       onPopInvokedWithResult: (_, _) {
-        enableScreenshot();
+        noScreenshot.screenshotOn();
       },
       child: Scaffold(
         appBar: AppBar(
@@ -73,98 +70,114 @@ class _ChapterReadingPageState extends ConsumerState<ChapterReadingPage> {
         ),
         body: Directionality(
           textDirection: TextDirection.rtl,
-          child: ListView(
-            controller: _scrollController,
+          child: ListView.builder(
+            controller: scrollController,
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-            children: [
-              Consumer(
-                builder: (context, ref, _) {
-                  final chapter = ref.watch(selectedChapterProvider)!;
-                  final operations = chapter.content;
-                  final lines = parseDelta(operations);
-                  final segments = groupLinesIntoSegments(lines);
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children:
-                        segments.asMap().entries.map((entry) {
-                          // int segmentIndex = entry.key;
-                          List<Line> segment = entry.value;
-
-                          // Build TextSpans for the segment
-                          String segmentText = segment
-                              .map((line) => line.parts.map((part) => part.$1).join())
-                              .join('\n');
-                          List<TextSpan> segmentSpans = [];
-
-                          for (int j = 0; j < segment.length; j++) {
-                            var line = segment[j];
-                            TextStyle headerStyle = getHeaderStyle(line.blockAttributes);
-                            List<TextSpan> partSpans = [];
-
-                            for (var part in line.parts) {
-                              TextStyle inlineStyle = getInlineStyle(part.$2);
-                              TextStyle partStyle;
-
-                              if (line.blockAttributes != null &&
-                                  line.blockAttributes!.isNotEmpty) {
-                                partStyle = TextStyle(
-                                  fontSize: headerStyle.fontSize ?? inlineStyle.fontSize ?? 16,
-                                  fontWeight:
-                                      headerStyle.fontWeight ??
-                                      inlineStyle.fontWeight ??
-                                      FontWeight.normal,
-                                  fontFamily:
-                                      headerStyle.fontFamily ??
-                                      inlineStyle.fontFamily ??
-                                      arabicPrimaryFont,
-                                  color:
-                                      headerStyle.color ??
-                                      inlineStyle.color ??
-                                      AppColors.whiteColor,
-                                );
-                              } else {
-                                partStyle = TextStyle(
-                                  fontSize: inlineStyle.fontSize ?? 16,
-                                  fontWeight: inlineStyle.fontWeight ?? FontWeight.normal,
-                                  fontFamily: inlineStyle.fontFamily ?? arabicPrimaryFont,
-                                  color: inlineStyle.color ?? AppColors.whiteColor,
-                                );
-                              }
-
-                              partSpans.add(TextSpan(text: part.$1, style: partStyle));
-                            }
-
-                            segmentSpans.add(TextSpan(children: partSpans));
-                            if (j < segment.length - 1) {
-                              segmentSpans.add(const TextSpan(text: '\n'));
-                            }
-                          }
-
-                          return GestureDetector(
-                            onLongPress: () {
-                              openMenu(context, segmentText);
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.only(bottom: 16.0),
-                              child: RichText(
-                                text: TextSpan(children: segmentSpans),
-                                textDirection: TextDirection.rtl,
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                  );
-                },
-              ),
-              const SizedBox(height: 15),
-              const NovelChapterInteractions(),
-              const SizedBox(height: 15),
-              ChapterButtonsController(onPageChange: onPageChange),
-            ],
+            itemCount: 3, // Segments + Interactions + Buttons
+            itemBuilder: (context, index) {
+              if (index == 0) {
+                return _buildChapterContent(ref);
+              } else if (index == 1) {
+                return const Column(
+                  children: [
+                    SizedBox(height: 15),
+                    NovelChapterInteractions(),
+                    SizedBox(height: 15),
+                  ],
+                );
+              } else {
+                return ChapterButtonsController(onPageChange: onPageChange);
+              }
+            },
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildChapterContent(WidgetRef ref) {
+    // Watch segments provider (memoized)
+    final chapter = ref.read(selectedChapterProvider)!;
+    final segments = ref.watch(segmentsProvider(chapter.id)); // Use a unique chapter ID if needed
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: segments.length,
+      itemBuilder: (context, segmentIndex) {
+        final segment = segments[segmentIndex];
+        final segmentSpans = _buildSegmentSpans(segment);
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16.0),
+          child: SelectableText.rich(
+            TextSpan(children: segmentSpans),
+            textDirection: TextDirection.rtl,
+            onSelectionChanged: (selection, cause) {
+              if (cause == SelectionChangedCause.longPress) {
+                // Customize selection menu if needed
+                String segmentText = segment
+                    .map((line) => line.parts.map((part) => part.$1).join())
+                    .join('\n');
+                openMenu(context, segmentText);
+              }
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  List<TextSpan> _buildSegmentSpans(List<Line> segment) {
+    final segmentSpans = <TextSpan>[];
+
+    for (int j = 0; j < segment.length; j++) {
+      final line = segment[j];
+      final headerStyle = getHeaderStyle(line.blockAttributes);
+      final partSpans = <TextSpan>[];
+
+      for (final part in line.parts) {
+        final inlineStyle = getInlineStyle(part.$2);
+        final partStyle = _computePartStyle(headerStyle, inlineStyle, line.blockAttributes);
+
+        partSpans.add(TextSpan(text: part.$1, style: partStyle));
+      }
+
+      segmentSpans.add(TextSpan(children: partSpans));
+      if (j < segment.length - 1) {
+        segmentSpans.add(const TextSpan(text: '\n'));
+      }
+    }
+
+    return segmentSpans;
+  }
+
+  TextStyle _computePartStyle(
+    TextStyle? headerStyle,
+    TextStyle inlineStyle,
+    Map<String, dynamic>? blockAttributes,
+  ) {
+    //  final defaultStyle = TextStyle(
+    //   fontSize: 16,
+    //   fontWeight: FontWeight.normal,
+    //   fontFamily: arabicPrimaryFont,
+    //   color: AppColors.whiteColor,
+    // );
+
+    if (blockAttributes != null && blockAttributes.isNotEmpty) {
+      return TextStyle(
+        fontSize: headerStyle?.fontSize ?? inlineStyle.fontSize ?? 16,
+        fontWeight: headerStyle?.fontWeight ?? inlineStyle.fontWeight ?? FontWeight.normal,
+        fontFamily: headerStyle?.fontFamily ?? inlineStyle.fontFamily ?? arabicPrimaryFont,
+        color: headerStyle?.color ?? inlineStyle.color ?? AppColors.whiteColor,
+      );
+    }
+
+    return TextStyle(
+      fontSize: inlineStyle.fontSize ?? 16,
+      fontWeight: inlineStyle.fontWeight ?? FontWeight.normal,
+      fontFamily: inlineStyle.fontFamily ?? arabicPrimaryFont,
+      color: inlineStyle.color ?? AppColors.whiteColor,
     );
   }
 }

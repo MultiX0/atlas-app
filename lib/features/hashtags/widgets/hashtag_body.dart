@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:atlas_app/core/common/enum/hashtag_enum.dart';
 import 'package:atlas_app/core/common/enum/post_like_enum.dart';
+import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/features/hashtags/widgets/hashtag_filter_widget.dart';
 import 'package:atlas_app/features/profile/widgets/post_widget.dart';
 import 'package:atlas_app/imports.dart';
@@ -70,9 +71,9 @@ class HashtagsBody extends StatelessWidget {
           hashtag: hashtag,
           key: ValueKey(post.postId),
           post: post,
-          onComment: () {},
+          onComment: () => CustomToast.soon(),
           postLikeType: PostLikeEnum.HASHTAG,
-          onShare: () {},
+          onShare: () => CustomToast.soon(),
         );
       },
     );

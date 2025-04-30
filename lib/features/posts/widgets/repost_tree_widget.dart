@@ -30,7 +30,7 @@ class RepostTreeWidget extends ConsumerWidget {
                 crossAxisAlignment:
                     postHasArabic ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                 children: [
-                  PostHeaderWidget(post: post),
+                  PostHeaderWidget(post: post, profileNav: false),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(15, 15, 15, 0),
                     child: PostContentWidget(post: post, repost: true),

@@ -12,6 +12,7 @@ class Routes {
   static const library = '/library';
   static const scrolls = '/scrolls';
   static const user = '/user';
+  static const profile = '/profile';
   static const search = '/searchPage';
   static const manhwaPage = '/manhwaPage';
   static const addComicReview = '/addComicReviewPage';
@@ -25,4 +26,5 @@ class Routes {
   static const chapterCommentsPage = '/chapterCommentsPage';
   static const comicPage = '/comicPage';
   static const editProfile = '/editProfile';
+  static const forgotPassword = '/forgotPassword';
 }

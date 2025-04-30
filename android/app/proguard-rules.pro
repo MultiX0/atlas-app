@@ -15,3 +15,6 @@
     public static class *;
 }
 -keep public class * extends android.os.Binder { public static *; }
+
+-keep class com.yalantis.ucrop** { *; }
+-keep interface com.yalantis.ucrop** { *; }

@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/features/comics/db/comics_db.dart';
 import 'package:atlas_app/features/comics/pages/manhwa_page.dart';
-import 'package:atlas_app/features/novels/providers/comic_views.dart';
 import 'package:atlas_app/features/novels/widgets/novel_shimmer_loading.dart';
 import 'package:atlas_app/imports.dart';
 
@@ -28,14 +27,14 @@ class _NovelLoaderState extends ConsumerState<ManhwaLoader> {
 
   Future<void> handleNovel() async {
     try {
-      final stateNovel = ref.read(comicViewsStateProvider.notifier).get(widget.comicId);
-      if (stateNovel != null) {
-        ref.read(selectedComicProvider.notifier).state = stateNovel;
-        setState(() {
-          comic = stateNovel;
-        });
-        return;
-      }
+      // final stateNovel = ref.read(comicViewsStateProvider.notifier).get(widget.comicId);
+      // if (stateNovel != null) {
+      //   ref.read(selectedComicProvider.notifier).state = stateNovel;
+      //   setState(() {
+      //     comic = stateNovel;
+      //   });
+      //   return;
+      // }
 
       final fetchedComic = await ref.read(comicsDBProvider).fetchComicDetailsFromLocalDb([
         widget.comicId,
@@ -49,7 +48,7 @@ class _NovelLoaderState extends ConsumerState<ManhwaLoader> {
       }
 
       ref.read(selectedComicProvider.notifier).state = fetchedComic.first;
-      ref.read(comicViewsStateProvider.notifier).add(fetchedComic.first);
+      // ref.read(comicViewsStateProvider.notifier).add(fetchedComic.first);
       if (mounted) {
         setState(() {
           comic = fetchedComic.first;

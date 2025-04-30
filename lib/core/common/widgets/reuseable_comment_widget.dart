@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/widgets/rich_text_view/models.dart';
 import 'package:atlas_app/core/common/widgets/rich_text_view/text_view.dart';
 import 'package:atlas_app/core/common/widgets/slash_parser.dart';
@@ -85,6 +86,7 @@ class CommentRichTextView extends StatelessWidget {
                     break;
                   case 'char':
                     log('Open Character (ID: $id) → $title');
+                    CustomToast.soon(text: "الشخصيات ستتوفر قريبا");
                     break;
                   case 'novel':
                     log('Open Novel (ID: $id) → $title');

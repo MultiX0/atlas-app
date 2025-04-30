@@ -1,5 +1,4 @@
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
-import 'package:atlas_app/core/common/utils/format_number.dart';
 import 'package:atlas_app/imports.dart';
 
 class InteractionBar extends StatelessWidget {

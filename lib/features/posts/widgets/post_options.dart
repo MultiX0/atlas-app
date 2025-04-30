@@ -7,6 +7,7 @@ import 'package:atlas_app/features/posts/widgets/post_report_sheet.dart';
 import 'package:atlas_app/router.dart';
 import 'package:clipboard/clipboard.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:flutter/foundation.dart';
 
 class PostOptions extends StatefulWidget {
   const PostOptions({super.key, required this.isOwner, required this.post});
@@ -51,7 +52,10 @@ class _PostOptionsSheetState extends State<PostOptions> {
       child: Consumer(
         builder: (context, ref, _) {
           final router = ref.read(routerProvider);
-          bool profile = router.state.uri.toString() == Routes.user;
+          if (kDebugMode) {
+            print(router.state.fullPath);
+          }
+          bool profile = (router.state.fullPath ?? "").contains(Routes.profile);
 
           return Column(
             children: [
@@ -103,7 +107,7 @@ class _PostOptionsSheetState extends State<PostOptions> {
                 },
               ),
               buildTile(
-                visible: isOwner,
+                visible: (isOwner && profile),
 
                 "حذف",
                 LucideIcons.trash_2,

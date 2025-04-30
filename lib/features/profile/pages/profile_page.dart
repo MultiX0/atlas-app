@@ -2,6 +2,7 @@ import 'package:atlas_app/features/profile/controller/profile_controller.dart';
 import 'package:atlas_app/features/profile/provider/providers.dart';
 import 'package:atlas_app/features/profile/widgets/profile_body.dart';
 import 'package:atlas_app/features/profile/widgets/profile_header_widget.dart';
+import 'package:atlas_app/features/profile/widgets/profile_loadig.dart';
 import 'package:atlas_app/features/profile/widgets/profile_tabs.dart';
 // import 'package:atlas_app/features/profile/widgets/profile_top_info_widget.dart';
 import 'package:atlas_app/imports.dart';
@@ -19,8 +20,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
   @override
   void initState() {
     final me = ref.read(userState).user!;
-    bool isMe = me.userId == widget.userId;
-    _controller = TabController(length: isMe ? 2 : 3, vsync: this);
+    bool isMe = (me.userId == widget.userId) || widget.userId.trim().isEmpty;
+
+    _controller = TabController(length: isMe ? 1 : 3, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) => handleInit());
     super.initState();
   }
@@ -28,7 +30,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
   void handleInit() {
     Future.microtask(() {
       final me = ref.read(userState).user!;
-      bool isMe = me.userId == widget.userId;
+      bool isMe = (me.userId == widget.userId) || widget.userId.trim().isEmpty;
       if (isMe) {
         ref.read(selectedUserProvider.notifier).state = me;
       }
@@ -41,22 +43,30 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
   }
 
   Widget buildBodyController() {
-    final me = ref.watch(userState).user!;
+    final me = ref.read(userState).user!;
     final userId = widget.userId;
-    bool isMe = me.userId == userId;
+    bool isMe = (me.userId == widget.userId) || widget.userId.trim().isEmpty;
 
     if (isMe) {
-      return buildBody(me, isMe);
+      return Consumer(
+        builder: (context, ref, _) {
+          final me = ref.watch(userState).user!;
+          return buildBody(me, isMe);
+        },
+      );
     }
 
     return ref
         .watch(getUserByIdProvider(userId))
         .when(
           data: (user) {
+            Future.microtask(() {
+              ref.read(selectedUserProvider.notifier).state = user;
+            });
             return buildBody(user, isMe);
           },
           error: (error, _) => Center(child: ErrorWidget(error)),
-          loading: () => const Loader(),
+          loading: () => const ProfileHeaderShimmer(),
         );
   }
 

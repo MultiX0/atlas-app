@@ -48,9 +48,7 @@ class _OnboardingFirstPageState extends ConsumerState<OnboardingFirstPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Center(
-                        child: AvifImage.asset('assets/images/logo_transparent.avif', height: 100),
-                      ),
+                      Center(child: Image.asset('assets/images/logo_at.png', height: 100)),
                       const Spacer(),
                       const Text.rich(
                         TextSpan(

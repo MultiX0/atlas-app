@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
@@ -107,8 +106,8 @@ class _AddNovelPageState extends ConsumerState<AddNovelPage> {
       return;
     }
 
-    if (story.length < 100 && !kDebugMode) {
-      CustomToast.error("على الملخص على الأقل أن يحتوي على 100 حرف");
+    if (story.length < 60 && !kDebugMode) {
+      CustomToast.error("على الملخص على الأقل أن يحتوي على 60 حرف");
       return;
     }
 
@@ -319,22 +318,12 @@ class _AddNovelPageState extends ConsumerState<AddNovelPage> {
             context: context,
             child: GenreSelectionSheet(
               genres: genreses,
-              onSelect: (gen) {
-                log(gen.name);
-
+              onUpdate: (updatedGenres) {
                 setState(() {
-                  if (selectedGenres.any((g) => g.name == gen.name)) {
-                    selectedGenres.remove(gen);
-                  } else {
-                    if (selectedGenres.length >= 3) {
-                      CustomToast.error("يمكنك أختيار 3 كأقصى حد");
-                      return;
-                    }
-                    selectedGenres.add(gen);
-                  }
+                  selectedGenres = List.from(updatedGenres);
                 });
               },
-              selectedGenreses: selectedGenres,
+              selectedGenres: selectedGenres,
             ),
           ),
       child: Genreses(selectedGenres: selectedGenres),

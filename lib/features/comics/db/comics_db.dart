@@ -1,11 +1,12 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'package:atlas_app/core/common/constants/function_names.dart';
 import 'package:atlas_app/core/common/constants/genres_json.dart';
 import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/core/common/constants/view_names.dart';
+import 'package:atlas_app/core/common/utils/encrypt.dart';
 import 'package:atlas_app/features/characters/db/characters_db.dart';
-import 'package:atlas_app/features/comics/models/comic_published_model.dart';
-import 'package:atlas_app/features/comics/models/comic_titles_model.dart';
+import 'package:atlas_app/features/comics/models/comic_preview_model.dart';
 import 'package:atlas_app/features/comics/models/genres_model.dart';
 import 'package:atlas_app/features/search/providers/manhwa_search_state.dart';
 import 'package:atlas_app/features/search/providers/providers.dart';
@@ -25,90 +26,53 @@ class ComicsDb {
   ComicsDb({required Ref ref}) : _ref = ref;
 
   final client = Supabase.instance.client;
-  SupabaseQueryBuilder get _comicsTable => client.from(TableNames.comics);
   SupabaseQueryBuilder get _comicsTitlesTable => client.from(TableNames.comic_titles);
-  SupabaseQueryBuilder get _comicsGenresTable => client.from(TableNames.comic_genres);
+  // SupabaseQueryBuilder get _comicsGenresTable => client.from(TableNames.comic_genres);
   SupabaseQueryBuilder get _comicReviewsTable => client.from(TableNames.comic_reviews);
   SupabaseQueryBuilder get _comicsView => client.from(ViewNames.comic_details_with_views);
+  SupabaseQueryBuilder get _comicsTable => client.from(TableNames.comics);
+
   SupabaseQueryBuilder get _comicsViewsTable => client.from(TableNames.comic_views);
 
   TranslationService get _translationService => TranslationService();
 
-  SupabaseQueryBuilder get _comicsPublishedDateTable =>
-      client.from(TableNames.comic_published_dates);
+  // SupabaseQueryBuilder get _comicsPublishedDateTable =>
+  //     client.from(TableNames.comic_published_dates);
 
   static final dio = Dio();
+  final String _apiBaseUrl = 'https://api.atlasapp.app/v1/'; // Replace with your actual API URL
+
+  Future<dynamic> _apiRequest(String endpoint, Map<String, dynamic> body) async {
+    try {
+      final authHeaders = await generateAuthHeaders();
+      final response = await Dio().post(
+        '$_apiBaseUrl$endpoint',
+        options: Options(headers: authHeaders),
+        data: jsonEncode(body),
+      );
+
+      if (response.statusCode != null &&
+          response.statusCode! >= 200 &&
+          response.statusCode! < 300) {
+        return response.data;
+      } else {
+        log('API Error: ${response.statusCode} - ${response.data}');
+        throw Exception('API Error: ${response.statusCode}');
+      }
+    } catch (e) {
+      log('API Request Error: $e');
+      rethrow;
+    }
+  }
 
   Future<void> viewComic({required String userId, required String comicId}) async {
     try {
-      final currentComic = _ref.read(selectedComicProvider)!;
-      await _comicsViewsTable.upsert({KeyNames.userId: userId, KeyNames.comic_id: comicId});
-      _ref.read(selectedComicProvider.notifier).state = currentComic.copyWith(
-        views: currentComic.views + 1,
-        is_viewed: true,
-      );
-    } catch (e) {
-      log(e.toString());
-      rethrow;
-    }
-  }
-
-  Future<void> insertComicsPublishDate(ComicPublishedModel date, String comicId) async {
-    try {
-      await _comicsPublishedDateTable.upsert({
-        KeyNames.from: date.from?.toIso8601String(),
-        KeyNames.to: date.to?.toIso8601String(),
-        KeyNames.string: date.string,
-        KeyNames.comic_id: comicId,
-      });
-    } catch (e) {
-      log(e.toString());
-      rethrow;
-    }
-  }
-
-  Future<void> insertComicTitles(List<ComicTitlesModel> titles, String comicId) async {
-    try {
-      List<Map<String, dynamic>> _titles = [];
-      for (final title in titles) {
-        final map = title.toMap();
-        map[KeyNames.comic_id] = comicId;
-        _titles.add(map);
-      }
-      // Use _titles instead of titles
-      await _comicsTitlesTable.upsert(_titles, onConflict: KeyNames.title, ignoreDuplicates: true);
-    } catch (e) {
-      log(e.toString());
-      rethrow;
-    }
-  }
-
-  Future<void> insertComicsGenres(List<GenresModel> genress, String comicId) async {
-    try {
-      final _alreadyFoundIds = await client.rpc(
-        FunctionNames.get_existing_genres,
-        params: {'p_comic_id': comicId, 'p_genre_ids': genress.map((g) => g.id).toList()},
-      );
-      final _ids = List.from(_alreadyFoundIds);
-      final _newGenrese = List<GenresModel>.from(genress);
-      if (_ids.isNotEmpty) {
-        _newGenrese.retainWhere((genres) => _ids.contains(genres.id));
-      }
-      if (_newGenrese.isEmpty) return;
-      List<Map<String, dynamic>> _genress = [];
-      for (final genres in _newGenrese) {
-        final map = genres.toMap();
-        map[KeyNames.comic_id] = comicId;
-        final id = genres.id;
-        map[KeyNames.genre_id] = id;
-        map.remove(KeyNames.type);
-        map.remove(KeyNames.id);
-        map.remove(KeyNames.name);
-        map.remove(KeyNames.name_arabic);
-        _genress.add(map);
-      }
-
-      await _comicsGenresTable.insert(_genress);
+      // final currentComic = _ref.read(selectedComicProvider)!;
+      await _comicsViewsTable.insert({KeyNames.userId: userId, KeyNames.comic_id: comicId});
+      // _ref.read(selectedComicProvider.notifier).state = currentComic.copyWith(
+      //   views: currentComic.views + 1,
+      //   is_viewed: true,
+      // );
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -145,48 +109,76 @@ class ComicsDb {
   Future<void> insertComics(List<ComicModel> comics, List<Map<String, dynamic>> characters) async {
     try {
       if (comics.isEmpty) return;
-      List<Map<String, dynamic>> _comics = [];
 
-      List<ComicModel> newComics = List.from(comics);
+      // First translate comics synopsis
+      List<ComicModel> newComics = await translateComics(List.from(comics));
+
+      // Process characters for all comics first to include translations
+      // This replaces the call to handleInsertCharacters in the original code
+      Map<int, Map<String, dynamic>> processedCharacters = {};
 
       for (final comic in newComics) {
-        // Log the mal_id to see what's happening
+        // Process characters for this comic
+        try {
+          final charactersForComic = await _ref
+              .read(characterDbProvider)
+              .prepareCharacterData(comic, characters);
+          if (charactersForComic != null) {
+            processedCharacters[comic.aniId] = charactersForComic;
+          }
+        } catch (e) {
+          log("Error processing characters for comic ${comic.comicId}: ${e.toString()}");
+          // Continue with other comics even if character processing fails for one
+        }
+      }
+
+      // Prepare data for batch insertion
+      List<Map<String, dynamic>> comicsData = [];
+
+      for (final comic in newComics) {
         log("Processing comic with ani_id: ${comic.aniId}");
 
-        final map = comic.toMap();
-        map[KeyNames.last_update_at] = DateTime.now().toUtc().toIso8601String();
-        _comics.add(map);
+        // Create payload for this comic
+        final comicData = {
+          'comic': comic.toMap(),
+          'titles':
+              comic.titles.map((title) => {'type': title.type, 'title': title.title}).toList(),
+          'genres':
+              comic.genres
+                  .map(
+                    (genre) => {
+                      'id': genre.id,
+                      'type': genre.type,
+                      'name': genre.name,
+                      'ar_name': genre.ar_name,
+                    },
+                  )
+                  .toList(),
+          'publishDate': {
+            'from': comic.publishedDate.from?.toIso8601String(),
+            'to': comic.publishedDate.to?.toIso8601String(),
+            'string': comic.publishedDate.string,
+          },
+          'charactersMap':
+              processedCharacters.containsKey(comic.aniId)
+                  ? [processedCharacters[comic.aniId]]
+                  : [],
+        };
+
+        comicsData.add(comicData);
       }
 
-      // Debug: print the prepared data
-      log("Comics to insert: ${_comics.length}");
-
-      // Try inserting one by one to identify which one causes the issue
-      for (var comicMap in _comics) {
-        try {
-          await _comicsTable.upsert(comicMap);
-        } catch (e) {
-          log("Error on comic with mal_id: ${comicMap[KeyNames.ani_id]}");
-          log(e.toString());
-          continue;
-        }
+      // If only one comic, use single insertion endpoint
+      if (comicsData.length == 1) {
+        await _apiRequest('insert-comic-data', comicsData.first);
+      } else {
+        // Otherwise use batch insertion endpoint
+        await _apiRequest('insert-comics-batch', {'comicsData': comicsData, 'concurrencyLimit': 5});
       }
 
-      // Now handle related data
-      for (final comic in newComics) {
-        try {
-          await Future.wait([
-            insertComicTitles(comic.titles, comic.comicId),
-            insertComicsGenres(comic.genres, comic.comicId),
-            insertComicsPublishDate(comic.publishedDate, comic.comicId),
-            _ref.read(characterDbProvider).handleInsertCharacters(comic, characters),
-          ]);
-        } catch (e) {
-          continue;
-        }
-      }
-    } catch (e) {
-      log(e.toString());
+      log("Successfully sent ${comicsData.length} comics to API for insertion");
+    } catch (e, trace) {
+      log("Error sending comics to API: ${e.toString()}", stackTrace: trace);
       rethrow;
     }
   }
@@ -202,17 +194,14 @@ class ComicsDb {
 
   Future<void> updateComic(ComicModel comic, List<Map<String, dynamic>> characters) async {
     try {
-      Map<String, dynamic> map = comic.toMap();
-      map.remove(KeyNames.id);
+      ComicModel _comic = comic;
       if (comic.ar_synopsis.isEmpty) {
         final translated = await translateComics([comic]);
-        map[KeyNames.ar_synopsis] = translated.first.ar_synopsis;
+        _comic.copyWith(ar_synopsis: translated.first.ar_synopsis);
       }
 
       await Future.wait([
-        _comicsTable.update(map).eq(KeyNames.ani_id, comic.aniId),
-        _ref.read(characterDbProvider).handleInsertCharacters(comic, characters),
-        insertComicsGenres(comic.genres, comic.comicId),
+        insertComics([_comic], characters),
       ]);
     } catch (e) {
       log(e.toString());
@@ -912,5 +901,41 @@ characters {
           },
         )
         .toList();
+  }
+
+  Future<List<ComicPreviewModel>> getExploreComics({required int pageSize}) async {
+    try {
+      final idsRaw = await client.rpc(
+        FunctionNames.get_random_comic_ids,
+        params: {'limit_num': pageSize},
+      );
+
+      final ids =
+          (idsRaw as List)
+              .whereType<Map<String, dynamic>>()
+              .map((row) => row['id']?.toString())
+              .whereType<String>()
+              .toList();
+
+      final data = await _comicsTable.select("*").inFilter(KeyNames.id, ids);
+      return data
+          .map(
+            (c) => ComicPreviewModel(
+              id: c[KeyNames.id],
+              title: c[KeyNames.title_english],
+              poster: c[KeyNames.image],
+              banner: c[KeyNames.banner] ?? "",
+              description:
+                  c[KeyNames.ar_synopsis].toString().isEmpty
+                      ? "سيتم اضافة القصة في وقت لاحق"
+                      : c[KeyNames.ar_synopsis],
+              color: c[KeyNames.theme_color] ?? '0084ff',
+            ),
+          )
+          .toList();
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
   }
 }

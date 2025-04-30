@@ -4,7 +4,8 @@ import 'package:atlas_app/core/common/enum/reviews_enum.dart';
 import 'package:atlas_app/features/assistant/pages/chat_page.dart';
 import 'package:atlas_app/features/auth/db/auth_db.dart';
 import 'package:atlas_app/features/auth/pages/forget_password/confirm_email_page.dart';
-import 'package:atlas_app/features/auth/pages/forget_password/email_field_page.dart';
+import 'package:atlas_app/features/posts/pages/main_feed_page.dart';
+import 'package:atlas_app/features/settings/pages/email_field_page.dart';
 import 'package:atlas_app/features/auth/pages/forget_password/update_password.dart';
 import 'package:atlas_app/features/auth/pages/login_page.dart';
 import 'package:atlas_app/features/auth/pages/register_page.dart';
@@ -27,6 +28,7 @@ import 'package:atlas_app/features/profile/pages/profile_page.dart';
 import 'package:atlas_app/features/reviews/pages/add_comic_review.dart';
 import 'package:atlas_app/features/scrolls/pages/scrolls_page.dart';
 import 'package:atlas_app/features/search/pages/search_page.dart';
+import 'package:atlas_app/features/settings/pages/forgot_password_page.dart';
 import 'package:atlas_app/features/splash/splash_page.dart';
 import 'package:atlas_app/nav_bar.dart';
 
@@ -36,48 +38,53 @@ final navigationShellProvider = Provider<StatefulNavigationShell>((ref) {
   throw UnimplementedError();
 });
 
-final auth = Supabase.instance.client.auth;
 final routerProvider = Provider<GoRouter>((ref) {
+  var userId = Supabase.instance.client.auth.currentSession?.user.id ?? "";
   final authState = ValueNotifier<bool>(ref.read(isLoggedProvider));
 
-  // Subscribe to auth state changes
   ref.listen<bool>(isLoggedProvider, (_, isLoggedIn) {
     authState.value = isLoggedIn;
+    if (isLoggedIn) {
+      userId = Supabase.instance.client.auth.currentSession!.user.id;
+    }
   });
 
   return GoRouter(
     initialLocation: Routes.splashPage,
-    refreshListenable: authState, // This makes the router rebuild when auth state changes
-
+    refreshListenable: authState,
     redirect: (context, state) {
       final splashRoute = state.uri.toString() == Routes.splashPage;
       if (splashRoute) {
-        return null;
+        return null; // Always allow splash page
       }
 
-      // log("user state is $userStateValue");
       final isUserLoggedIn = authState.value;
-
       final loginRoute = state.uri.toString() == Routes.loginPage;
       final registerRoute = state.uri.toString() == Routes.registerPage;
-      final forgetPasswordPage =
-          state.uri.toString() == Routes.forgotPasswordConfirmEmailPage ||
-          state.uri.toString() == Routes.forgotPasswordEmailPage ||
-          state.uri.toString() == Routes.updatePasswordPage;
+      final forgetPasswordPage = [
+        Routes.forgotPasswordConfirmEmailPage,
+        Routes.forgotPasswordEmailPage,
+        Routes.updatePasswordPage,
+        Routes.forgotPassword,
+      ].contains(state.uri.toString());
       final firstPageRoute = state.uri.toString() == Routes.onboardingPage;
 
+      // Allow deep links to proceed if user is logged in
+      if (isUserLoggedIn) {
+        if (loginRoute || registerRoute || firstPageRoute) {
+          return Routes.home; // Redirect to home if trying to access login/register/onboarding
+        }
+        return null; // Allow all other routes (including deep links)
+      }
+
+      // If not logged in, redirect to onboarding unless on allowed routes
       if (!isUserLoggedIn) {
         log("user is not logged in");
         log(state.uri.toString());
         if (loginRoute || registerRoute || forgetPasswordPage || firstPageRoute) {
           return null;
-        } else {
-          return Routes.onboardingPage;
         }
-      }
-
-      if (isUserLoggedIn && (loginRoute || registerRoute || firstPageRoute)) {
-        return Routes.home;
+        return Routes.onboardingPage;
       }
 
       return null;
@@ -86,7 +93,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       StatefulShellRoute.indexedStack(
         branches: [
           StatefulShellBranch(
-            routes: [buildRoute(path: Routes.home, child: const SizedBox(), fade: true)],
+            routes: [buildRoute(path: Routes.home, child: const MainFeedPage(), fade: true)],
           ),
           StatefulShellBranch(
             routes: [buildRoute(path: Routes.aiPage, child: const AssistantChatPage(), fade: true)],
@@ -105,11 +112,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           StatefulShellBranch(
             routes: [
-              buildRoute(
-                path: Routes.user,
-                child: ProfilePage(userId: auth.currentSession?.user.id ?? ""),
-                fade: true,
-              ),
+              buildRoute(path: Routes.profile, child: ProfilePage(userId: userId), fade: true),
             ],
           ),
         ],
@@ -132,6 +135,22 @@ final routerProvider = Provider<GoRouter>((ref) {
       buildRoute(path: Routes.novelReadChapter, child: const ChapterReadingPage(), fade: true),
       buildRoute(path: Routes.chapterCommentsPage, child: const ChapterCommentsPage(), fade: true),
       buildRoute(path: Routes.editProfile, child: const EditProfileScreen(), fade: true),
+      buildRoute(path: Routes.addNovelPage, child: const AddNovelPage(edit: false), fade: true),
+
+      GoRoute(
+        path: Routes.forgotPassword,
+        name: Routes.forgotPassword,
+        pageBuilder: (context, state) {
+          final email = ((state.extra as Map<String, dynamic>)["email"] ?? "").toString().trim();
+
+          return CustomTransitionPage(
+            child: ForgotPasswordPage(email: email),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+          );
+        },
+      ),
 
       GoRoute(
         path: "${Routes.addComicReview}/:update/:type",
@@ -161,7 +180,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           );
         },
       ),
-
       GoRoute(
         path: "${Routes.addNovelPage}/:edit",
         pageBuilder: (context, state) {

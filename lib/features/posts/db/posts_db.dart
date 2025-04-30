@@ -1,13 +1,21 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:atlas_app/core/common/constants/function_names.dart';
 import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/core/common/constants/view_names.dart';
 import 'package:atlas_app/core/common/enum/hashtag_enum.dart';
+import 'package:atlas_app/core/common/utils/encrypt.dart';
 import 'package:atlas_app/core/common/utils/extract_key_words.dart';
 import 'package:atlas_app/core/common/widgets/slash_parser.dart';
+import 'package:atlas_app/core/services/user_vector_service.dart';
 import 'package:atlas_app/features/hashtags/db/hashtags_db.dart';
+import 'package:atlas_app/features/notifications/db/notifications_db.dart';
+import 'package:atlas_app/features/notifications/interfaces/notifications_interface.dart';
+import 'package:atlas_app/features/posts/models/post_interaction_model.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 final postsDbProvider = Provider<PostsDb>((ref) {
   return PostsDb();
@@ -17,12 +25,14 @@ class PostsDb {
   SupabaseClient get _client => Supabase.instance.client;
   SupabaseQueryBuilder get _postsView => _client.from(ViewNames.post_details_with_mentions);
   SupabaseQueryBuilder get _postsTable => _client.from(TableNames.posts);
-  SupabaseQueryBuilder get _postLikesTable => _client.from(TableNames.post_likes);
   SupabaseQueryBuilder get _mentionsTable => _client.from(TableNames.post_mentions);
   SupabaseQueryBuilder get _pinnedPostsTable => _client.from(TableNames.pinned_posts);
   SupabaseQueryBuilder get _savedPostsTable => _client.from(TableNames.saved_posts);
+  SupabaseQueryBuilder get _postInteractionsTable => _client.from(TableNames.post_interactions);
 
+  static Dio get _dio => Dio();
   HashtagsDb get hashtagDb => HashtagsDb();
+  NotificationsDb get notificationsDb => NotificationsDb();
 
   Future<List<PostModel>> getUserPosts({
     required int startIndex,
@@ -46,13 +56,14 @@ class PostsDb {
   Future<void> insertPost(
     String postId,
     String post,
-    String userId,
+    UserModel user,
     List<String>? images, {
     bool canRepost = true,
     bool canComment = true,
     String? parentId,
   }) async {
     try {
+      final userId = user.userId;
       await _postsTable.insert({
         KeyNames.id: postId,
         KeyNames.content: post,
@@ -71,8 +82,44 @@ class PostsDb {
         }
       }
 
-      await Future.wait([hashtagDb.insertNewHashTag(hashtags), insertMentions(mentions, postId)]);
-      await hashtagDb.insertPostHashTag(hashtags, postId);
+      List<String> userMentions =
+          extractMentionKeywords(post).where((m) => m != user.username.toLowerCase()).toList();
+
+      try {
+        await Future.wait([
+          hashtagDb.insertNewHashTag(hashtags),
+          insertMentions(mentions, postId),
+          if (userMentions.isNotEmpty)
+            notificationsDb.sendMentionNotifications(userMentions, 'p', user),
+        ]);
+      } catch (e) {
+        rethrow;
+      }
+      await Future.wait([
+        hashtagDb.insertPostHashTag(hashtags, postId),
+        insertEmbedding(id: postId, content: post, userId: userId),
+      ]);
+      await updateUserVector(userId);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> insertEmbedding({
+    required String id,
+    required String content,
+    required String userId,
+  }) async {
+    try {
+      final body = jsonEncode({
+        "type": "post",
+        "content": content,
+        "content_id": id,
+        "user_id": userId,
+      });
+      final headers = await generateAuthHeaders();
+      await _dio.post('${appAPI}embedding', options: Options(headers: headers), data: body);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -146,7 +193,24 @@ class PostsDb {
 
   Future<void> deletePost(String postId) async {
     try {
-      await _postsTable.delete().eq(KeyNames.id, postId);
+      await Future.wait([
+        _postsTable.delete().eq(KeyNames.id, postId),
+        removePostVectorPoint(postId),
+      ]);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> removePostVectorPoint(String id) async {
+    try {
+      final headers = await generateAuthHeaders();
+      await _dio.post(
+        "${appAPI}delete-post",
+        options: Options(headers: headers),
+        data: jsonEncode({"id": id}),
+      );
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -155,17 +219,12 @@ class PostsDb {
 
   Future<void> insertMentions(List<SlashEntity> mentions, String postId) async {
     try {
-      final data =
-          mentions
-              .map(
-                (mention) => {
-                  KeyNames.entity_id: mention.id,
-                  KeyNames.mention_type: mention.type == 'char' ? "character" : mention.type,
-                  KeyNames.post_id: postId,
-                },
-              )
-              .toList();
-      await _mentionsTable.upsert(data);
+      for (final mention in mentions) {
+        await _client.rpc(
+          FunctionNames.upsert_post_mention,
+          params: {"p_post_id": postId, "p_entity_id": mention.id, "p_mention_type": mention.type},
+        );
+      }
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -192,22 +251,20 @@ class PostsDb {
     }
   }
 
-  Future<void> handleUserLike(PostModel post, String userId) async {
+  Future<void> handleUserLike(PostModel post, UserModel user) async {
     try {
       log("Database operation: post.userLiked = ${post.userLiked}");
 
-      if (!post.userLiked) {
-        // User IS liking the post now, so INSERT a like
-        log("Inserting like");
-        await _postLikesTable.insert({KeyNames.userId: userId, KeyNames.post_id: post.postId});
-      } else {
-        // User is NOT liking the post now, so DELETE the like
-        log("Deleting like");
-        await _postLikesTable
-            .delete()
-            .eq(KeyNames.post_id, post.postId)
-            .eq(KeyNames.userId, userId);
-      }
+      log("Inserting like");
+      final notification = NotificationsInterface.postLikeNotification(
+        userId: post.userId,
+        username: user.username,
+      );
+      await Future.wait([
+        if ((user.userId != post.userId) && !post.userLiked)
+          notificationsDb.sendNotificatiosn(notification),
+        _client.rpc(FunctionNames.toggle_post_like, params: {'target_post_id': post.postId}),
+      ]);
     } catch (e) {
       log("Database error: ${e.toString()}");
       rethrow;
@@ -233,6 +290,90 @@ class PostsDb {
 
       final data = await query;
       return data.map((post) => PostModel.fromMap(post)).toList();
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<List<String>> fetchUserRecommendation({required String userId, required int page}) async {
+    try {
+      final url = '${appAPI}recommend-posts?user_id=$userId&page=$page';
+      final headers = await generateAuthHeaders();
+      final options = Options(headers: headers);
+      final res = await _dio.get(url, options: options);
+      if (res.statusCode != null && res.statusCode! >= 200 && res.statusCode! <= 299) {
+        if (res.data == null) {
+          log('Error: Response data is null');
+          return [];
+        }
+
+        log('Response data: ${res.data.toString()}');
+
+        final data = jsonDecode(res.data.toString());
+
+        if (data is List) {
+          return List<String>.from(
+            data.where((item) => item != null).map((item) => item.toString()),
+          );
+        } else {
+          log('Error: Expected a List but got ${data.runtimeType}');
+          return [];
+        }
+      }
+      return [];
+    } catch (e) {
+      log(e.toString());
+      return [];
+    }
+  }
+
+  Future<List<PostModel>> getMainFeeds({
+    required String userId,
+    required int page,
+    required int startAt,
+    required int pageSize,
+  }) async {
+    try {
+      final ids = await fetchUserRecommendation(userId: userId, page: page);
+      var query = _postsView.select("*");
+
+      if (ids.isNotEmpty) {
+        query = query.inFilter(KeyNames.post_id, ids);
+        if (!kDebugMode) {
+          //remove personal posts from the feeds in prod
+          query = query.neq(KeyNames.userId, userId);
+        }
+      } else {
+        query.range(startAt, startAt + pageSize - 1);
+      }
+
+      final data = await query;
+      final idIndexMap = {for (var i = 0; i < ids.length; i++) ids[i]: i};
+      data.sort(
+        (a, b) => (idIndexMap[a[KeyNames.post_id]] ?? ids.length).compareTo(
+          idIndexMap[b[KeyNames.post_id]] ?? ids.length,
+        ),
+      );
+      return data.map((p) => PostModel.fromMap(p)).toList();
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> insetPostInteraction(PostInteractionModel interactionModel) async {
+    try {
+      await _postInteractionsTable.insert(interactionModel.toMap());
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> updateInteractionModel(PostInteractionModel interactionModel) async {
+    try {
+      await _postInteractionsTable.insert(interactionModel.toMap());
     } catch (e) {
       log(e.toString());
       rethrow;

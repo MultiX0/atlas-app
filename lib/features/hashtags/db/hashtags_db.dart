@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:atlas_app/core/common/constants/function_names.dart';
 import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/core/common/constants/view_names.dart';
 import 'package:atlas_app/features/hashtags/models/hashtag_model.dart';
@@ -11,24 +12,15 @@ final hashtagsDbProvider = Provider<HashtagsDb>((ref) {
 
 class HashtagsDb {
   SupabaseClient get _client => Supabase.instance.client;
-  SupabaseQueryBuilder get _hashTagsTable => _client.from(TableNames.hashtags);
+  // SupabaseQueryBuilder get _hashTagsTable => _client.from(TableNames.hashtags);
   SupabaseQueryBuilder get _postsHashtags => _client.from(TableNames.post_hashtags);
   SupabaseQueryBuilder get _hashTagsView => _client.from(ViewNames.hashtag_post_counts);
 
   Future<List<HashtagModel>> insertNewHashTag(List<String> hashtags) async {
     try {
-      final now = DateTime.now().toIso8601String();
-      final _data =
-          hashtags
-              .map(
-                (hashtag) => {
-                  KeyNames.hashtag: hashtag,
-                  KeyNames.created_at: now,
-                  KeyNames.lpc_at: now,
-                },
-              )
-              .toList();
-      await _hashTagsTable.upsert(_data, onConflict: KeyNames.hashtag, ignoreDuplicates: false);
+      for (final hashtag in hashtags) {
+        await _client.rpc(FunctionNames.upsert_hashtag, params: {"p_hashtag": hashtag});
+      }
       return hashtags.map((hash) => HashtagModel(hashtag: hash, postCount: 0)).toList();
     } catch (e) {
       log(e.toString());

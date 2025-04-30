@@ -23,7 +23,7 @@ plugins {
     id("com.google.gms.google-services") version("4.3.15") apply false
     // END: FlutterFire Configuration
     // id("com.android.application") version "8.7.0" apply false
-    id("org.jetbrains.kotlin.android") version "1.9.24" apply false // Or latest
+    id("org.jetbrains.kotlin.android") version "2.0.0" apply false // Or latest
     // id("org.jetbrains.kotlin.android") version "1.8.22" apply false
 }
 

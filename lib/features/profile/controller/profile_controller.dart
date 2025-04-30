@@ -4,7 +4,6 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
-import 'package:atlas_app/core/common/utils/image_to_avif_convert.dart';
 import 'package:atlas_app/core/common/utils/upload_storage.dart';
 import 'package:atlas_app/features/auth/controller/auth_controller.dart';
 import 'package:atlas_app/features/auth/db/auth_db.dart';
@@ -94,25 +93,20 @@ class ProfileController extends StateNotifier<bool> {
         }
       }
 
-      String avatarLink;
+      String? avatarLink;
       String? bannerLink;
-      final data = await Future.wait<dynamic>([
-        if (avatar != null) uploadImage(avatar, me.userId, avatar: true),
-        if (banner != null) uploadImage(banner, me.userId, avatar: false),
-      ]);
 
-      if (data.isNotEmpty) {
-        avatarLink = data[0] ?? avatarUrl;
-        bannerLink = data[1] ?? bannerUrl;
-      } else {
-        avatarLink = avatarUrl;
-        bannerLink = bannerUrl;
+      if (avatar != null) {
+        avatarLink = await uploadImage(avatar, me.userId, avatar: true);
+      }
+      if (banner != null) {
+        bannerLink = await uploadImage(banner, me.userId, avatar: false);
       }
 
       final updatedUser = me.copyWith(
         username: userName,
-        avatar: avatarLink,
-        banner: bannerLink,
+        avatar: avatarLink ?? avatarUrl,
+        banner: bannerLink ?? bannerUrl,
         fullName: fullName,
         bio: bio,
       );
@@ -135,21 +129,12 @@ class ProfileController extends StateNotifier<bool> {
   Future<String> uploadImage(File image, String userId, {required bool avatar}) async {
     try {
       String link;
-      final avifImage = await AvifConverter.convertToAvif(image, quality: 80);
-      if (avifImage != null) {
-        link = await UploadStorage.uploadImages(
-          image: avifImage,
-          path:
-              '/users/$userId/${avatar ? 'avatar-${uuid.v4()}.avif' : 'banner-${uuid.v4()}.avif'}',
-          quiality: 80,
-        );
-      } else {
-        link = await UploadStorage.uploadImages(
-          image: image,
-          path: '/users/$userId/${avatar ? 'avatar-${uuid.v4()}.png' : 'banner-${uuid.v4()}.png'}',
-          quiality: 80,
-        );
-      }
+
+      link = await UploadStorage.uploadImages(
+        image: image,
+        path: '/users/$userId/${avatar ? 'avatar-${uuid.v4()}.png' : 'banner-${uuid.v4()}.png'}',
+        quiality: 60,
+      );
 
       return link;
     } catch (e, trace) {
@@ -167,15 +152,11 @@ class ProfileController extends StateNotifier<bool> {
         followers_count:
             (oldUser.followed ?? false) ? oldUser.followers_count - 1 : oldUser.followers_count + 1,
       );
-
-      _ref
-          .read(userState.notifier)
-          .updateState(
-            me.copyWith(
-              following_count:
-                  (oldUser?.followed ?? false) ? me.following_count - 1 : me.following_count + 1,
-            ),
-          );
+      UserModel newMe = me.copyWith(
+        following_count:
+            (oldUser?.followed ?? false) ? me.following_count - 1 : me.following_count + 1,
+      );
+      _ref.read(userState.notifier).updateState(newMe);
 
       await _profileDb.toggleFollow(targetId);
     } catch (e) {

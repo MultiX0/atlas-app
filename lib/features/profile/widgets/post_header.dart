@@ -6,9 +6,10 @@ import 'package:atlas_app/router.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class PostHeaderWidget extends StatelessWidget {
-  const PostHeaderWidget({super.key, required this.post});
+  const PostHeaderWidget({super.key, required this.post, required this.profileNav});
 
   final PostModel post;
+  final bool profileNav;
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +18,14 @@ class PostHeaderWidget extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 5),
       child: Row(
         children: [
-          CachedAvatar(avatar: user.avatar),
+          GestureDetector(
+            onTap: () {
+              if (profileNav) {
+                context.push("${Routes.user}/${post.userId}");
+              }
+            },
+            child: CachedAvatar(avatar: user.avatar),
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -80,7 +88,7 @@ class PostHeaderWidget extends StatelessWidget {
           ),
           Consumer(
             builder: (context, ref, _) {
-              final me = ref.watch(userState.select((state) => state.user!));
+              final me = ref.watch(userState).user!;
               return IconButton(
                 onPressed: () => postOptions(context, me, ref),
                 icon: const Icon(TablerIcons.dots, color: AppColors.mutedSilver),

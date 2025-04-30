@@ -118,10 +118,7 @@ class NovelModel {
       user: UserModel.fromMap(map[KeyNames.user]),
       poster: map[KeyNames.poster] ?? "",
       userId: map[KeyNames.userId] ?? "",
-      color:
-          map[KeyNames.theme_color] == null
-              ? AppColors.primary
-              : HexColor(map[KeyNames.theme_color]),
+      color: map[KeyNames.color] == null ? AppColors.primary : HexColor(map[KeyNames.color]),
     );
   }
 }

@@ -1,3 +1,5 @@
+import 'package:atlas_app/features/explore/pages/explore_comics_page.dart';
+import 'package:atlas_app/features/explore/pages/explore_novels_page.dart';
 import 'package:atlas_app/imports.dart';
 
 class ExplorePage extends ConsumerStatefulWidget {
@@ -44,7 +46,10 @@ class _ExplorePageState extends ConsumerState<ExplorePage> with SingleTickerProv
           tabs: const [Tab(text: "روايات"), Tab(text: "مانهوا")],
         ),
       ),
-      body: TabBarView(controller: _controller, children: const [SizedBox(), SizedBox()]),
+      body: TabBarView(
+        controller: _controller,
+        children: const [ExploreNovelsPage(), ExploreComicsPage()],
+      ),
     );
   }
 }

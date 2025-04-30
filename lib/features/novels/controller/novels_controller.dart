@@ -14,6 +14,7 @@ import 'package:atlas_app/features/novels/models/chapter_model.dart';
 import 'package:atlas_app/features/novels/models/novel_chapter_comment_model.dart';
 import 'package:atlas_app/features/novels/models/novel_chapter_comment_reply_model.dart';
 import 'package:atlas_app/features/novels/models/novel_model.dart';
+import 'package:atlas_app/features/novels/models/novel_preview_model.dart';
 import 'package:atlas_app/features/novels/models/novels_genre_model.dart';
 import 'package:atlas_app/features/novels/providers/chapter_comments_replies.dart';
 import 'package:atlas_app/features/novels/providers/chapter_comments_state.dart';
@@ -29,6 +30,14 @@ import 'package:uuid/uuid.dart';
 final novelsControllerProvider = StateNotifierProvider<NovelsController, bool>(
   (ref) => NovelsController(ref: ref),
 );
+
+final getUserNovelsProvider = FutureProvider.family<List<NovelPreviewModel>, String>((
+  ref,
+  id,
+) async {
+  final controller = ref.watch(novelsControllerProvider.notifier);
+  return await controller.getUserNovels(id);
+});
 
 class NovelsController extends StateNotifier<bool> {
   final Ref _ref;
@@ -46,6 +55,15 @@ class NovelsController extends StateNotifier<bool> {
       return data;
     } catch (e) {
       state = false;
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<List<NovelPreviewModel>> getUserNovels(String userId) async {
+    try {
+      return await db.getUserNovels(userId);
+    } catch (e) {
       log(e.toString());
       rethrow;
     }
