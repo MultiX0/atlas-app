@@ -30,4 +30,5 @@ class FunctionNames {
   static const upsert_user_fcm_token = 'upsert_user_fcm_token';
   static const upsert_hashtag = 'upsert_hashtag';
   static const upsert_post_mention = 'upsert_post_mention';
+  static const toggle_post_like = 'toggle_post_like';
 }

@@ -10,6 +10,8 @@ import 'package:atlas_app/core/common/utils/extract_key_words.dart';
 import 'package:atlas_app/core/common/widgets/slash_parser.dart';
 import 'package:atlas_app/core/services/user_vector_service.dart';
 import 'package:atlas_app/features/hashtags/db/hashtags_db.dart';
+import 'package:atlas_app/features/notifications/db/notifications_db.dart';
+import 'package:atlas_app/features/notifications/interfaces/notifications_interface.dart';
 import 'package:atlas_app/features/posts/models/post_interaction_model.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:dio/dio.dart';
@@ -23,7 +25,6 @@ class PostsDb {
   SupabaseClient get _client => Supabase.instance.client;
   SupabaseQueryBuilder get _postsView => _client.from(ViewNames.post_details_with_mentions);
   SupabaseQueryBuilder get _postsTable => _client.from(TableNames.posts);
-  SupabaseQueryBuilder get _postLikesTable => _client.from(TableNames.post_likes);
   SupabaseQueryBuilder get _mentionsTable => _client.from(TableNames.post_mentions);
   SupabaseQueryBuilder get _pinnedPostsTable => _client.from(TableNames.pinned_posts);
   SupabaseQueryBuilder get _savedPostsTable => _client.from(TableNames.saved_posts);
@@ -31,6 +32,7 @@ class PostsDb {
 
   static Dio get _dio => Dio();
   HashtagsDb get hashtagDb => HashtagsDb();
+  NotificationsDb get notificationsDb => NotificationsDb();
 
   Future<List<PostModel>> getUserPosts({
     required int startIndex,
@@ -54,13 +56,14 @@ class PostsDb {
   Future<void> insertPost(
     String postId,
     String post,
-    String userId,
+    UserModel user,
     List<String>? images, {
     bool canRepost = true,
     bool canComment = true,
     String? parentId,
   }) async {
     try {
+      final userId = user.userId;
       await _postsTable.insert({
         KeyNames.id: postId,
         KeyNames.content: post,
@@ -79,7 +82,19 @@ class PostsDb {
         }
       }
 
-      await Future.wait([hashtagDb.insertNewHashTag(hashtags), insertMentions(mentions, postId)]);
+      List<String> userMentions =
+          extractMentionKeywords(post).where((m) => m != user.username.toLowerCase()).toList();
+
+      try {
+        await Future.wait([
+          hashtagDb.insertNewHashTag(hashtags),
+          insertMentions(mentions, postId),
+          if (userMentions.isNotEmpty)
+            notificationsDb.sendMentionNotifications(userMentions, 'p', user),
+        ]);
+      } catch (e) {
+        rethrow;
+      }
       await Future.wait([
         hashtagDb.insertPostHashTag(hashtags, postId),
         insertEmbedding(id: postId, content: post, userId: userId),
@@ -178,7 +193,24 @@ class PostsDb {
 
   Future<void> deletePost(String postId) async {
     try {
-      await _postsTable.delete().eq(KeyNames.id, postId);
+      await Future.wait([
+        _postsTable.delete().eq(KeyNames.id, postId),
+        removePostVectorPoint(postId),
+      ]);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> removePostVectorPoint(String id) async {
+    try {
+      final headers = await generateAuthHeaders();
+      await _dio.post(
+        "${appAPI}delete-post",
+        options: Options(headers: headers),
+        data: jsonEncode({"id": id}),
+      );
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -219,22 +251,20 @@ class PostsDb {
     }
   }
 
-  Future<void> handleUserLike(PostModel post, String userId) async {
+  Future<void> handleUserLike(PostModel post, UserModel user) async {
     try {
       log("Database operation: post.userLiked = ${post.userLiked}");
 
-      if (!post.userLiked) {
-        // User IS liking the post now, so INSERT a like
-        log("Inserting like");
-        await _postLikesTable.insert({KeyNames.userId: userId, KeyNames.post_id: post.postId});
-      } else {
-        // User is NOT liking the post now, so DELETE the like
-        log("Deleting like");
-        await _postLikesTable
-            .delete()
-            .eq(KeyNames.post_id, post.postId)
-            .eq(KeyNames.userId, userId);
-      }
+      log("Inserting like");
+      final notification = NotificationsInterface.postLikeNotification(
+        userId: post.userId,
+        username: user.username,
+      );
+      await Future.wait([
+        if ((user.userId != post.userId) && !post.userLiked)
+          notificationsDb.sendNotificatiosn(notification),
+        _client.rpc(FunctionNames.toggle_post_like, params: {'target_post_id': post.postId}),
+      ]);
     } catch (e) {
       log("Database error: ${e.toString()}");
       rethrow;

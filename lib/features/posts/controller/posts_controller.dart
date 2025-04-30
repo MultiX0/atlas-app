@@ -60,7 +60,7 @@ class PostsController extends StateNotifier<bool> {
       await db.insertPost(
         postId,
         postContent,
-        user.userId,
+        user,
         links,
         canComment: canComment,
         canRepost: canRepost,
@@ -129,12 +129,10 @@ class PostsController extends StateNotifier<bool> {
     }
   }
 
-  Future<void> likesMiddleware({
-    required String userId,
-    required PostModel post,
-    required PostLikeEnum postType,
-  }) async {
+  Future<void> likesMiddleware({required PostModel post, required PostLikeEnum postType}) async {
     try {
+      log(postType.name);
+      final me = _ref.read(userState.select((s) => s.user!));
       log("Before update: post.userLiked = ${post.userLiked}");
       final hashtag = _ref.read(selectedHashtagProvider);
       final newPost = post.copyWith(
@@ -144,21 +142,22 @@ class PostsController extends StateNotifier<bool> {
       switch (postType) {
         case PostLikeEnum.HASHTAG:
           _ref.read(hashtagStateProvider(hashtag).notifier).likePost(postModel: newPost);
+          _ref.read(profilePostsStateProvider(me.userId).notifier).likePost(postModel: newPost);
+
           log("After state update: expecting userLiked = ${newPost.userLiked}");
-          await db.handleUserLike(post, userId);
-          _ref.read(hashtagStateProvider(hashtag).notifier).likePost(postModel: newPost);
+          await db.handleUserLike(post, me);
           break;
         case PostLikeEnum.PROFILE:
-          _ref.read(profilePostsStateProvider(post.userId).notifier).likePost(postModel: newPost);
+          _ref.read(profilePostsStateProvider(me.userId).notifier).likePost(postModel: newPost);
+          _ref.read(hashtagStateProvider(hashtag).notifier).likePost(postModel: newPost);
+
           log("After state update: expecting userLiked = ${newPost.userLiked}");
-          await db.handleUserLike(post, userId);
-          _ref.read(hashtagStateProvider(post.userId).notifier).likePost(postModel: newPost);
+          await db.handleUserLike(post, me);
           break;
         case PostLikeEnum.GENERAL:
-          _ref.read(mainFeedStateProvider(post.userId).notifier).likePost(postModel: newPost);
+          _ref.read(mainFeedStateProvider(me.userId).notifier).likePost(postModel: newPost);
           log("After state update: expecting userLiked = ${newPost.userLiked}");
-          await db.handleUserLike(post, userId);
-          _ref.read(mainFeedStateProvider(post.userId).notifier).likePost(postModel: newPost);
+          await db.handleUserLike(post, me);
           break;
       }
     } catch (e) {

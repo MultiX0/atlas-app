@@ -29,12 +29,12 @@ class ReviewsDb {
 
   PostsDb get _postsDb => PostsDb();
 
-  Future<void> insertComicReview(ComicReviewModel review) async {
+  Future<void> insertComicReview(ComicReviewModel review, UserModel me) async {
     try {
       final postId = uuid.v4();
       await Future.wait([
         _comicReviewsTable.insert(review.toMap()),
-        _postsDb.insertPost(postId, review.review, review.userId, []),
+        _postsDb.insertPost(postId, review.review, me, []),
       ]);
 
       await _postsDb.insertMentions([SlashEntity('comic', review.comicId, "")], postId);
@@ -44,12 +44,12 @@ class ReviewsDb {
     }
   }
 
-  Future<void> insertNovelReview(NovelReviewModel review) async {
+  Future<void> insertNovelReview(NovelReviewModel review, UserModel user) async {
     try {
       final postId = uuid.v4();
       await Future.wait([
         _novelReviewsTable.insert(review.toMap()),
-        _postsDb.insertPost(postId, review.review, review.userId, []),
+        _postsDb.insertPost(postId, review.review, user, []),
         _postsDb.insertMentions([SlashEntity('novel', review.novelId, "")], postId),
       ]);
     } catch (e) {

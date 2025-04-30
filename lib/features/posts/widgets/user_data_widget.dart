@@ -1,3 +1,4 @@
+import 'package:atlas_app/core/common/widgets/cached_avatar.dart';
 import 'package:atlas_app/imports.dart';
 
 // Widget for user data display
@@ -24,11 +25,7 @@ class UserDataWidget extends ConsumerWidget {
             ],
           ),
           const SizedBox(width: 15),
-          CircleAvatar(
-            radius: 25,
-            backgroundColor: AppColors.primaryAccent,
-            backgroundImage: CachedNetworkAvifImageProvider(me.avatar),
-          ),
+          CachedAvatar(avatar: me.avatar, raduis: 25),
         ],
       ),
     );

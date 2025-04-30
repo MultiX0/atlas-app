@@ -65,7 +65,7 @@ class ReviewsController extends StateNotifier<bool> {
         reviewsCount: 0,
       );
 
-      await db.insertComicReview(review);
+      await db.insertComicReview(review, me.user!);
       _ref.read(manhwaReviewsStateProvider(comicId).notifier).addReview(review);
       context.loaderOverlay.hide();
       CustomToast.success("تم نشر مراجعتك بنجاح");
@@ -122,7 +122,7 @@ class ReviewsController extends StateNotifier<bool> {
         reviewsCount: 0,
       );
 
-      await db.insertNovelReview(review);
+      await db.insertNovelReview(review, me.user!);
       _ref.read(novelReviewsState(novelId).notifier).addReview(review);
       context.loaderOverlay.hide();
       CustomToast.success("تم نشر مراجعتك بنجاح");

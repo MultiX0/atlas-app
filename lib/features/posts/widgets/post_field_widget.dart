@@ -191,7 +191,7 @@ class _PostFieldWidgetState extends ConsumerState<PostFieldWidget> {
                           backgroundColor: AppColors.blackColor,
                           backgroundImage:
                               data['photo']?.isNotEmpty == true
-                                  ? CachedNetworkAvifImageProvider(data['photo'])
+                                  ? CachedNetworkImageProvider(data['photo'])
                                   : null,
                           child:
                               data['photo']?.isNotEmpty != true ? const Icon(Icons.person) : null,

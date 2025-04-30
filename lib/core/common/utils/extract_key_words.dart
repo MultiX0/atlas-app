@@ -13,6 +13,12 @@ String? extractMentionKeyword(String text) {
   return null;
 }
 
+/// Extracts all mention keywords (text after each @) from the input
+List<String> extractMentionKeywords(String text) {
+  final matches = RegExp(r'@(\w+)').allMatches(text);
+  return matches.map((m) => m.group(1)!.toLowerCase().trim()).toList();
+}
+
 /// Extract hashtag query - gets the text after # symbol being typed
 List<String> extractHashtagKeyword(String text) {
   final match = RegExp(RTUtils.hashPattern).allMatches(text);

@@ -80,7 +80,7 @@ class PostWidget extends ConsumerWidget {
       onDebounce: () async {
         await ref
             .read(postsControllerProvider.notifier)
-            .likesMiddleware(userId: userId, post: post, postType: postLikeType);
+            .likesMiddleware(post: post, postType: postLikeType);
       },
     );
 

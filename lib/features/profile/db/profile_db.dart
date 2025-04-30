@@ -59,4 +59,15 @@ class ProfileDb {
       rethrow;
     }
   }
+
+  Future<List<String>> getUserIdBasedOnUsername(List<String> users) async {
+    try {
+      final data = await _usersTable.select("id").inFilter(KeyNames.username, users);
+      log(data.toString());
+      return data.map((d) => d['id'].toString()).toList();
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
 }
