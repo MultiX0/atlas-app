@@ -8,6 +8,7 @@ import 'package:atlas_app/core/common/utils/image_to_avif_convert.dart';
 import 'package:atlas_app/core/common/utils/upload_storage.dart';
 import 'package:atlas_app/features/novels/models/novel_review_model.dart';
 import 'package:atlas_app/features/novels/providers/novel_reviews_state.dart';
+import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/features/reviews/db/reviews_db.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:loader_overlay/loader_overlay.dart';
@@ -96,6 +97,7 @@ class ReviewsController extends StateNotifier<bool> {
   }) async {
     try {
       final me = _ref.read(userState);
+      final novel = _ref.read(selectedNovelProvider)!;
       state = true;
       context.loaderOverlay.show();
       final _images = await uploadImages(images, dir: '/novels/$novelId', userId: userId);
@@ -122,7 +124,7 @@ class ReviewsController extends StateNotifier<bool> {
         reviewsCount: 0,
       );
 
-      await db.insertNovelReview(review, me.user!);
+      await db.insertNovelReview(review, me.user!, novel.userId);
       _ref.read(novelReviewsState(novelId).notifier).addReview(review);
       context.loaderOverlay.hide();
       CustomToast.success("تم نشر مراجعتك بنجاح");
@@ -154,13 +156,14 @@ class ReviewsController extends StateNotifier<bool> {
     }
   }
 
-  Future<void> handleNovelReviewLike(NovelReviewModel review, String userId, int index) async {
+  Future<void> handleNovelReviewLike(NovelReviewModel review, int index) async {
     try {
+      final me = _ref.read(userState.select((s) => s.user!));
       _ref
           .read(novelReviewsState(review.novelId).notifier)
           .handleLocalLike(review.copyWith(i_liked: !review.i_liked), index);
 
-      await db.handleNovelReviewLike(review, userId);
+      await db.handleNovelReviewLike(review, me);
     } catch (e) {
       _ref
           .read(novelReviewsState(review.novelId).notifier)

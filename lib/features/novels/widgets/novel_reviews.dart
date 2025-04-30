@@ -89,7 +89,7 @@ class _ReviewsWidgetState extends ConsumerState<NovelReviewsWidget> {
           onLike: (id, i, isLiked) async {
             ref
                 .read(reviewsControllerProvider.notifier)
-                .handleNovelReviewLike(review.copyWith(i_liked: !isLiked), id, i);
+                .handleNovelReviewLike(review.copyWith(i_liked: !isLiked), i);
             return true;
           },
           onRepost: () {

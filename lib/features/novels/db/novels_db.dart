@@ -6,6 +6,8 @@ import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/core/common/constants/view_names.dart';
 import 'package:atlas_app/core/common/utils/encrypt.dart';
 import 'package:atlas_app/core/services/user_vector_service.dart';
+import 'package:atlas_app/features/notifications/db/notifications_db.dart';
+import 'package:atlas_app/features/notifications/interfaces/notifications_interface.dart';
 import 'package:atlas_app/features/novels/models/chapter_draft_model.dart';
 import 'package:atlas_app/features/novels/models/chapter_model.dart';
 import 'package:atlas_app/features/novels/models/novel_chapter_comment_model.dart';
@@ -43,6 +45,7 @@ class NovelsDb {
       _client.from(TableNames.novel_chapter_comment_replies);
 
   static Dio get _dio => Dio();
+  NotificationsDb get _notificationsDb => NotificationsDb();
 
   // SupabaseQueryBuilder get _novelsFavoriteTable => _client.from(TableNames.users_favorite_novels);
 
@@ -122,15 +125,27 @@ class NovelsDb {
     }
   }
 
-  Future<void> handleAddNewChapterCommentReply(NovelChapterCommentReplyWithLikes reply) async {
+  Future<void> handleAddNewChapterCommentReply(
+    NovelChapterCommentReplyWithLikes reply,
+    NovelModel novel,
+  ) async {
     try {
-      await _novelChapterCommentRepliesTable.insert({
-        KeyNames.id: reply.id,
-        KeyNames.userId: reply.userId,
-        KeyNames.content: reply.content,
-        KeyNames.parent_comment_author_id: reply.parentCommentAuthorId,
-        KeyNames.comment_id: reply.commentId,
-      });
+      final notification = NotificationsInterface.novelChapterLikeCommentNotification(
+        userId: reply.parentCommentAuthorId,
+        username: reply.user.username,
+        novelTitle: novel.title,
+      );
+      await Future.wait([
+        if (reply.userId != reply.parentCommentAuthorId)
+          _notificationsDb.sendNotificatiosn(notification),
+        _novelChapterCommentRepliesTable.insert({
+          KeyNames.id: reply.id,
+          KeyNames.userId: reply.userId,
+          KeyNames.content: reply.content,
+          KeyNames.parent_comment_author_id: reply.parentCommentAuthorId,
+          KeyNames.comment_id: reply.commentId,
+        }),
+      ]);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -146,9 +161,17 @@ class NovelsDb {
     }
   }
 
-  Future<void> handleFavorite(NovelModel novel) async {
+  Future<void> handleFavorite(NovelModel novel, UserModel user) async {
     try {
-      await _client.rpc(FunctionNames.toggle_favorite_novel, params: {'p_novel_id': novel.id});
+      final notification = NotificationsInterface.novelLikeNotification(
+        userId: novel.userId,
+        username: user.username,
+      );
+      Future.wait([
+        if (novel.userId != user.userId && !novel.isFavorite)
+          _notificationsDb.sendNotificatiosn(notification),
+        _client.rpc(FunctionNames.toggle_favorite_novel, params: {'p_novel_id': novel.id}),
+      ]);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -164,9 +187,18 @@ class NovelsDb {
     }
   }
 
-  Future<void> handleChapterLike(ChapterModel chapter) async {
+  Future<void> handleChapterLike(ChapterModel chapter, UserModel user, NovelModel novel) async {
     try {
-      await _client.rpc(FunctionNames.toggle_chapter_like, params: {'p_chapter_id': chapter.id});
+      final notification = NotificationsInterface.novelChapterLikeNotification(
+        userId: novel.userId,
+        username: user.username,
+        novelTitle: novel.title,
+      );
+      Future.wait([
+        if (novel.userId != user.userId && !chapter.isLiked)
+          _notificationsDb.sendNotificatiosn(notification),
+        _client.rpc(FunctionNames.toggle_chapter_like, params: {'p_chapter_id': chapter.id}),
+      ]);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -186,15 +218,23 @@ class NovelsDb {
     required String chapterId,
     required String commentId,
     required String content,
-    required String userId,
+    required UserModel user,
+    required String novelAuthor,
   }) async {
     try {
-      await _novelChapterCommentsTable.insert({
-        KeyNames.content: content,
-        KeyNames.id: commentId,
-        KeyNames.userId: userId,
-        KeyNames.chapter_id: chapterId,
-      });
+      final notification = NotificationsInterface.novelChapterCommentNotification(
+        userId: novelAuthor,
+        username: user.username,
+      );
+      await Future.wait([
+        if (user.userId != novelAuthor) _notificationsDb.sendNotificatiosn(notification),
+        _novelChapterCommentsTable.insert({
+          KeyNames.content: content,
+          KeyNames.id: commentId,
+          KeyNames.userId: user.userId,
+          KeyNames.chapter_id: chapterId,
+        }),
+      ]);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -213,12 +253,26 @@ class NovelsDb {
     }
   }
 
-  Future<void> handleChapterCommentReplyLike(String replyId) async {
+  Future<void> handleChapterCommentReplyLike(
+    String replyId,
+    UserModel me,
+    NovelModel novel,
+    String commentOwnerId,
+  ) async {
     try {
-      await _client.rpc(
-        FunctionNames.toggle_chapter_comment_reply_like,
-        params: {'p_reply_id': replyId},
+      final notification = NotificationsInterface.novelChapterLikeCommentNotification(
+        userId: commentOwnerId,
+        username: me.username,
+        novelTitle: novel.title,
       );
+
+      await Future.wait([
+        if (me.userId != commentOwnerId) _notificationsDb.sendNotificatiosn(notification),
+        _client.rpc(
+          FunctionNames.toggle_chapter_comment_reply_like,
+          params: {'p_reply_id': replyId},
+        ),
+      ]);
     } catch (e) {
       log(e.toString());
       rethrow;

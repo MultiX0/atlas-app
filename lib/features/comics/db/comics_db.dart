@@ -249,7 +249,7 @@ class ComicsDb {
   Future<List> _searchComicsInLocalDb(String query, int limit) async {
     final comicIds = await _comicsTitlesTable
         .select(KeyNames.comic_id)
-        .textSearch(KeyNames.title, query, type: TextSearchType.plain)
+        .ilike(KeyNames.title, "%$query%")
         .order(KeyNames.title, ascending: true)
         .limit(limit);
 

@@ -314,13 +314,15 @@ class NovelsController extends StateNotifier<bool> {
 
   Future<void> handleChapterLike(ChapterModel chapter) async {
     try {
+      final me = _ref.read(userState.select((s) => s.user!));
+      final novel = _ref.read(selectedNovelProvider)!;
       final newChapter = chapter.copyWith(
         isLiked: !chapter.isLiked,
         likeCount: chapter.isLiked ? chapter.likeCount - 1 : chapter.likeCount + 1,
       );
       _ref.read(selectedChapterProvider.notifier).state = newChapter;
       _ref.read(chaptersStateProvider(chapter.novelId).notifier).updateChapter(newChapter);
-      await db.handleChapterLike(chapter);
+      await db.handleChapterLike(chapter, me, novel);
     } catch (e) {
       _ref.read(selectedChapterProvider.notifier).state = chapter;
       _ref.read(chaptersStateProvider(chapter.novelId).notifier).updateChapter(chapter);
@@ -359,7 +361,7 @@ class NovelsController extends StateNotifier<bool> {
           .addWork(
             MyWorkModel(title: novel.title, type: 'novel', poster: novel.poster, id: novel.id),
           );
-      await db.handleFavorite(novel);
+      await db.handleFavorite(novel, me);
       CustomToast.success(
         "تمت ${novel.isFavorite ? "ازالة" : "اضافة"} الرواية ${novel.isFavorite ? "من" : "الى"} المفضلة بنجاح",
       );
@@ -427,6 +429,7 @@ class NovelsController extends StateNotifier<bool> {
 
   Future<void> addChapterComment(String content) async {
     final chapter = _ref.read(selectedChapterProvider.select((s) => s!));
+    final novel = _ref.read(selectedNovelProvider)!;
     final me = _ref.read(userState.select((s) => s.user!));
     final id = uuid.v4();
     final comment = NovelChapterCommentWithMeta(
@@ -448,7 +451,8 @@ class NovelsController extends StateNotifier<bool> {
         chapterId: chapter.id,
         commentId: comment.id,
         content: content,
-        userId: comment.userId,
+        user: comment.user,
+        novelAuthor: novel.userId,
       );
       final newChapter = chapter.copyWith(commentsCount: chapter.commentsCount + 1);
       _ref.read(chaptersStateProvider(chapter.novelId).notifier).updateChapter(newChapter);
@@ -484,6 +488,8 @@ class NovelsController extends StateNotifier<bool> {
 
   Future<void> handleChapterCommentReplyLike(NovelChapterCommentReplyWithLikes reply) async {
     try {
+      final me = _ref.read(userState.select((s) => s.user!));
+      final novel = _ref.read(selectedNovelProvider)!;
       _ref
           .read(novelChapterCommentRepliesState(reply.commentId).notifier)
           .updateComment(
@@ -492,7 +498,7 @@ class NovelsController extends StateNotifier<bool> {
               isLiked: !reply.isLiked,
             ),
           );
-      await db.handleChapterCommentReplyLike(reply.id);
+      await db.handleChapterCommentReplyLike(reply.id, me, novel, reply.parentCommentAuthorId);
     } catch (e) {
       _ref.read(novelChapterCommentRepliesState(reply.commentId).notifier).updateComment(reply);
       CustomToast.error(errorMsg);
@@ -502,6 +508,7 @@ class NovelsController extends StateNotifier<bool> {
   }
 
   Future<void> replyToComment({required String commentId, required String replyContent}) async {
+    final novel = _ref.read(selectedNovelProvider)!;
     final id = uuid.v4();
     final _chapter = _ref.read(selectedChapterProvider)!;
     final comment = _ref
@@ -530,7 +537,7 @@ class NovelsController extends StateNotifier<bool> {
       _ref
           .read(novelChapterCommentsStateProvider(commentId).notifier)
           .updateComment(comment.copyWith(repliesCount: comment.repliesCount + 1));
-      await db.handleAddNewChapterCommentReply(replyModel);
+      await db.handleAddNewChapterCommentReply(replyModel, novel);
     } catch (e) {
       CustomToast.error(errorMsg);
       _ref.read(novelChapterCommentRepliesState(comment.id).notifier).deleteComment(id);

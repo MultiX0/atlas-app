@@ -85,6 +85,15 @@ class PostsDb {
       List<String> userMentions =
           extractMentionKeywords(post).where((m) => m != user.username.toLowerCase()).toList();
 
+      if (parentId != null && parentId.isNotEmpty) {
+        final String userId = await getUserIdByPost(parentId);
+        final notification = NotificationsInterface.postRepostNotification(
+          userId: userId,
+          username: user.username,
+        );
+        await notificationsDb.sendNotificatiosn(notification);
+      }
+
       try {
         await Future.wait([
           hashtagDb.insertNewHashTag(hashtags),
@@ -365,6 +374,16 @@ class PostsDb {
   Future<void> insetPostInteraction(PostInteractionModel interactionModel) async {
     try {
       await _postInteractionsTable.insert(interactionModel.toMap());
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<String> getUserIdByPost(String postId) async {
+    try {
+      final data = await _postsTable.select(KeyNames.userId).eq(KeyNames.id, postId).maybeSingle();
+      return data?[KeyNames.userId] ?? "";
     } catch (e) {
       log(e.toString());
       rethrow;

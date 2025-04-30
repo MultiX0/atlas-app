@@ -56,6 +56,18 @@ class NotificationsInterface {
     data: data,
   );
 
+  static NotificationContainerModel novelChapterLikeNotification({
+    required String userId,
+    Map<String, dynamic>? data,
+    required String username,
+    required String novelTitle,
+  }) => NotificationContainerModel(
+    title: "إعجاب بأحد فصولك",
+    body: 'أعجب $username بفصل من روايتك: $novelTitle',
+    userId: userId,
+    data: data,
+  );
+
   static NotificationContainerModel novelChapterCommentNotification({
     required String userId,
     Map<String, dynamic>? data,
@@ -63,6 +75,54 @@ class NotificationsInterface {
   }) => NotificationContainerModel(
     title: "تعليق على فصل روايتك",
     body: 'قام $username بكتابة تعليق على أحد فصول روايتك. تحقق منه!',
+    userId: userId,
+    data: data,
+  );
+
+  static NotificationContainerModel novelChapterLikeCommentNotification({
+    required String userId,
+    Map<String, dynamic>? data,
+    required String username,
+    required String novelTitle,
+  }) => NotificationContainerModel(
+    title: "اعجاب جديد",
+    body: 'قام $username بالأعجاب بتعليقك على رواية: $novelTitle',
+    userId: userId,
+    data: data,
+  );
+
+  static NotificationContainerModel novelChapterReplyCommentNotification({
+    required String userId,
+    Map<String, dynamic>? data,
+    required String username,
+    required String novelTitle,
+  }) => NotificationContainerModel(
+    title: "رد على تعليقك",
+    body: 'قام $username بالرد على تعليقك على رواية: $novelTitle',
+    userId: userId,
+    data: data,
+  );
+
+  static NotificationContainerModel novelReviewNotification({
+    required String userId,
+    Map<String, dynamic>? data,
+    required String username,
+    required String novelTitle,
+  }) => NotificationContainerModel(
+    title: "تقييم جديد",
+    body: 'قام $username بوضع تقييم جديد على الرواية الخاصة بك: $novelTitle',
+    userId: userId,
+    data: data,
+  );
+
+  static NotificationContainerModel novelReviewLike({
+    required String userId,
+    Map<String, dynamic>? data,
+    required String username,
+    required String novelTitle,
+  }) => NotificationContainerModel(
+    title: "اعجاب جديد",
+    body: 'قام $username بالأعجاب بمراجعتك على رواية: $novelTitle',
     userId: userId,
     data: data,
   );
