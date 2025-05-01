@@ -12,7 +12,7 @@ import 'package:atlas_app/core/services/user_vector_service.dart';
 import 'package:atlas_app/features/hashtags/db/hashtags_db.dart';
 import 'package:atlas_app/features/notifications/db/notifications_db.dart';
 import 'package:atlas_app/features/notifications/interfaces/notifications_interface.dart';
-import 'package:atlas_app/features/posts/models/post_interaction_model.dart';
+import 'package:atlas_app/features/interactions/models/post_interaction_model.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
