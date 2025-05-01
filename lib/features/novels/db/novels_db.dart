@@ -68,6 +68,7 @@ class NovelsDb {
     try {
       final data = await _chaptersView
           .select("*")
+          .eq(KeyNames.novel_id, novelId)
           .order(KeyNames.number, ascending: false)
           .range(startIndex, (startIndex + pageSize - 1));
 

@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:atlas_app/core/common/enum/post_like_enum.dart';
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/features/posts/controller/posts_controller.dart';
@@ -10,10 +11,11 @@ import 'package:atlas_app/imports.dart';
 import 'package:flutter/foundation.dart';
 
 class PostOptions extends StatefulWidget {
-  const PostOptions({super.key, required this.isOwner, required this.post});
+  const PostOptions({super.key, required this.isOwner, required this.post, required this.postType});
 
   final bool isOwner;
   final PostModel post;
+  final PostLikeEnum postType;
 
   @override
   State<PostOptions> createState() => _PostOptionsSheetState();
@@ -94,7 +96,9 @@ class _PostOptionsSheetState extends State<PostOptions> {
                     _debouncer.debounce(
                       duration: const Duration(milliseconds: 200),
                       onDebounce: () {
-                        ref.read(postsControllerProvider.notifier).handlePostSave(widget.post);
+                        ref
+                            .read(postsControllerProvider.notifier)
+                            .handlePostSave(widget.post, postType: widget.postType);
                       },
                     );
                   } catch (e) {

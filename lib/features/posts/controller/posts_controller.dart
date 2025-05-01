@@ -6,11 +6,12 @@ import 'dart:io';
 import 'package:atlas_app/core/common/enum/post_like_enum.dart';
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/extract_key_words.dart';
-import 'package:atlas_app/core/common/utils/image_to_avif_convert.dart';
 import 'package:atlas_app/core/common/utils/upload_storage.dart';
 import 'package:atlas_app/core/common/widgets/slash_parser.dart';
 import 'package:atlas_app/features/hashtags/providers/hashtag_state_provider.dart';
 import 'package:atlas_app/features/hashtags/providers/providers.dart';
+import 'package:atlas_app/features/interactions/db/interactions_db.dart';
+import 'package:atlas_app/features/interactions/models/post_interaction_model.dart';
 import 'package:atlas_app/features/novels/providers/novel_reviews_state.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/features/posts/db/posts_db.dart';
@@ -32,6 +33,7 @@ class PostsController extends StateNotifier<bool> {
 
   PostsDb get db => _ref.watch(postsDbProvider);
   final uuid = const Uuid();
+  InteractionsDb get _interactionsDb => InteractionsDb();
 
   Future<void> insertPost({
     required PostType postType,
@@ -139,27 +141,30 @@ class PostsController extends StateNotifier<bool> {
         userLiked: !post.userLiked,
         likeCount: !post.userLiked ? post.likeCount + 1 : post.likeCount - 1,
       );
+
+      final newInteraction = _getPostInteraction(newPost);
+
       switch (postType) {
         case PostLikeEnum.HASHTAG:
           _ref.read(hashtagStateProvider(hashtag).notifier).likePost(postModel: newPost);
           _ref.read(profilePostsStateProvider(me.userId).notifier).likePost(postModel: newPost);
-
           log("After state update: expecting userLiked = ${newPost.userLiked}");
-          await db.handleUserLike(post, me);
           break;
         case PostLikeEnum.PROFILE:
           _ref.read(profilePostsStateProvider(me.userId).notifier).likePost(postModel: newPost);
           _ref.read(hashtagStateProvider(hashtag).notifier).likePost(postModel: newPost);
-
           log("After state update: expecting userLiked = ${newPost.userLiked}");
-          await db.handleUserLike(post, me);
           break;
         case PostLikeEnum.GENERAL:
           _ref.read(mainFeedStateProvider(me.userId).notifier).likePost(postModel: newPost);
           log("After state update: expecting userLiked = ${newPost.userLiked}");
-          await db.handleUserLike(post, me);
           break;
       }
+
+      await Future.wait([
+        db.handleUserLike(post, me),
+        _interactionsDb.upsertPostInteraction(newInteraction),
+      ]);
     } catch (e) {
       CustomToast.error(errorMsg);
       log(e.toString());
@@ -180,6 +185,19 @@ class PostsController extends StateNotifier<bool> {
       }
       rethrow;
     }
+  }
+
+  PostInteractionModel _getPostInteraction(PostModel post) {
+    final me = _ref.read(userState.select((s) => s.user!));
+    return post.interaction ??
+        PostInteractionModel(
+          id: uuid.v4(),
+          userId: me.userId,
+          postId: post.postId,
+          liked: post.userLiked,
+          shared: post.shared_by_me,
+          favorite: post.isSaved,
+        );
   }
 
   Future<void> handlePostPin(PostModel post) async {
@@ -205,12 +223,37 @@ class PostsController extends StateNotifier<bool> {
     }
   }
 
-  Future<void> handlePostSave(PostModel post) async {
+  Future<void> handlePostSave(PostModel post, {required PostLikeEnum postType}) async {
     final me = _ref.read(userState.select((user) => user.user!));
+    final hashtag = _ref.read(selectedHashtagProvider);
+
     try {
-      _ref
-          .read(profilePostsStateProvider(post.userId).notifier)
-          .updatePost(post.copyWith(isSaved: !post.isSaved));
+      switch (postType) {
+        case PostLikeEnum.HASHTAG:
+          _ref
+              .read(hashtagStateProvider(hashtag).notifier)
+              .updatePost(post.copyWith(isSaved: !post.isSaved));
+          _ref
+              .read(profilePostsStateProvider(post.userId).notifier)
+              .updatePost(post.copyWith(isSaved: !post.isSaved));
+          break;
+        case PostLikeEnum.PROFILE:
+          _ref
+              .read(profilePostsStateProvider(post.userId).notifier)
+              .updatePost(post.copyWith(isSaved: !post.isSaved));
+          _ref
+              .read(hashtagStateProvider(hashtag).notifier)
+              .updatePost(post.copyWith(isSaved: !post.isSaved));
+          break;
+        case PostLikeEnum.GENERAL:
+          _ref
+              .read(mainFeedStateProvider(post.userId).notifier)
+              .updatePost(post.copyWith(isSaved: !post.isSaved));
+          _ref
+              .read(hashtagStateProvider(hashtag).notifier)
+              .updatePost(post.copyWith(isSaved: !post.isSaved));
+          break;
+      }
       await db.handlePostSave(post, me.userId);
     } catch (e) {
       log(e.toString());
@@ -241,29 +284,13 @@ class PostsController extends StateNotifier<bool> {
       String extension = '';
       List<String> _links = [];
       for (final image in images) {
-        // Convert image to AVIF first
-        final avifImage = await AvifConverter.convertToAvif(image, quality: 80);
-        log("avifImage: ${avifImage?.absolute.path}");
-
-        // Check if conversion was successful before proceeding
-        if (avifImage != null) {
-          extension = avifImage.absolute.path.split('.').last.trim().toString();
-          final link = await UploadStorage.uploadImages(
-            image: avifImage,
-            path: 'posts/$postId/${uuid.v4()}.$extension',
-          );
-          log("avif image uploaded: $link");
-          _links.add(link);
-        } else {
-          // If AVIF conversion fails, use the original image as fallback
-          log('AVIF conversion failed for image. Using original format.');
-          extension = image.absolute.path.split('.').last.trim().toString();
-          final link = await UploadStorage.uploadImages(
-            image: image,
-            path: 'posts/$postId/${uuid.v4()}.$extension',
-          );
-          _links.add(link);
-        }
+        extension = image.absolute.path.split('.').last.trim().toString();
+        final link = await UploadStorage.uploadImages(
+          quiality: 60,
+          image: image,
+          path: 'posts/$postId/${uuid.v4()}.$extension',
+        );
+        _links.add(link);
       }
       return _links;
     } catch (e) {

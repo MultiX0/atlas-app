@@ -132,6 +132,14 @@ class MainFeedState extends StateNotifier<_HelperClass> {
     posts[indexOfPost] = postModel;
     state = state.copyWith(posts: posts);
   }
+
+  void updatePost(PostModel post) {
+    final indexOf = state.posts.indexWhere((p) => p.postId == post.postId);
+    if (indexOf == -1) return;
+    List<PostModel> updatedPosts = List<PostModel>.from(state.posts);
+    updatedPosts[indexOf] = post;
+    state = state.copyWith(posts: updatedPosts);
+  }
 }
 
 final mainFeedStateProvider = StateNotifierProvider.family<MainFeedState, _HelperClass, String>((

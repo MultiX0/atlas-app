@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:atlas_app/features/novels/controller/novels_controller.dart';
 import 'package:atlas_app/features/novels/models/novel_model.dart';
 import 'package:atlas_app/features/novels/pages/characters_page.dart';
@@ -47,6 +49,7 @@ class _NovelPageState extends ConsumerState<NovelPage> with SingleTickerProvider
   }
 
   Widget buildBody(NovelModel novel) {
+    log(novel.id);
     return SafeArea(
       child: NestedScrollView(
         headerSliverBuilder: ((context, innerBoxIsScrolled) {

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:atlas_app/core/common/enum/post_like_enum.dart';
 import 'package:atlas_app/core/common/utils/image_picker.dart';
 import 'package:atlas_app/features/posts/controller/posts_controller.dart';
 import 'package:atlas_app/features/posts/providers/providers.dart';
@@ -174,7 +175,7 @@ class TypeControllerWidget extends ConsumerWidget {
       case PostType.novel_review:
         return const ComicReviewTreeWidget();
       case PostType.repost:
-        return const RepostTreeWidget();
+        return const RepostTreeWidget(postType: PostLikeEnum.PROFILE);
       default:
         return PostFieldWidget(defaultText: defaultText);
     }

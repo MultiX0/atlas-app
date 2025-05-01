@@ -50,7 +50,7 @@ class PostWidget extends ConsumerWidget {
               const SizedBox(height: 8),
             ],
 
-            PostHeaderWidget(post: post, profileNav: profileNav),
+            PostHeaderWidget(post: post, profileNav: profileNav, postType: postLikeType),
             PostBodyWidget(
               post: post,
               hashtag: hashtag,

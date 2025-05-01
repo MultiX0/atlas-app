@@ -1,3 +1,4 @@
+import 'package:atlas_app/core/common/enum/post_like_enum.dart';
 import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/features/posts/widgets/post_field_widget.dart';
 import 'package:atlas_app/features/profile/widgets/post_content_widget.dart';
@@ -6,7 +7,9 @@ import 'package:atlas_app/imports.dart';
 import 'package:intl/intl.dart';
 
 class RepostTreeWidget extends ConsumerWidget {
-  const RepostTreeWidget({super.key});
+  const RepostTreeWidget({super.key, required this.postType});
+
+  final PostLikeEnum postType;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,7 +33,7 @@ class RepostTreeWidget extends ConsumerWidget {
                 crossAxisAlignment:
                     postHasArabic ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                 children: [
-                  PostHeaderWidget(post: post, profileNav: false),
+                  PostHeaderWidget(post: post, profileNav: false, postType: postType, repost: true),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(15, 15, 15, 0),
                     child: PostContentWidget(post: post, repost: true),
