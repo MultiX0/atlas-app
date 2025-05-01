@@ -4,6 +4,8 @@ import 'package:atlas_app/core/common/enum/post_like_enum.dart';
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/core/common/widgets/app_refresh.dart';
+import 'package:atlas_app/features/auth/controller/auth_controller.dart';
+import 'package:atlas_app/features/profile/controller/profile_controller.dart';
 import 'package:atlas_app/features/profile/provider/profile_posts_state.dart';
 import 'package:atlas_app/features/profile/widgets/post_widget.dart';
 import 'package:atlas_app/imports.dart';
@@ -42,7 +44,14 @@ class _ProfilePostsPageState extends ConsumerState<ProfilePostsPage> {
   }
 
   void refresh() async {
+    final me = ref.read(userState.select((s) => s.user!));
     ref.read(profilePostsStateProvider(widget.user.userId).notifier).fetchData(refresh: true);
+    if (widget.user.userId != me.userId) {
+      ref.invalidate(getUserByIdProvider(widget.user.userId));
+    } else {
+      final userData = await ref.read(authControllerProvider.notifier).getUserData(me.userId);
+      ref.read(userState.notifier).updateState(userData);
+    }
   }
 
   @override

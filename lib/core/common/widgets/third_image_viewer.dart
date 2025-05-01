@@ -31,11 +31,11 @@ class ThirdImageViewer extends StatelessWidget {
           // Left side - First image
           Expanded(
             flex: 1,
-            child: CachedNetworkAvifImage(
-              firstProvider.url,
+            child: CachedNetworkImage(
+              imageUrl: firstProvider.url,
               height: size.width / 2,
-              cacheHeight: (imageWidth / 1.5).toInt(),
-              cacheWidth: (imageWidth / 2).toInt(),
+              maxHeightDiskCache: (imageWidth / 1.5).toInt(),
+              maxWidthDiskCache: (imageWidth / 2).toInt(),
               fit: BoxFit.cover,
             ),
           ),
@@ -48,12 +48,12 @@ class ThirdImageViewer extends StatelessWidget {
                 // Second image
                 Stack(
                   children: [
-                    CachedNetworkAvifImage(
-                      secondProvider.url,
+                    CachedNetworkImage(
+                      imageUrl: secondProvider.url,
                       height: imageWidth / 3,
                       width: imageWidth / 2,
-                      cacheHeight: (imageWidth / 3).toInt(),
-                      cacheWidth: (imageWidth / 2).toInt(),
+                      maxHeightDiskCache: (imageWidth / 3).toInt(),
+                      maxWidthDiskCache: (imageWidth / 2).toInt(),
                       fit: BoxFit.cover,
                     ),
                   ],
@@ -62,12 +62,12 @@ class ThirdImageViewer extends StatelessWidget {
                 // Third image with remaining count overlay if needed
                 Stack(
                   children: [
-                    CachedNetworkAvifImage(
-                      thirdProvider.url,
+                    CachedNetworkImage(
+                      imageUrl: thirdProvider.url,
                       height: imageWidth / 3 - 4,
                       width: imageWidth / 2,
-                      cacheHeight: (imageWidth / 3).toInt(),
-                      cacheWidth: (imageWidth / 2).toInt(),
+                      maxHeightDiskCache: (imageWidth / 3).toInt(),
+                      maxWidthDiskCache: (imageWidth / 2).toInt(),
                       fit: BoxFit.cover,
                     ),
                     if (remainingCount > 0)

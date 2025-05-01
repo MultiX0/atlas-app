@@ -41,7 +41,7 @@ class AuthController extends StateNotifier<bool> {
       final user = await _db.signUp(
         localUser!.copyWith(
           banner:
-              'https://ijetdkekpdlnbyrnirfe.supabase.co/storage/v1/object/public/public_stotage//mitpmcvgd31mtbykbjud.avif',
+              'https://qlweguljtwgnikrdbply.supabase.co/storage/v1/object/public/public-stotage//Orv%20Wallpaper%20Laptop.jpeg',
         ),
       );
       CustomToast.success("أهلاً بكم في أطلس! رحلتكم تبدأ الآن.");

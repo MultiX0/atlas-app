@@ -28,11 +28,11 @@ class SingleImageViewer extends StatelessWidget {
           height: 500,
           child: Material(
             color: AppColors.secondBlackColor,
-            child: CachedNetworkAvifImage(
-              provider.url,
+            child: CachedNetworkImage(
+              imageUrl: provider.url,
               fit: BoxFit.cover,
-              cacheHeight: min(size.width.toInt(), 500), // Cap at 500px
-              cacheWidth: min(size.width.toInt(), 500),
+              maxHeightDiskCache: min(size.width.toInt(), 500), // Cap at 500px
+              maxWidthDiskCache: min(size.width.toInt(), 500),
             ),
           ),
         ),

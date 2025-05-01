@@ -142,6 +142,8 @@ class PostsController extends StateNotifier<bool> {
         likeCount: !post.userLiked ? post.likeCount + 1 : post.likeCount - 1,
       );
 
+      log("liked: ${newPost.userLiked}");
+      log("current interacion is: ${newPost.interaction}");
       final newInteraction = _getPostInteraction(newPost);
 
       switch (postType) {
@@ -189,7 +191,11 @@ class PostsController extends StateNotifier<bool> {
 
   PostInteractionModel _getPostInteraction(PostModel post) {
     final me = _ref.read(userState.select((s) => s.user!));
-    return post.interaction ??
+    return post.interaction?.copyWith(
+          liked: post.userLiked,
+          favorite: post.isSaved,
+          shared: post.shared_by_me,
+        ) ??
         PostInteractionModel(
           id: uuid.v4(),
           userId: me.userId,
@@ -247,14 +253,20 @@ class PostsController extends StateNotifier<bool> {
           break;
         case PostLikeEnum.GENERAL:
           _ref
-              .read(mainFeedStateProvider(post.userId).notifier)
+              .read(mainFeedStateProvider(me.userId).notifier)
               .updatePost(post.copyWith(isSaved: !post.isSaved));
           _ref
               .read(hashtagStateProvider(hashtag).notifier)
               .updatePost(post.copyWith(isSaved: !post.isSaved));
           break;
       }
-      await db.handlePostSave(post, me.userId);
+
+      await Future.wait([
+        db.handlePostSave(post, me.userId),
+        _interactionsDb.upsertPostInteraction(
+          _getPostInteraction(post.copyWith(isSaved: !post.isSaved)),
+        ),
+      ]);
     } catch (e) {
       log(e.toString());
       _ref

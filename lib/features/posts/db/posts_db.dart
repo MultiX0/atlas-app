@@ -115,6 +115,18 @@ class PostsDb {
     }
   }
 
+  Future<void> seePost(String postId, String userId) async {
+    try {
+      await _client.rpc(
+        FunctionNames.mark_post_as_seen,
+        params: {'p_user_id': userId, 'p_post_id': postId},
+      );
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
   Future<void> insertEmbedding({
     required String id,
     required String content,
