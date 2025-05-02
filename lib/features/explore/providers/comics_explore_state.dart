@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:atlas_app/features/comics/db/comics_db.dart';
 import 'package:atlas_app/features/comics/models/comic_preview_model.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:retry/retry.dart';
 
 class _HelperClass {
   final List<ComicPreviewModel> comics;
@@ -86,21 +87,23 @@ class ComicsExploreState extends StateNotifier<_HelperClass> {
         updateState(error: null, loadingMore: true, isLoading: false);
       }
 
-      const _pageSize = 20;
-      final comics = await _db.getExploreComics(pageSize: _pageSize);
+      await retry(maxAttempts: 3, () async {
+        const _pageSize = 20;
+        final comics = await _db.getExploreComics(pageSize: _pageSize);
 
-      bool hasReachedEnd = comics.length < _pageSize;
-      final updatedComics = refresh ? comics : [...state.comics, ...comics];
-      final newPageNumber = refresh ? 1 : state.currentPage + 1;
+        bool hasReachedEnd = comics.length < _pageSize;
+        final updatedComics = refresh ? comics : [...state.comics, ...comics];
+        final newPageNumber = refresh ? 1 : state.currentPage + 1;
 
-      updateState(
-        loadingMore: false,
-        hasReachedEnd: hasReachedEnd,
-        error: null,
-        isLoading: false,
-        currentPage: newPageNumber,
-        comics: updatedComics,
-      );
+        updateState(
+          loadingMore: false,
+          hasReachedEnd: hasReachedEnd,
+          error: null,
+          isLoading: false,
+          currentPage: newPageNumber,
+          comics: updatedComics,
+        );
+      }, retryIf: (e) => true);
     } catch (e) {
       log(e.toString());
       rethrow;

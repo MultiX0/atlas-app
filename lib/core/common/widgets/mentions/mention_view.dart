@@ -1,12 +1,10 @@
 import 'dart:developer';
-
 import 'package:atlas_app/core/common/widgets/mentions/annotation_editing_controller.dart';
 import 'package:atlas_app/core/common/widgets/mentions/models.dart';
 import 'package:atlas_app/core/common/widgets/mentions/option_list.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:flutter/services.dart';
 
-// Enhanced version of FlutterMentions with per-trigger callbacks
 class EnhancedFlutterMentions extends StatefulWidget {
   const EnhancedFlutterMentions({
     required this.mentions,
@@ -17,7 +15,7 @@ class EnhancedFlutterMentions extends StatefulWidget {
     this.onMarkupChanged,
     this.onMentionAdd,
     this.onSearchChanged,
-    this.triggerCallbacks = const {}, // New parameter for per-trigger callbacks
+    this.triggerCallbacks = const {},
     this.leading = const [],
     this.trailing = const [],
     this.suggestionListDecoration,
@@ -120,10 +118,9 @@ class EnhancedFlutterMentionsState extends State<EnhancedFlutterMentions> {
   String _pattern = '';
   String? _currentTrigger;
 
-  // Method to clear the text
   void clearText({String? text}) {
     if (controller != null) {
-      controller!.clear(); // Clear the text in the controller
+      controller!.clear();
       setState(() {
         _selectedMention = null;
         _currentTrigger = null;
@@ -133,10 +130,10 @@ class EnhancedFlutterMentionsState extends State<EnhancedFlutterMentions> {
         }
       });
       if (widget.onMarkupChanged != null) {
-        widget.onMarkupChanged!(text ?? ''); // Notify listeners of cleared text
+        widget.onMarkupChanged!(text ?? '');
       }
       if (widget.onSuggestionVisibleChanged != null) {
-        widget.onSuggestionVisibleChanged!(false); // Hide suggestions
+        widget.onSuggestionVisibleChanged!(false);
       }
     }
   }
@@ -203,15 +200,21 @@ class EnhancedFlutterMentionsState extends State<EnhancedFlutterMentions> {
     controller!.selection = TextSelection.fromPosition(TextPosition(offset: nextCursorPosition));
   }
 
+  bool isPositionAnnotated(int position) {
+    return controller!.getAnnotationAt(position) != null;
+  }
+
   void suggestionListerner() {
     final cursorPos = controller!.selection.baseOffset;
     final text = controller!.text;
     if (cursorPos < 0) return;
+
     final mentionTriggers = widget.mentions.map((e) => e.trigger).toList();
     final slashMention = widget.mentions.firstWhere(
       (e) => e.trigger == '/',
       orElse: () => Mention(trigger: '/', data: []),
     );
+
     if (slashMention.trigger == '/') {
       int start = cursorPos - 1;
       while (start >= 0 && text[start] != '\n') {
@@ -220,7 +223,7 @@ class EnhancedFlutterMentionsState extends State<EnhancedFlutterMentions> {
         }
         start--;
       }
-      if (start >= 0 && text[start] == '/') {
+      if (start >= 0 && text[start] == '/' && !isPositionAnnotated(start)) {
         final substring = text.substring(start, cursorPos);
         final mention = LengthMap(str: substring, start: start, end: cursorPos);
         setState(() {
@@ -234,16 +237,21 @@ class EnhancedFlutterMentionsState extends State<EnhancedFlutterMentions> {
         return;
       }
     }
+
     var _pos = 0;
     final lengthMap = <LengthMap>[];
     controller!.value.text.split(RegExp(r'(\s)')).forEach((element) {
       lengthMap.add(LengthMap(str: element, start: _pos, end: _pos + element.length));
       _pos = _pos + element.length + 1;
     });
+
     final val = lengthMap.indexWhere((element) {
       _pattern = widget.mentions.map((e) => e.trigger).join('|');
-      return element.end == cursorPos && mentionTriggers.any((t) => element.str.startsWith(t));
+      return element.end == cursorPos &&
+          mentionTriggers.any((t) => element.str.startsWith(t)) &&
+          !isPositionAnnotated(element.start);
     });
+
     if (val != -1) {
       final mention = lengthMap[val];
       setState(() {

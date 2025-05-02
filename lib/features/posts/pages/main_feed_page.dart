@@ -122,7 +122,7 @@ class _MainFeedPageState extends ConsumerState<MainFeedPage> {
         onRefresh: () async => refresh(),
         child: CustomScrollView(
           controller: _scrollController,
-          physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+          physics: const AlwaysScrollableScrollPhysics(),
           cacheExtent: MediaQuery.sizeOf(context).height * 1.5,
           slivers: [
             const MainFeedAppbar(),

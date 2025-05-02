@@ -922,8 +922,8 @@ characters {
           .map(
             (c) => ComicPreviewModel(
               id: c[KeyNames.id],
-              title: c[KeyNames.title_english],
-              poster: c[KeyNames.image],
+              title: c[KeyNames.title_english] ?? "Uknown",
+              poster: c[KeyNames.image] ?? "",
               banner: c[KeyNames.banner] ?? "",
               description:
                   c[KeyNames.ar_synopsis].toString().isEmpty

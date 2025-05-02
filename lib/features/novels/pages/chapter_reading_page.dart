@@ -52,6 +52,7 @@ class ChapterReadingPage extends HookConsumerWidget {
     // Page change callback
     void onPageChange() {
       scrollController.jumpTo(0);
+      ref.read(novelsControllerProvider.notifier).handleChapterView();
     }
 
     return PopScope(

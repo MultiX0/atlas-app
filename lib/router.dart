@@ -229,7 +229,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           return CustomTransitionPage(
             child: MakePostPage(
               postType: type,
-              defaultText: defaultText.isNotEmpty ? '$defaultText\n' : '',
+              defaultText: defaultText.isNotEmpty ? defaultText : '',
             ),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);

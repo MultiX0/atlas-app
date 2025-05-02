@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:atlas_app/core/services/syste_chrome.dart';
 import 'package:atlas_app/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter_langdetect/flutter_langdetect.dart' as langdetect;
 import 'package:timeago/timeago.dart' as timeago;
 import 'imports.dart';
@@ -12,6 +13,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await _initEnv();
   await Future.wait([langdetect.initLangDetect(), _supabaseInit(), _firebaseInit()]);
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
 
   editChromeSystem();
 

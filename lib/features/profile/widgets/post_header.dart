@@ -68,7 +68,7 @@ class PostHeaderWidget extends StatelessWidget {
                       Consumer(
                         builder: (context, ref, _) {
                           final router = ref.read(routerProvider);
-                          bool profile = router.state.uri.toString() == Routes.user;
+                          bool profile = router.state.uri.toString() == Routes.profile;
                           if (!profile) return const SizedBox.shrink();
                           return const Row(
                             children: [

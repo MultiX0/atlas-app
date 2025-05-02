@@ -118,12 +118,12 @@ class _MakePostPageState extends ConsumerState<MakePostPage> {
               ),
             ),
             if (images.isNotEmpty) ...[buildImages(), const SizedBox(height: 10)],
-
             ToolsWidget(
               selectImages: handleImages,
               handleOptions: (canRepost, canComment) => handleOptions(canRepost, canComment),
               canComment: canComment ?? true,
               canRepost: canRepost ?? true,
+              edit: (widget.defaultText == null || (widget.defaultText ?? "").isEmpty),
             ),
           ],
         ),

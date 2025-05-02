@@ -432,12 +432,9 @@ class NovelsDb {
     }
   }
 
-  Future<void> deleteNovelGenreses(List<int> ids, String novelId) async {
+  Future<void> deleteNovelGenreses(String novelId) async {
     try {
-      await _novelsGenresTable
-          .delete()
-          .eq(KeyNames.novel_id, novelId)
-          .inFilter(KeyNames.genre_id, ids);
+      await _novelsGenresTable.delete().eq(KeyNames.novel_id, novelId);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -525,17 +522,7 @@ class NovelsDb {
     String? banner,
   }) async {
     try {
-      List<NovelsGenreModel> oldOnlyGenres =
-          oldGenreses.where((oldGenre) {
-            return !genres.any((newGenre) => newGenre.id == oldGenre.id);
-          }).toList();
-
-      List<NovelsGenreModel> newOnlyGenres =
-          genres.where((newGenre) {
-            return !oldGenreses.any((oldGenre) => oldGenre.id == oldGenre.id);
-          }).toList();
-
-      await deleteNovelGenreses(oldOnlyGenres.map((g) => g.id).toList(), id);
+      await deleteNovelGenreses(id);
 
       final data = {
         KeyNames.title: title,
@@ -548,8 +535,8 @@ class NovelsDb {
         KeyNames.id: id,
       };
       await insertNovel(data);
-      await insertNovelGenreses(newOnlyGenres, id);
-      return newOnlyGenres;
+      await insertNovelGenreses(genres, id);
+      return genres;
     } catch (e) {
       log(e.toString());
       rethrow;
