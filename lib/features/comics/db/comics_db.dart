@@ -106,6 +106,26 @@ class ComicsDb {
     }
   }
 
+  Future<void> insertEmbedding({
+    required String id,
+    required String content,
+    required String userId,
+  }) async {
+    try {
+      final body = jsonEncode({
+        "type": "comic",
+        "content": content,
+        "content_id": id,
+        "user_id": userId,
+      });
+      final headers = await generateAuthHeaders();
+      await dio.post('${appAPI}embedding', options: Options(headers: headers), data: body);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
   Future<void> insertComics(List<ComicModel> comics, List<Map<String, dynamic>> characters) async {
     try {
       if (comics.isEmpty) return;
@@ -170,10 +190,26 @@ class ComicsDb {
 
       // If only one comic, use single insertion endpoint
       if (comicsData.length == 1) {
-        await _apiRequest('insert-comic-data', comicsData.first);
+        await Future.wait([
+          _apiRequest('insert-comic-data', comicsData.first),
+          insertEmbedding(
+            id: comicsData.first['comic'][KeyNames.id],
+            content:
+                "${comicsData.first['comic'][KeyNames.title_english]}\n${comicsData.first['comic'][KeyNames.synopsis]}",
+            userId: '',
+          ),
+        ]);
       } else {
         // Otherwise use batch insertion endpoint
         await _apiRequest('insert-comics-batch', {'comicsData': comicsData, 'concurrencyLimit': 5});
+        for (final comic in comicsData) {
+          await insertEmbedding(
+            id: comic['comic'][KeyNames.id],
+            content:
+                "${comic['comic'][KeyNames.title_english]}\n${comic['comic'][KeyNames.synopsis]}",
+            userId: '',
+          );
+        }
       }
 
       log("Successfully sent ${comicsData.length} comics to API for insertion");
