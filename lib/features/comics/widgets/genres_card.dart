@@ -40,6 +40,7 @@ class GenresCard extends StatelessWidget {
             Align(
               alignment: Alignment.centerRight,
               child: Wrap(
+                alignment: WrapAlignment.end,
                 spacing: 10,
                 runSpacing: 5,
                 children:

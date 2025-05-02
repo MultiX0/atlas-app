@@ -127,6 +127,7 @@ class ChapterCommentTile extends StatelessWidget {
                   final me = ref.read(userState.select((s) => s.user!));
                   final novel = ref.read(selectedNovelProvider)!;
                   final isMeOrCreator = (me.userId == novel.userId) || (user.userId == me.userId);
+                  final isMe = user.userId == me.userId;
                   return Row(
                     children: [
                       TextButton(
@@ -150,27 +151,28 @@ class ChapterCommentTile extends StatelessWidget {
                           ),
                         ),
                       ),
-                      TextButton(
-                        onPressed:
-                            () => handleAction(
-                              ref,
-                              commentId,
-                              parentUserId,
-                              content,
-                              user.username,
-                              parentUser,
-                              false,
-                              context,
+                      if (!isMe)
+                        TextButton(
+                          onPressed:
+                              () => handleAction(
+                                ref,
+                                commentId,
+                                parentUserId,
+                                content,
+                                user.username,
+                                parentUser,
+                                false,
+                                context,
+                              ),
+                          child: const Text(
+                            "ابلاغ",
+                            style: TextStyle(
+                              fontFamily: arabicAccentFont,
+                              fontSize: 15,
+                              color: AppColors.mutedSilver,
                             ),
-                        child: const Text(
-                          "ابلاغ",
-                          style: TextStyle(
-                            fontFamily: arabicAccentFont,
-                            fontSize: 15,
-                            color: AppColors.mutedSilver,
                           ),
                         ),
-                      ),
                       if (isMeOrCreator) ...[
                         TextButton(
                           onPressed: () => handleDelete(context, ref, isReply, commentId, id),

@@ -297,7 +297,7 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
                     children: [
                       CircleAvatar(
                         backgroundColor: AppColors.blackColor,
-                        backgroundImage: CachedNetworkAvifImageProvider(me.user!.avatar),
+                        backgroundImage: CachedNetworkImageProvider(me.user!.avatar),
                       ),
                       const SizedBox(width: 10),
                       Text("@${me.user?.username}"),
