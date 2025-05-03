@@ -609,11 +609,9 @@ characters {
       'Yaoi',
       'Yuri',
       'Zombie',
-      "Heterosexual",
       "LGBTQ+ Themes",
       "Handjob",
       "Boys' Love",
-      "Primarily Adult Cast",
     };
 
     try {
