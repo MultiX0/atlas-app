@@ -463,7 +463,7 @@ class ComicsDb {
     const String query = '''
   query SearchManga(\$search: String, \$limit: Int) {
     Page(page: 1, perPage: \$limit) {
-      media(search: \$search, type: MANGA) {
+      media(search: \$search, type: MANGA, isAdult: false) {
         id
         title {
           romaji
@@ -548,12 +548,87 @@ characters {
 ''';
 
     final variables = {'search': searchQuery, 'limit': limit};
+    const blockedTags = {
+      'Adult',
+      'Adult Themes',
+      'Anal Sex',
+      'Bestiality',
+      'BDSM',
+      'Bondage',
+      'Boys Love',
+      'Cross-dressing',
+      'Cumshot',
+      'Double Penetration',
+      'Ecchi',
+      'Erotica',
+      'Exhibitionism',
+      'Explicit Language',
+      'Explicit Scenes',
+      'Facial',
+      'Fetish',
+      'Fisting',
+      'Furry',
+      'Groping',
+      'Group Sex',
+      'Guro',
+      'Hentai',
+      'Incest',
+      'Incestuous',
+      'Incestuous Relationship',
+      'Lewd',
+      'Lolicon',
+      'Lolita',
+      'Masturbation',
+      'MILF',
+      'Non-Consensual',
+      'NTR (Netorare)',
+      'NSFW',
+      'Nudity',
+      'Oral Sex',
+      'Orgy',
+      'Pegging',
+      'Public Sex',
+      'Rape',
+      'Sexual Assault',
+      'Sexual Content',
+      'Sexual Harassment',
+      'Sexual Humor',
+      'Sexual Violence',
+      'Shotacon',
+      'Shemale',
+      'Smut',
+      'Tentacle Rape',
+      'Tentacles',
+      'Threesome',
+      'Transgender',
+      'Trap',
+      'Underage',
+      'Voyeurism',
+      'Watersports',
+      'Whipping',
+      'Yaoi',
+      'Yuri',
+      'Zombie',
+    };
 
     try {
       final res = await dio.post(aniListAPI, data: {'query': query, 'variables': variables});
       if (res.statusCode! >= 200 && res.statusCode! <= 299) {
         final data = List<Map<dynamic, dynamic>>.from(res.data["data"]["Page"]["media"]);
-        final _data = filterComics(data);
+        final filtered =
+            data.where((manga) {
+              final genres = List<String>.from(manga['genres'] ?? []);
+              final tags =
+                  (manga['tags'] as List?)
+                      ?.map((tag) => tag['name']?.toString() ?? '')
+                      .where((name) => name.isNotEmpty)
+                      .toList() ??
+                  [];
+
+              return !genres.any((g) => blockedTags.contains(g)) &&
+                  !tags.any((t) => blockedTags.contains(t));
+            }).toList();
+        final _data = filterComics(filtered);
         return _data;
       }
       throw DioException(requestOptions: res.requestOptions);

@@ -123,7 +123,7 @@ class _MakePostPageState extends ConsumerState<MakePostPage> {
               handleOptions: (canRepost, canComment) => handleOptions(canRepost, canComment),
               canComment: canComment ?? true,
               canRepost: canRepost ?? true,
-              edit: (widget.defaultText == null || (widget.defaultText ?? "").isEmpty),
+              edit: !((widget.defaultText == null || (widget.defaultText ?? "").isEmpty)),
             ),
           ],
         ),
