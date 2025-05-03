@@ -108,19 +108,19 @@ TextStyle getInlineStyle(Map<String, dynamic>? attributes) {
     style = style.copyWith(
       fontWeight: FontWeight.bold,
       fontFamily: arabicPrimaryFont,
-      color: AppColors.whiteColor,
+      color: AppColors.readingTextColor,
     );
   }
   if (attributes['size'] != null) {
     String size = attributes['size'];
     if (size == 'small') {
-      style = style.copyWith(fontSize: 14, color: AppColors.whiteColor);
+      style = style.copyWith(fontSize: 14, color: AppColors.readingTextColor);
     } else if (size == 'large') {
-      style = style.copyWith(fontSize: 18, color: AppColors.whiteColor);
+      style = style.copyWith(fontSize: 18, color: AppColors.readingTextColor);
     } else if (size == 'huge') {
-      style = style.copyWith(fontSize: 24, color: AppColors.whiteColor);
+      style = style.copyWith(fontSize: 24, color: AppColors.readingTextColor);
     } else if (size == 'clear(0)') {
-      style = style.copyWith(fontSize: 16, color: AppColors.whiteColor);
+      style = style.copyWith(fontSize: 16, color: AppColors.readingTextColor);
     }
   }
   return style;

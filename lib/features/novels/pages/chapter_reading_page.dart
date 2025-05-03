@@ -61,6 +61,7 @@ class ChapterReadingPage extends HookConsumerWidget {
         noScreenshot.screenshotOn();
       },
       child: Scaffold(
+        backgroundColor: AppColors.readingBackgroundColor,
         appBar: AppBar(
           actions: [
             IconButton(
@@ -115,6 +116,7 @@ class ChapterReadingPage extends HookConsumerWidget {
             TextSpan(children: segmentSpans),
             textDirection: TextDirection.rtl,
             onSelectionChanged: (selection, cause) {
+              if (cause == SelectionChangedCause.doubleTap) return;
               if (cause == SelectionChangedCause.longPress) {
                 // Customize selection menu if needed
                 String segmentText = segment
@@ -170,7 +172,7 @@ class ChapterReadingPage extends HookConsumerWidget {
         fontSize: headerStyle?.fontSize ?? inlineStyle.fontSize ?? 16,
         fontWeight: headerStyle?.fontWeight ?? inlineStyle.fontWeight ?? FontWeight.normal,
         fontFamily: headerStyle?.fontFamily ?? inlineStyle.fontFamily ?? arabicPrimaryFont,
-        color: headerStyle?.color ?? inlineStyle.color ?? AppColors.whiteColor,
+        color: headerStyle?.color ?? inlineStyle.color ?? AppColors.readingTextColor,
       );
     }
 
@@ -178,7 +180,7 @@ class ChapterReadingPage extends HookConsumerWidget {
       fontSize: inlineStyle.fontSize ?? 16,
       fontWeight: inlineStyle.fontWeight ?? FontWeight.normal,
       fontFamily: inlineStyle.fontFamily ?? arabicPrimaryFont,
-      color: inlineStyle.color ?? AppColors.whiteColor,
+      color: inlineStyle.color ?? AppColors.readingTextColor,
     );
   }
 }
