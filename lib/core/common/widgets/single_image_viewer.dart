@@ -10,7 +10,7 @@ class SingleImageViewer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
-    final provider = images.first as CachedNetworkAvifImageProvider;
+    final provider = images.first as CachedNetworkImageProvider;
     return InkWell(
       onTap: () {
         MultiImageProvider multiImageProvider = MultiImageProvider(images, initialIndex: 0);

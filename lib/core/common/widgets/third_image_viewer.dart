@@ -9,9 +9,9 @@ class ThirdImageViewer extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
     final imageWidth = size.width;
-    final firstProvider = images[0] as CachedNetworkAvifImageProvider;
-    final secondProvider = images[1] as CachedNetworkAvifImageProvider;
-    final thirdProvider = images[2] as CachedNetworkAvifImageProvider;
+    final firstProvider = images[0] as CachedNetworkImageProvider;
+    final secondProvider = images[1] as CachedNetworkImageProvider;
+    final thirdProvider = images[2] as CachedNetworkImageProvider;
 
     // Calculate if there are more images beyond the first three
     final remainingCount = images.length - 3;

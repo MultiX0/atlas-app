@@ -36,7 +36,7 @@ class PostBodyWidget extends StatelessWidget {
           if (post.images.isNotEmpty) ...[
             const SizedBox(height: 10),
             ViewImagesController(
-              images: post.images.map((image) => CachedNetworkAvifImageProvider(image)).toList(),
+              images: post.images.map((image) => CachedNetworkImageProvider(image)).toList(),
             ),
           ],
           const SizedBox(height: 15),

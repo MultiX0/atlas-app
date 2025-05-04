@@ -8,8 +8,8 @@ class DoubleImageViewer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
-    final firstProvider = images[0] as CachedNetworkAvifImageProvider;
-    final secondProvider = images[1] as CachedNetworkAvifImageProvider;
+    final firstProvider = images[0] as CachedNetworkImageProvider;
+    final secondProvider = images[1] as CachedNetworkImageProvider;
 
     return InkWell(
       onTap: () {

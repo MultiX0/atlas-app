@@ -293,14 +293,12 @@ class PostsController extends StateNotifier<bool> {
   }) async {
     try {
       const uuid = Uuid();
-      String extension = '';
       List<String> _links = [];
       for (final image in images) {
-        extension = image.absolute.path.split('.').last.trim().toString();
         final link = await UploadStorage.uploadImages(
           quiality: 60,
           image: image,
-          path: 'posts/$postId/${uuid.v4()}.$extension',
+          path: 'posts/$postId/${uuid.v4()}',
         );
         _links.add(link);
       }

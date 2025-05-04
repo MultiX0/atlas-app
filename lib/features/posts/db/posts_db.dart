@@ -240,7 +240,11 @@ class PostsDb {
 
   Future<void> insertMentions(List<SlashEntity> mentions, String postId) async {
     try {
-      for (final mention in mentions) {
+      final _mentions =
+          mentions
+              .map((m) => m.type == 'char' ? SlashEntity('character', m.id, m.title) : m)
+              .toList();
+      for (final mention in _mentions) {
         await _client.rpc(
           FunctionNames.upsert_post_mention,
           params: {"p_post_id": postId, "p_entity_id": mention.id, "p_mention_type": mention.type},
