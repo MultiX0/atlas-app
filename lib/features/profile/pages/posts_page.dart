@@ -21,7 +21,6 @@ class ProfilePostsPage extends ConsumerStatefulWidget {
 
 class _ProfilePostsPageState extends ConsumerState<ProfilePostsPage> {
   final Debouncer _debouncer = Debouncer();
-  double _previousScroll = 0.0;
 
   @override
   void initState() {
@@ -82,9 +81,9 @@ class _ProfilePostsPageState extends ConsumerState<ProfilePostsPage> {
                   final metrics = scrollNotification.metrics;
                   final maxScroll = metrics.maxScrollExtent;
                   final currentScroll = metrics.pixels;
-                  const delta = 200.0;
+                  var threshold = MediaQuery.sizeOf(context).height / 2;
 
-                  if (currentScroll > _previousScroll + 10 && maxScroll - currentScroll <= delta) {
+                  if (maxScroll - currentScroll <= threshold) {
                     log("Near bottom, triggering fetch");
                     const duration = Duration(milliseconds: 500);
                     _debouncer.debounce(
@@ -99,7 +98,6 @@ class _ProfilePostsPageState extends ConsumerState<ProfilePostsPage> {
                       },
                     );
                   }
-                  _previousScroll = currentScroll;
                 }
                 return false;
               },

@@ -613,8 +613,7 @@ class NovelsController extends StateNotifier<bool> {
     try {
       final link = await UploadStorage.uploadImages(
         image: image,
-        path:
-            '/novels/$userId/$novelId/${poster ? 'poster-${uuid.v4()}.jpg' : 'banner-${uuid.v4()}.jpg'}',
+        path: '/novels/$userId/$novelId/${poster ? 'poster-${uuid.v4()}' : 'banner-${uuid.v4()}'}',
         quiality: 80,
       );
       return link;

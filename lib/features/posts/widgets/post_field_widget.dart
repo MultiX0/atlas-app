@@ -42,8 +42,8 @@ class _PostFieldWidgetState extends ConsumerState<PostFieldWidget> {
               .map(
                 (u) => {
                   "id": u[KeyNames.id] ?? "",
-                  "display": u[KeyNames.fullName] ?? "Unknown",
-                  "username": u[KeyNames.username] ?? "Unknown",
+                  "display": u[KeyNames.username] ?? "Unknown",
+                  "username": u[KeyNames.fullName] ?? "Unknown",
                   "photo": u[KeyNames.avatar] ?? "",
                   'trigger': '@',
                 },
@@ -185,8 +185,8 @@ class _PostFieldWidgetState extends ConsumerState<PostFieldWidget> {
                     (data) => Material(
                       color: AppColors.blackColor,
                       child: ListTile(
-                        title: Text(data['display'] ?? "No Name"),
-                        subtitle: Text("@${data['username'] ?? "No Username"}"),
+                        title: Text("@${data['display'] ?? "No Username"}"),
+                        subtitle: Text("${data['username'] ?? "No Name"}"),
                         leading: CircleAvatar(
                           backgroundColor: AppColors.blackColor,
                           backgroundImage:

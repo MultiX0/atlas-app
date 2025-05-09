@@ -112,19 +112,17 @@ class ChapterReadingPage extends HookConsumerWidget {
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 16.0),
-          child: SelectableText.rich(
-            TextSpan(children: segmentSpans),
-            textDirection: TextDirection.rtl,
-            onSelectionChanged: (selection, cause) {
-              if (cause == SelectionChangedCause.doubleTap) return;
-              if (cause == SelectionChangedCause.longPress) {
-                // Customize selection menu if needed
-                String segmentText = segment
-                    .map((line) => line.parts.map((part) => part.$1).join())
-                    .join('\n');
-                openMenu(context, segmentText);
-              }
+          child: GestureDetector(
+            onLongPress: () {
+              String segmentText = segment
+                  .map((line) => line.parts.map((part) => part.$1).join())
+                  .join('\n');
+              openMenu(context, segmentText);
             },
+            child: RichText(
+              text: TextSpan(children: segmentSpans),
+              textDirection: TextDirection.rtl,
+            ),
           ),
         );
       },

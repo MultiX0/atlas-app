@@ -10,9 +10,17 @@ import 'package:atlas_app/imports.dart';
 import 'package:dio/dio.dart';
 
 class IsLoggedState extends StateNotifier<bool> {
-  IsLoggedState() : super(false);
+  IsLoggedState() : super(Supabase.instance.client.auth.currentSession == null);
+
+  Session? get session => Supabase.instance.client.auth.currentSession;
+
+  bool get sessionState => session == null;
 
   void updateState(bool isLogged) {
+    if (session == null) {
+      state = sessionState;
+      return;
+    }
     state = isLogged;
   }
 }
@@ -100,7 +108,15 @@ class AuthDb {
 
   Future<UserModel> getUserData(String userId) async {
     try {
-      final data = await _usersView.select("*").eq(KeyNames.id, userId).maybeSingle();
+      var query = _usersView.select("*");
+      if (userId.length == 36) {
+        query = query.eq(KeyNames.id, userId);
+      } else {
+        query = query.eq(KeyNames.username, userId);
+      }
+
+      var data = await query.maybeSingle();
+
       if (data != null) {
         return UserModel.fromMap(data);
       }

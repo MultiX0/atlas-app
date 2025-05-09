@@ -8,17 +8,17 @@ import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 // Assuming AppColors, formatNumber, accentFont, arabicAccentFont, Routes, openSheet, etc. are defined elsewhere
 
 class ProfileHeader extends ConsumerWidget {
-  const ProfileHeader({super.key, required this.user});
+  const ProfileHeader({super.key, required this.user, required this.isMe});
 
   final UserModel user;
 
+  final bool isMe;
   final double avatarRadius = 40.0;
   final double avatarBorder = 4.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final me = ref.watch(userState).user!; // Ensure 'me' is available
-    bool isMe = me.userId == user.userId;
     final size = MediaQuery.sizeOf(context);
 
     final _user =

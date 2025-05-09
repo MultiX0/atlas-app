@@ -13,7 +13,10 @@ import 'package:atlas_app/imports.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:uuid/uuid.dart';
 
-final getUserByIdProvider = FutureProvider.family<UserModel, String>((ref, userId) async {
+final getUserByIdProvider = FutureProvider.family.autoDispose<UserModel, String>((
+  ref,
+  userId,
+) async {
   final controller = ref.watch(authControllerProvider.notifier);
 
   final user = await controller.getUserData(userId);

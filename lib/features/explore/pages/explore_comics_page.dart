@@ -44,7 +44,7 @@ class _ExploreNovelsPageState extends ConsumerState<ExploreComicsPage> {
     if (!_scrollController.hasClients) return false;
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.offset;
-    const threshold = 600.0;
+    var threshold = MediaQuery.sizeOf(context).height / 2;
 
     return maxScroll - currentScroll <= threshold;
   }

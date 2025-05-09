@@ -1,3 +1,4 @@
+import 'package:atlas_app/core/common/widgets/error_widget.dart';
 import 'package:atlas_app/features/profile/controller/profile_controller.dart';
 import 'package:atlas_app/features/profile/provider/providers.dart';
 import 'package:atlas_app/features/profile/widgets/profile_body.dart';
@@ -17,10 +18,15 @@ class ProfilePage extends ConsumerStatefulWidget {
 
 class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProviderStateMixin {
   late TabController _controller;
+  bool get isUsername => widget.userId.length != 36;
+
   @override
   void initState() {
     final me = ref.read(userState).user!;
-    bool isMe = (me.userId == widget.userId) || widget.userId.trim().isEmpty;
+    bool isMe =
+        isUsername
+            ? (me.username == widget.userId)
+            : (me.userId == widget.userId) || widget.userId.trim().isEmpty;
 
     _controller = TabController(length: isMe ? 1 : 3, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) => handleInit());
@@ -30,7 +36,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
   void handleInit() {
     Future.microtask(() {
       final me = ref.read(userState).user!;
-      bool isMe = (me.userId == widget.userId) || widget.userId.trim().isEmpty;
+      bool isMe =
+          isUsername
+              ? (me.username == widget.userId)
+              : (me.userId == widget.userId) || widget.userId.trim().isEmpty;
       if (isMe) {
         ref.read(selectedUserProvider.notifier).state = me;
       }
@@ -45,8 +54,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
   Widget buildBodyController() {
     final me = ref.read(userState).user!;
     final userId = widget.userId;
-    bool isMe = (me.userId == widget.userId) || widget.userId.trim().isEmpty;
 
+    bool isMe =
+        isUsername
+            ? (me.username == widget.userId)
+            : (me.userId == widget.userId) || widget.userId.trim().isEmpty;
     if (isMe) {
       return Consumer(
         builder: (context, ref, _) {
@@ -65,7 +77,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
             });
             return buildBody(user, isMe);
           },
-          error: (error, _) => Center(child: ErrorWidget(error)),
+          error: (error, _) {
+            return AtlasErrorPage(
+              title: "Not Found",
+              message: error.toString(),
+              onHome: () => context.pop(),
+            );
+          },
           loading: () => const CustomScrollView(slivers: [ProfileHeaderShimmer()]),
         );
   }
@@ -76,7 +94,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
         physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
         headerSliverBuilder: ((context, innerBoxIsScrolled) {
           return [
-            ProfileHeader(user: user),
+            ProfileHeader(user: user, isMe: isMe),
             SliverPersistentHeader(
               delegate: _SliverAppBarDelegate(ProfileTabs(controller: _controller, isMe: isMe)),
               pinned: true,

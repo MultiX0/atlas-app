@@ -5,6 +5,7 @@ import 'dart:developer';
 
 import 'package:app_links/app_links.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:atlas_app/main.dart';
 import 'package:no_screenshot/no_screenshot.dart';
 
 class SplashPage extends ConsumerStatefulWidget {
@@ -23,6 +24,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   Future<void> initAppLinks() async {
     try {
       final initialUri = await _appLinks.getInitialLink();
+      await supabaseInit();
       if (initialUri != null) {
         _pendingDeepLink = initialUri; // Store initial deep link
       }

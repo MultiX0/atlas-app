@@ -608,7 +608,6 @@ characters {
       'Whipping',
       'Yaoi',
       'Yuri',
-      'Zombie',
       "LGBTQ+ Themes",
       "Handjob",
       "Boys' Love",

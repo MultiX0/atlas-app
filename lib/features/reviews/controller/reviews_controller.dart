@@ -4,7 +4,6 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
-import 'package:atlas_app/core/common/utils/image_to_avif_convert.dart';
 import 'package:atlas_app/core/common/utils/upload_storage.dart';
 import 'package:atlas_app/features/novels/models/novel_review_model.dart';
 import 'package:atlas_app/features/novels/providers/novel_reviews_state.dart';
@@ -279,32 +278,14 @@ class ReviewsController extends StateNotifier<bool> {
   }) async {
     try {
       const uuid = Uuid();
-      String extension = '';
       List<String> _links = [];
       for (final image in images) {
-        // Convert image to AVIF first
-        final avifImage = await AvifConverter.convertToAvif(image, quality: 80);
-        log("avifImage: ${avifImage?.absolute.path}");
-
-        // Check if conversion was successful before proceeding
-        if (avifImage != null) {
-          extension = avifImage.absolute.path.split('.').last.trim().toString();
-          final link = await UploadStorage.uploadImages(
-            image: avifImage,
-            path: '$dir/reviews/$userId-${uuid.v4()}.$extension',
-          );
-          log("avif image uploaded: $link");
-          _links.add(link);
-        } else {
-          // If AVIF conversion fails, use the original image as fallback
-          log('AVIF conversion failed for image. Using original format.');
-          extension = image.absolute.path.split('.').last.trim().toString();
-          final link = await UploadStorage.uploadImages(
-            image: image,
-            path: '$dir/reviews/$userId-${uuid.v4()}.$extension',
-          );
-          _links.add(link);
-        }
+        final link = await UploadStorage.uploadImages(
+          image: image,
+          quiality: 60,
+          path: '$dir/reviews/$userId-${uuid.v4()}',
+        );
+        _links.add(link);
       }
       return _links;
     } catch (e) {
