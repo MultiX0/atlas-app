@@ -380,6 +380,7 @@ class NovelsDb {
     ChapterModel chapter,
   ) async {
     try {
+      log("original chapter: ${draft.originalChapterId}");
       if (draft.originalChapterId != null && draft.originalChapterId!.isNotEmpty) {
         await updateChapter(chapter.copyWith(id: draft.originalChapterId));
         await deleteDraft(draft);

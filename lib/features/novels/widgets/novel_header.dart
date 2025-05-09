@@ -5,7 +5,9 @@ import 'package:atlas_app/core/common/widgets/reports/report_widget.dart';
 import 'package:atlas_app/features/novels/controller/novels_controller.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
+import 'dart:ui' as ui;
 
 class NovelHeader extends ConsumerStatefulWidget {
   const NovelHeader({super.key});
@@ -29,6 +31,7 @@ class _NovelHeaderState extends ConsumerState<NovelHeader> {
     final shadowColor = novel.color.withValues(alpha: .25);
     final me = ref.watch(userState.select((s) => s.user!));
     final isMeCreator = me.userId == novel.userId;
+    final titleHasArabic = Bidi.hasAnyRtl(novel.title);
     return SliverToBoxAdapter(
       child: RepaintBoundary(
         child: SizedBox(
@@ -111,19 +114,22 @@ class _NovelHeaderState extends ConsumerState<NovelHeader> {
                                 Padding(
                                   padding: const EdgeInsets.only(right: 15),
                                   child: Text(
-                                    textDirection: TextDirection.rtl,
+                                    textDirection:
+                                        titleHasArabic
+                                            ? ui.TextDirection.rtl
+                                            : ui.TextDirection.ltr,
                                     novel.title,
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontFamily: arabicAccentFont,
+                                    style: TextStyle(
+                                      fontFamily: titleHasArabic ? arabicAccentFont : enAccentFont,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 20,
                                     ),
                                   ),
                                 ),
                                 Text.rich(
-                                  textDirection: TextDirection.rtl,
+                                  textDirection: ui.TextDirection.rtl,
                                   TextSpan(
                                     text: novel.publishedAt == null ? '' : "تم تنشرها في: ",
                                     style: const TextStyle(fontFamily: arabicAccentFont),
@@ -139,19 +145,31 @@ class _NovelHeaderState extends ConsumerState<NovelHeader> {
                                   style: const TextStyle(fontFamily: enPrimaryFont),
                                 ),
                                 Text(
-                                  textDirection: TextDirection.rtl,
+                                  textDirection: ui.TextDirection.rtl,
                                   "التصنيف العمري: ${novel.ageRating}+",
                                   style: const TextStyle(
                                     fontFamily: arabicAccentFont,
                                     color: AppColors.mutedSilver,
                                   ),
                                 ),
-                                Text(
-                                  "الكاتب: @${novel.user.username}",
+                                InkWell(
+                                  onTap: () => context.push("${Routes.user}/${novel.user.userId}"),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        "الكاتب: ${novel.user.username}",
 
-                                  style: const TextStyle(
-                                    fontFamily: arabicAccentFont,
-                                    color: AppColors.mutedSilver,
+                                        style: const TextStyle(
+                                          fontFamily: arabicAccentFont,
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                      const Icon(
+                                        LucideIcons.chevron_right,
+                                        size: 14,
+                                        color: AppColors.primary,
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],

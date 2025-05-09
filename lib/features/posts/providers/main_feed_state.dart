@@ -120,23 +120,41 @@ class MainFeedState extends StateNotifier<_HelperClass> {
     log("Updating post like state: ${postModel.postId}, userLiked: ${postModel.userLiked}");
 
     final posts = List<PostModel>.from(state.posts);
-    final indexOfPost = posts.indexWhere((post) => post.postId == postModel.postId);
+    List<int> indexes =
+        posts
+            .asMap()
+            .entries
+            .where((entry) => entry.value.postId == postModel.postId)
+            .map((entry) => entry.key)
+            .toList();
 
-    if (indexOfPost == -1) {
+    if (indexes.isNotEmpty) {
       log("Post not found in state: ${postModel.postId}");
       return;
     }
 
     // Replace with the updated post
-    posts[indexOfPost] = postModel;
+    for (int index in indexes) {
+      posts[index] = postModel;
+    }
+
     state = state.copyWith(posts: posts);
   }
 
   void updatePost(PostModel post) {
-    final indexOf = state.posts.indexWhere((p) => p.postId == post.postId);
-    if (indexOf == -1) return;
     List<PostModel> updatedPosts = List<PostModel>.from(state.posts);
-    updatedPosts[indexOf] = post;
+
+    List<int> indexes =
+        updatedPosts
+            .asMap()
+            .entries
+            .where((entry) => entry.value.postId == post.postId)
+            .map((entry) => entry.key)
+            .toList();
+    if (indexes.isEmpty) return;
+    for (final index in indexes) {
+      updatedPosts[index] = post;
+    }
     state = state.copyWith(posts: updatedPosts);
   }
 }

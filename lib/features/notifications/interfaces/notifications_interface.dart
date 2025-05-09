@@ -170,4 +170,14 @@ class NotificationsInterface {
     userId: userId,
     data: data,
   );
+  static NotificationContainerModel followUserNotification({
+    required String userId,
+    Map<String, dynamic>? data,
+    required String username,
+  }) => NotificationContainerModel(
+    title: "متابع جديد",
+    body: '$username بدأ في متابعتك. تحقق من ملفه!',
+    userId: userId,
+    data: data,
+  );
 }

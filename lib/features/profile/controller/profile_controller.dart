@@ -160,7 +160,7 @@ class ProfileController extends StateNotifier<bool> {
       );
       _ref.read(userState.notifier).updateState(newMe);
 
-      await _profileDb.toggleFollow(targetId);
+      await _profileDb.toggleFollow(targetId, oldUser?.followed ?? false, me);
     } catch (e) {
       _ref.read(selectedUserProvider.notifier).state = oldUser;
       _ref.read(userState.notifier).updateState(me);

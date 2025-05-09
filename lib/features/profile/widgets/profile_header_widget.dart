@@ -32,7 +32,7 @@ class ProfileHeader extends ConsumerWidget {
 
     double bottomHeaderEstimatedHeight = 160.0;
     if (_user!.bio != null && _user.bio!.isNotEmpty) {
-      bottomHeaderEstimatedHeight += 20.0;
+      bottomHeaderEstimatedHeight += 40.0;
     }
 
     final double totalExpandedHeight = topHeaderHeight + bottomHeaderEstimatedHeight;

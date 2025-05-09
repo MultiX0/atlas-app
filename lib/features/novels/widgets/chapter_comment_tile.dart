@@ -61,7 +61,11 @@ class ChapterCommentTile extends StatelessWidget {
                   Expanded(
                     child: Row(
                       children: [
-                        CachedAvatar(avatar: user.avatar, raduis: 20),
+                        CachedAvatar(
+                          avatar: user.avatar,
+                          raduis: 20,
+                          onTap: () => context.push("${Routes.user}/${user.userId}"),
+                        ),
                         const SizedBox(width: 15),
                         Expanded(
                           child: Column(

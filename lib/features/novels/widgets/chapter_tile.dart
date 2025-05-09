@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:atlas_app/core/common/utils/custom_action_sheet.dart';
 import 'package:atlas_app/features/novels/controller/novels_controller.dart';
 import 'package:atlas_app/features/novels/models/chapter_draft_model.dart';
@@ -86,6 +88,7 @@ class ChapterTile extends StatelessWidget {
               final id = const Uuid().v4();
               final now = DateTime.now();
               final me = ref.read(userState.select((s) => s.user!));
+              log("the original chapter id is: ${chapter.id}");
               final draft = ChapterDraftModel(
                 id: id,
                 createdAt: now,

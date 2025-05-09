@@ -89,7 +89,7 @@ class _MainFeedPageState extends ConsumerState<MainFeedPage> {
     // Mark as seen only if more than 70% visible and not already marked
     if (!_alreadyMarkedSeen.contains(postId) && visibleFraction > 0.7) {
       _seenTimer?.cancel();
-      _seenTimer = Timer(const Duration(seconds: 2), () {
+      _seenTimer = Timer(const Duration(milliseconds: 500), () {
         ref.read(postsDbProvider).seePost(postId, userId);
         _alreadyMarkedSeen.add(postId);
       });

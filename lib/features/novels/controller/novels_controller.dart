@@ -260,7 +260,7 @@ class NovelsController extends StateNotifier<bool> {
   Future<void> publishChapter(ChapterDraftModel draft, BuildContext context) async {
     try {
       context.loaderOverlay.show();
-      final id = uuid.v4();
+      final id = draft.originalChapterId ?? uuid.v4();
       final novel = _ref.read(selectedNovelProvider)!;
       final nextChapterNumber = await db.getNextChapterNumber(draft.novelId);
       final chapter = ChapterModel(
