@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:atlas_app/core/common/enum/reviews_enum.dart';
 import 'package:atlas_app/core/common/utils/color_to_string.dart';
 import 'package:atlas_app/core/common/utils/image_picker.dart';
 import 'package:atlas_app/features/novels/models/novel_review_model.dart';

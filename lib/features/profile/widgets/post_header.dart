@@ -1,6 +1,5 @@
 import 'package:atlas_app/core/common/enum/post_like_enum.dart';
 import 'package:atlas_app/core/common/widgets/cached_avatar.dart';
-import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/features/posts/widgets/post_options.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:atlas_app/router.dart';

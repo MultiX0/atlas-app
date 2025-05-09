@@ -1,6 +1,5 @@
 import 'dart:developer';
 
-import 'package:atlas_app/features/auth/db/auth_db.dart';
 // import 'package:atlas_app/features/profile/db/profile_db.dart';
 import 'package:atlas_app/imports.dart';
 

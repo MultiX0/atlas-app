@@ -4,7 +4,6 @@ import 'dart:developer';
 import 'package:atlas_app/core/common/enum/post_like_enum.dart';
 import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/features/posts/controller/posts_controller.dart';
-import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/features/profile/widgets/post_body_widget.dart';
 import 'package:atlas_app/features/profile/widgets/post_header.dart';
 import 'package:atlas_app/features/profile/widgets/post_replayed_widget.dart';

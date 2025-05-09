@@ -18,15 +18,22 @@ class ProfilePage extends ConsumerStatefulWidget {
 
 class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProviderStateMixin {
   late TabController _controller;
-  bool get isUsername => widget.userId.length != 36;
+  late String userId;
 
   @override
   void initState() {
     final me = ref.read(userState).user!;
+    setState(() {
+      if (widget.userId.trim().isEmpty) {
+        userId = me.userId;
+      } else {
+        userId = widget.userId;
+      }
+    });
+    bool isUsername = userId.length != 36;
+
     bool isMe =
-        isUsername
-            ? (me.username == widget.userId)
-            : (me.userId == widget.userId) || widget.userId.trim().isEmpty;
+        isUsername ? (me.username == userId) : (me.userId == userId) || userId.trim().isEmpty;
 
     _controller = TabController(length: isMe ? 1 : 3, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) => handleInit());
@@ -36,10 +43,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
   void handleInit() {
     Future.microtask(() {
       final me = ref.read(userState).user!;
+      bool isUsername = userId.length != 36;
+
       bool isMe =
-          isUsername
-              ? (me.username == widget.userId)
-              : (me.userId == widget.userId) || widget.userId.trim().isEmpty;
+          isUsername ? (me.username == userId) : (me.userId == userId) || userId.trim().isEmpty;
       if (isMe) {
         ref.read(selectedUserProvider.notifier).state = me;
       }
@@ -53,12 +60,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with SingleTickerProv
 
   Widget buildBodyController() {
     final me = ref.read(userState).user!;
-    final userId = widget.userId;
+    final userId = this.userId;
+    bool isUsername = userId.length != 36;
 
     bool isMe =
-        isUsername
-            ? (me.username == widget.userId)
-            : (me.userId == widget.userId) || widget.userId.trim().isEmpty;
+        isUsername ? (me.username == userId) : (me.userId == userId) || userId.trim().isEmpty;
     if (isMe) {
       return Consumer(
         builder: (context, ref, _) {

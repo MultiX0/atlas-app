@@ -6,7 +6,6 @@ import 'package:atlas_app/core/common/widgets/mentions/mention_view.dart';
 import 'package:atlas_app/core/common/widgets/mentions/models.dart';
 import 'package:atlas_app/features/hashtags/db/hashtags_db.dart';
 import 'package:atlas_app/features/posts/controller/posts_controller.dart';
-import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/features/posts/widgets/user_data_widget.dart';
 import 'package:atlas_app/features/profile/controller/profile_controller.dart';
 import 'package:atlas_app/imports.dart';

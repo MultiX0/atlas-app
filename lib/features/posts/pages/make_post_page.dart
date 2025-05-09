@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:atlas_app/core/common/enum/post_like_enum.dart';
 import 'package:atlas_app/core/common/utils/image_picker.dart';
 import 'package:atlas_app/features/posts/controller/posts_controller.dart';
-import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/features/posts/widgets/comic_review_tree_widget.dart';
 import 'package:atlas_app/features/posts/widgets/post_field_widget.dart';
 import 'package:atlas_app/features/posts/widgets/repost_tree_widget.dart';

@@ -1,4 +1,3 @@
-import 'package:atlas_app/core/common/enum/reviews_enum.dart';
 import 'package:atlas_app/core/common/widgets/app_refresh.dart';
 import 'package:atlas_app/features/novels/models/novel_model.dart';
 import 'package:atlas_app/features/novels/models/novel_review_model.dart';

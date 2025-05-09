@@ -23,8 +23,9 @@ class _SplashPageState extends ConsumerState<SplashPage> {
 
   Future<void> initAppLinks() async {
     try {
-      final initialUri = await _appLinks.getInitialLink();
       await supabaseInit();
+
+      final initialUri = await _appLinks.getInitialLink();
       if (initialUri != null) {
         _pendingDeepLink = initialUri; // Store initial deep link
       }
@@ -64,7 +65,8 @@ class _SplashPageState extends ConsumerState<SplashPage> {
       // Avoid navigating to "/"
       log("Navigating via context.go to: $path");
       // Ensure the router provider is accessed safely if needed, but context.go is preferred
-      context.go(path);
+      context.go(Routes.home);
+      context.push(path);
     } else {
       log("Deep link path is empty or root, navigating home.");
       context.go(Routes.home); // Fallback to home if path is invalid/empty
@@ -82,6 +84,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       log("Splash: Post frame callback started.");
+
       try {
         // Initialize user and wait for it to complete
         final user = await ref.read(userState.notifier).initlizeUser();

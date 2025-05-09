@@ -6,7 +6,6 @@ import 'dart:io';
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/upload_storage.dart';
 import 'package:atlas_app/features/auth/controller/auth_controller.dart';
-import 'package:atlas_app/features/auth/db/auth_db.dart';
 import 'package:atlas_app/features/profile/db/profile_db.dart';
 import 'package:atlas_app/features/profile/provider/providers.dart';
 import 'package:atlas_app/imports.dart';

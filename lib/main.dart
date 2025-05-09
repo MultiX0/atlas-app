@@ -35,8 +35,11 @@ Future<void> _firebaseInit() async {
   }
 }
 
+bool _supaInit = false;
+
 Future<void> supabaseInit() async {
   try {
+    if (_supaInit) return;
     await _initEnv();
     final key = dotenv.env["DB_KEY"];
     final url = dotenv.env["DB_URL"];
@@ -54,6 +57,7 @@ Future<void> supabaseInit() async {
         autoRefreshToken: true,
       ),
     );
+    _supaInit = true;
   } catch (e) {
     log(e.toString());
     rethrow;

@@ -16,7 +16,6 @@ import 'package:atlas_app/features/novels/providers/novel_reviews_state.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/features/posts/db/posts_db.dart';
 import 'package:atlas_app/features/posts/providers/main_feed_state.dart';
-import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/features/profile/provider/profile_posts_state.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:loader_overlay/loader_overlay.dart';

@@ -1,5 +1,4 @@
 import 'package:atlas_app/core/common/enum/post_like_enum.dart';
-import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/features/posts/widgets/post_field_widget.dart';
 import 'package:atlas_app/features/profile/widgets/post_content_widget.dart';
 import 'package:atlas_app/features/profile/widgets/post_header.dart';
