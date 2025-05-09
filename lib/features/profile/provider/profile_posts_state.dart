@@ -194,6 +194,7 @@ class ProfilePostsStateProvider extends StateNotifier<ProfilePostsStateHelper> {
 
   void updatePost(PostModel post) {
     final indexOf = state.posts.indexWhere((p) => p.postId == post.postId);
+    if (indexOf == -1) return;
     List<PostModel> updatedPosts = List<PostModel>.from(state.posts);
     updatedPosts[indexOf] = post;
     state = state.copyWith(posts: updatedPosts);

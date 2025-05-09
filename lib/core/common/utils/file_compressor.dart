@@ -9,6 +9,7 @@ Future<File> writeToFile(List<int> image, String filePath) {
 Future<File> compressFile(File file, int? quality) async {
   var result = await FlutterImageCompress.compressWithFile(
     file.absolute.path,
+    format: CompressFormat.webp,
     quality: quality ?? 80,
   );
   log((file.lengthSync()).toString());

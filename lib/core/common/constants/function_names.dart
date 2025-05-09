@@ -31,4 +31,6 @@ class FunctionNames {
   static const upsert_hashtag = 'upsert_hashtag';
   static const upsert_post_mention = 'upsert_post_mention';
   static const toggle_post_like = 'toggle_post_like';
+  static const mark_post_as_seen = 'mark_post_as_seen';
+  static const upsert_post_interaction = 'upsert_post_interaction';
 }

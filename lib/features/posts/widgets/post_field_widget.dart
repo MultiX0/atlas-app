@@ -6,7 +6,6 @@ import 'package:atlas_app/core/common/widgets/mentions/mention_view.dart';
 import 'package:atlas_app/core/common/widgets/mentions/models.dart';
 import 'package:atlas_app/features/hashtags/db/hashtags_db.dart';
 import 'package:atlas_app/features/posts/controller/posts_controller.dart';
-import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/features/posts/widgets/user_data_widget.dart';
 import 'package:atlas_app/features/profile/controller/profile_controller.dart';
 import 'package:atlas_app/imports.dart';
@@ -42,8 +41,8 @@ class _PostFieldWidgetState extends ConsumerState<PostFieldWidget> {
               .map(
                 (u) => {
                   "id": u[KeyNames.id] ?? "",
-                  "display": u[KeyNames.fullName] ?? "Unknown",
-                  "username": u[KeyNames.username] ?? "Unknown",
+                  "display": u[KeyNames.username] ?? "Unknown",
+                  "username": u[KeyNames.fullName] ?? "Unknown",
                   "photo": u[KeyNames.avatar] ?? "",
                   'trigger': '@',
                 },
@@ -185,8 +184,8 @@ class _PostFieldWidgetState extends ConsumerState<PostFieldWidget> {
                     (data) => Material(
                       color: AppColors.blackColor,
                       child: ListTile(
-                        title: Text(data['display'] ?? "No Name"),
-                        subtitle: Text("@${data['username'] ?? "No Username"}"),
+                        title: Text("@${data['display'] ?? "No Username"}"),
+                        subtitle: Text("${data['username'] ?? "No Name"}"),
                         leading: CircleAvatar(
                           backgroundColor: AppColors.blackColor,
                           backgroundImage:

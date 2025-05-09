@@ -51,7 +51,7 @@ class _MetadataPageState extends ConsumerState<MetadataPage> {
         cancelStyle: const TextStyle(color: Colors.white60),
       ),
       showTitleActions: true,
-      maxTime: DateTime.now().subtract(const Duration(days: 365 * 14)),
+      maxTime: DateTime.now().subtract(const Duration(days: 365 * 16)),
       onChanged: (date) {
         final d = DateFormat.yMMMMd('en_US').format(date);
         log(d);
@@ -172,7 +172,7 @@ class _MetadataPageState extends ConsumerState<MetadataPage> {
           },
           onTap: birthDateSheet,
         ),
-        buildLabel("(يجب أن تكون في سن 14 أو أكثر للانضمام.)"),
+        buildLabel("(يجب أن تكون في سن 16 أو أكثر للانضمام.)"),
       ],
     );
   }
@@ -220,11 +220,11 @@ class _MetadataPageState extends ConsumerState<MetadataPage> {
     if (value == null || value.trim().isEmpty) {
       return "اللقب لا يمكن أن يكون فارغًا.";
     }
-    if (!RegExp(r'^[a-zA-Z0-9 ]+$').hasMatch(value)) {
+    if (!RegExp(r'^[\u0621-\u064A\u0660-\u0669a-zA-Z0-9 ]+$').hasMatch(value)) {
       return "اللقب يمكن أن يحتوي فقط على الحروف، الأرقام، والمسافات.";
     }
-    if (value.trim().length < 3 || value.trim().length > 10) {
-      return "يجب أن يكون اللقب بين 3 و 10 أحرف.";
+    if (value.trim().length < 3 || value.trim().length > 15) {
+      return "يجب أن يكون اللقب بين 3 و 15 أحرف.";
     }
     return null; // Valid
   }
@@ -233,8 +233,8 @@ class _MetadataPageState extends ConsumerState<MetadataPage> {
     if (value == null || value.trim().isEmpty) {
       return "اسم المستخدم لا يمكن أن يكون فارغًا.";
     }
-    if (value.length < 3 || value.length > 15) {
-      return "يجب أن يكون اسم المستخدم بين 3 و 15 حرفًا.";
+    if (value.length < 3 || value.length > 20) {
+      return "يجب أن يكون اسم المستخدم بين 3 و 20 حرفًا.";
     }
     if (!RegExp(r'^[a-z0-9_.]+$').hasMatch(value)) {
       return "اسم المستخدم يمكن أن يحتوي فقط على الحروف الصغيرة، الأرقام، العلامات السفلية (_)، والنقاط (.).";

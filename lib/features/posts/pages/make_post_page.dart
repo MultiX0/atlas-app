@@ -1,7 +1,7 @@
 import 'dart:io';
+import 'package:atlas_app/core/common/enum/post_like_enum.dart';
 import 'package:atlas_app/core/common/utils/image_picker.dart';
 import 'package:atlas_app/features/posts/controller/posts_controller.dart';
-import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/features/posts/widgets/comic_review_tree_widget.dart';
 import 'package:atlas_app/features/posts/widgets/post_field_widget.dart';
 import 'package:atlas_app/features/posts/widgets/repost_tree_widget.dart';
@@ -117,12 +117,12 @@ class _MakePostPageState extends ConsumerState<MakePostPage> {
               ),
             ),
             if (images.isNotEmpty) ...[buildImages(), const SizedBox(height: 10)],
-
             ToolsWidget(
               selectImages: handleImages,
               handleOptions: (canRepost, canComment) => handleOptions(canRepost, canComment),
               canComment: canComment ?? true,
               canRepost: canRepost ?? true,
+              edit: !((widget.defaultText == null || (widget.defaultText ?? "").isEmpty)),
             ),
           ],
         ),
@@ -174,7 +174,7 @@ class TypeControllerWidget extends ConsumerWidget {
       case PostType.novel_review:
         return const ComicReviewTreeWidget();
       case PostType.repost:
-        return const RepostTreeWidget();
+        return const RepostTreeWidget(postType: PostLikeEnum.PROFILE);
       default:
         return PostFieldWidget(defaultText: defaultText);
     }

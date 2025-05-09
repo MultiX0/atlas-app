@@ -30,6 +30,10 @@ class NovelViewsState extends StateNotifier<List<NovelModel>> {
     newState[indexOf] = novel;
     state = newState;
   }
+
+  void clear() {
+    state = [];
+  }
 }
 
 final novelViewsStateProvider = StateNotifierProvider<NovelViewsState, List<NovelModel>>((ref) {

@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/features/comics/db/comics_db.dart';
-import 'package:atlas_app/features/comics/pages/manhwa_page.dart';
 import 'package:atlas_app/features/novels/widgets/novel_shimmer_loading.dart';
 import 'package:atlas_app/imports.dart';
 

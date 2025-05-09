@@ -3,6 +3,8 @@ import 'dart:developer';
 import 'package:atlas_app/core/common/constants/function_names.dart';
 import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/core/common/constants/view_names.dart';
+import 'package:atlas_app/features/notifications/db/notifications_db.dart';
+import 'package:atlas_app/features/notifications/interfaces/notifications_interface.dart';
 import 'package:atlas_app/features/profile/models/follows_model.dart';
 import 'package:atlas_app/imports.dart';
 
@@ -10,6 +12,7 @@ class ProfileDb {
   final client = Supabase.instance.client;
   SupabaseQueryBuilder get _usersTable => client.from(TableNames.users);
   SupabaseQueryBuilder get _usersView => client.from(ViewNames.user_profiles_view);
+  NotificationsDb get notificationsDb => NotificationsDb();
 
   Future<FollowsCountModel> getFollowsCountString(String userId) async {
     try {
@@ -51,9 +54,16 @@ class ProfileDb {
     }
   }
 
-  Future<void> toggleFollow(String targetId) async {
+  Future<void> toggleFollow(String targetId, bool isFollowed, UserModel me) async {
     try {
-      await client.rpc(FunctionNames.toggle_follow_user, params: {"target_user_id": targetId});
+      final notification = NotificationsInterface.followUserNotification(
+        userId: targetId,
+        username: me.username,
+      );
+      await Future.wait([
+        if (!isFollowed) notificationsDb.sendNotificatiosn(notification),
+        client.rpc(FunctionNames.toggle_follow_user, params: {"target_user_id": targetId}),
+      ]);
     } catch (e) {
       log(e.toString());
       rethrow;

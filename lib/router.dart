@@ -1,37 +1,5 @@
 import 'dart:developer';
 
-import 'package:atlas_app/core/common/enum/reviews_enum.dart';
-import 'package:atlas_app/features/assistant/pages/chat_page.dart';
-import 'package:atlas_app/features/auth/db/auth_db.dart';
-import 'package:atlas_app/features/auth/pages/forget_password/confirm_email_page.dart';
-import 'package:atlas_app/features/posts/pages/main_feed_page.dart';
-import 'package:atlas_app/features/settings/pages/email_field_page.dart';
-import 'package:atlas_app/features/auth/pages/forget_password/update_password.dart';
-import 'package:atlas_app/features/auth/pages/login_page.dart';
-import 'package:atlas_app/features/auth/pages/register_page.dart';
-import 'package:atlas_app/features/comics/pages/manhwa_loader.dart';
-import 'package:atlas_app/features/comics/pages/manhwa_page.dart';
-import 'package:atlas_app/features/explore/pages/explore_page.dart';
-import 'package:atlas_app/features/hashtags/pages/hashtag_page.dart';
-import 'package:atlas_app/features/library/pages/add_novel_page.dart';
-import 'package:atlas_app/features/library/pages/library_page.dart';
-import 'package:atlas_app/features/novels/pages/chapter_comments_page.dart';
-import 'package:atlas_app/features/novels/pages/chapter_drafts_page.dart';
-import 'package:atlas_app/features/novels/pages/chapter_reading_page.dart';
-import 'package:atlas_app/features/novels/pages/new_chapter_page.dart';
-import 'package:atlas_app/features/novels/widgets/novel_loader.dart';
-import 'package:atlas_app/features/onboarding/pages/first_page.dart';
-import 'package:atlas_app/features/posts/pages/make_post_page.dart';
-import 'package:atlas_app/features/posts/providers/providers.dart';
-import 'package:atlas_app/features/profile/pages/edit_profile_page.dart';
-import 'package:atlas_app/features/profile/pages/profile_page.dart';
-import 'package:atlas_app/features/reviews/pages/add_comic_review.dart';
-import 'package:atlas_app/features/scrolls/pages/scrolls_page.dart';
-import 'package:atlas_app/features/search/pages/search_page.dart';
-import 'package:atlas_app/features/settings/pages/forgot_password_page.dart';
-import 'package:atlas_app/features/splash/splash_page.dart';
-import 'package:atlas_app/nav_bar.dart';
-
 import 'imports.dart';
 
 final navigationShellProvider = Provider<StatefulNavigationShell>((ref) {
@@ -39,15 +7,20 @@ final navigationShellProvider = Provider<StatefulNavigationShell>((ref) {
 });
 
 final routerProvider = Provider<GoRouter>((ref) {
-  var userId = Supabase.instance.client.auth.currentSession?.user.id ?? "";
   final authState = ValueNotifier<bool>(ref.read(isLoggedProvider));
 
   ref.listen<bool>(isLoggedProvider, (_, isLoggedIn) {
     authState.value = isLoggedIn;
-    if (isLoggedIn) {
-      userId = Supabase.instance.client.auth.currentSession!.user.id;
-    }
   });
+
+  String? authRedirect(context, state) {
+    final user = ref.read(userState.select((s) => s.user));
+    if (user != null) {
+      return null;
+    } else {
+      return Routes.splashPage;
+    }
+  }
 
   return GoRouter(
     initialLocation: Routes.splashPage,
@@ -112,7 +85,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           StatefulShellBranch(
             routes: [
-              buildRoute(path: Routes.profile, child: ProfilePage(userId: userId), fade: true),
+              buildRoute(path: Routes.profile, child: const ProfilePage(userId: ''), fade: true),
             ],
           ),
         ],
@@ -229,7 +202,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           return CustomTransitionPage(
             child: MakePostPage(
               postType: type,
-              defaultText: defaultText.isNotEmpty ? '$defaultText\n' : '',
+              defaultText: defaultText.isNotEmpty ? defaultText : '',
             ),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);
@@ -253,6 +226,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: "${Routes.novelPage}/:id",
+        redirect: authRedirect,
         pageBuilder: (context, state) {
           final id = state.pathParameters["id"] ?? "";
 
@@ -267,6 +241,8 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       GoRoute(
         path: "${Routes.comicPage}/:id",
+        redirect: authRedirect,
+
         pageBuilder: (context, state) {
           final id = state.pathParameters["id"] ?? "";
 
@@ -281,6 +257,8 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       GoRoute(
         path: "${Routes.user}/:id",
+        redirect: authRedirect,
+
         pageBuilder: (context, state) {
           final id = state.pathParameters["id"] ?? "";
 

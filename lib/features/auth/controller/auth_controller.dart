@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
-import 'package:atlas_app/features/auth/db/auth_db.dart';
 import 'package:atlas_app/imports.dart';
 
 final authControllerProvider = StateNotifierProvider<AuthController, bool>((ref) {
@@ -41,7 +40,7 @@ class AuthController extends StateNotifier<bool> {
       final user = await _db.signUp(
         localUser!.copyWith(
           banner:
-              'https://ijetdkekpdlnbyrnirfe.supabase.co/storage/v1/object/public/public_stotage//mitpmcvgd31mtbykbjud.avif',
+              'https://qlweguljtwgnikrdbply.supabase.co/storage/v1/object/public/public-stotage//Orv%20Wallpaper%20Laptop.jpeg',
         ),
       );
       CustomToast.success("أهلاً بكم في أطلس! رحلتكم تبدأ الآن.");

@@ -234,7 +234,7 @@ class _AddNovelPageState extends ConsumerState<AddNovelPage> {
                         hintText: 'ملخص أو القصة',
                         minLines: 4,
                         maxLines: 4,
-                        maxLength: 800,
+                        maxLength: 1600,
                       ),
                     ],
                   ),

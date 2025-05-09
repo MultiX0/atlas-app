@@ -4,6 +4,8 @@ import 'package:atlas_app/core/common/constants/function_names.dart';
 import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/core/common/constants/view_names.dart';
 import 'package:atlas_app/core/common/widgets/slash_parser.dart';
+import 'package:atlas_app/features/notifications/db/notifications_db.dart';
+import 'package:atlas_app/features/notifications/interfaces/notifications_interface.dart';
 import 'package:atlas_app/features/novels/models/novel_review_model.dart';
 import 'package:atlas_app/features/posts/db/posts_db.dart';
 import 'package:atlas_app/imports.dart';
@@ -28,6 +30,7 @@ class ReviewsDb {
   final uuid = const Uuid();
 
   PostsDb get _postsDb => PostsDb();
+  NotificationsDb get _notificationsDb => NotificationsDb();
 
   Future<void> insertComicReview(ComicReviewModel review, UserModel me) async {
     try {
@@ -44,10 +47,20 @@ class ReviewsDb {
     }
   }
 
-  Future<void> insertNovelReview(NovelReviewModel review, UserModel user) async {
+  Future<void> insertNovelReview(
+    NovelReviewModel review,
+    UserModel user,
+    String novelAuthor,
+  ) async {
     try {
       final postId = uuid.v4();
+      final notification = NotificationsInterface.novelReviewNotification(
+        novelTitle: review.novelTitle,
+        userId: novelAuthor,
+        username: user.username,
+      );
       await Future.wait([
+        if (novelAuthor != user.userId) _notificationsDb.sendNotificatiosn(notification),
         _novelReviewsTable.insert(review.toMap()),
         _postsDb.insertPost(postId, review.review, user, []),
         _postsDb.insertMentions([SlashEntity('novel', review.novelId, "")], postId),
@@ -252,17 +265,25 @@ class ReviewsDb {
     }
   }
 
-  Future<void> handleNovelReviewLike(NovelReviewModel review, String userId) async {
+  Future<void> handleNovelReviewLike(NovelReviewModel review, UserModel user) async {
     try {
       if (review.i_liked) {
-        await _novelReviewLikesTable.insert({
-          KeyNames.review_id: review.id,
-          KeyNames.userId: userId,
-        });
+        final notification = NotificationsInterface.novelReviewLike(
+          userId: review.userId,
+          username: user.username,
+          novelTitle: review.novelTitle,
+        );
+        await Future.wait([
+          if (user.userId != review.userId) _notificationsDb.sendNotificatiosn(notification),
+          _novelReviewLikesTable.insert({
+            KeyNames.review_id: review.id,
+            KeyNames.userId: user.userId,
+          }),
+        ]);
       } else {
         await _novelReviewLikesTable
             .delete()
-            .eq(KeyNames.userId, userId)
+            .eq(KeyNames.userId, user.userId)
             .eq(KeyNames.review_id, review.id);
       }
     } catch (e) {

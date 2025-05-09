@@ -9,12 +9,14 @@ class ToolsWidget extends ConsumerWidget {
     required this.handleOptions,
     required this.canComment,
     required this.canRepost,
+    required this.edit,
   });
 
   final Function() selectImages;
   final Function(bool canRepost, bool canComment) handleOptions;
   final bool canComment;
   final bool canRepost;
+  final bool edit;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,7 +29,8 @@ class ToolsWidget extends ConsumerWidget {
           child: Row(
             spacing: 10,
             children: [
-              ToolTileWidget(text: "اضافة صور", icon: TablerIcons.photo, onTap: selectImages),
+              if (!edit)
+                ToolTileWidget(text: "اضافة صور", icon: TablerIcons.photo, onTap: selectImages),
               ToolTileWidget(
                 text: "اعدادات اضافية",
                 icon: TablerIcons.settings_2,

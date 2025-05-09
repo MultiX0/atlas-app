@@ -7,6 +7,7 @@ import 'package:atlas_app/core/common/widgets/overlay_boundry.dart';
 import 'package:atlas_app/features/novels/controller/novels_controller.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/features/novels/widgets/save_sheet.dart';
+import 'package:atlas_app/features/novels/widgets/writing_instructions.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 
@@ -194,8 +195,19 @@ class _AddChapterState extends ConsumerState<AddChapterPage> {
         resizeToAvoidBottomInset: true,
         appBar: AppBar(
           title: const Text("مسودة"),
-          centerTitle: true,
           actions: [
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.primary,
+                textStyle: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: arabicAccentFont,
+                  fontSize: 16,
+                ),
+              ),
+              onPressed: () => showWritingInstructionsSheet(context),
+              child: const Text("التعليمات"),
+            ),
             IconButton(
               onPressed: () {
                 setState(() {
@@ -246,9 +258,15 @@ class _AddChapterState extends ConsumerState<AddChapterPage> {
                         focusNode: _editorFocusNode,
                         config: QuillEditorConfig(
                           onLaunchUrl: (_) {},
-                          customStyles: const DefaultStyles(
+                          customStyleBuilder: (attribute) {
+                            return TextStyle(
+                              fontFamily: arabicPrimaryFont,
+                              color: AppColors.whiteColor,
+                            );
+                          },
+                          customStyles: DefaultStyles(
                             paragraph: DefaultTextBlockStyle(
-                              TextStyle(fontFamily: arabicPrimaryFont),
+                              TextStyle(fontFamily: arabicPrimaryFont, color: AppColors.whiteColor),
                               HorizontalSpacing.zero,
                               VerticalSpacing.zero,
                               VerticalSpacing.zero,

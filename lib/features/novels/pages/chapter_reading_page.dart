@@ -52,6 +52,7 @@ class ChapterReadingPage extends HookConsumerWidget {
     // Page change callback
     void onPageChange() {
       scrollController.jumpTo(0);
+      ref.read(novelsControllerProvider.notifier).handleChapterView();
     }
 
     return PopScope(
@@ -60,6 +61,7 @@ class ChapterReadingPage extends HookConsumerWidget {
         noScreenshot.screenshotOn();
       },
       child: Scaffold(
+        backgroundColor: AppColors.readingBackgroundColor,
         appBar: AppBar(
           actions: [
             IconButton(
@@ -110,18 +112,17 @@ class ChapterReadingPage extends HookConsumerWidget {
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 16.0),
-          child: SelectableText.rich(
-            TextSpan(children: segmentSpans),
-            textDirection: TextDirection.rtl,
-            onSelectionChanged: (selection, cause) {
-              if (cause == SelectionChangedCause.longPress) {
-                // Customize selection menu if needed
-                String segmentText = segment
-                    .map((line) => line.parts.map((part) => part.$1).join())
-                    .join('\n');
-                openMenu(context, segmentText);
-              }
+          child: GestureDetector(
+            onLongPress: () {
+              String segmentText = segment
+                  .map((line) => line.parts.map((part) => part.$1).join())
+                  .join('\n');
+              openMenu(context, segmentText);
             },
+            child: RichText(
+              text: TextSpan(children: segmentSpans),
+              textDirection: TextDirection.rtl,
+            ),
           ),
         );
       },
@@ -169,7 +170,7 @@ class ChapterReadingPage extends HookConsumerWidget {
         fontSize: headerStyle?.fontSize ?? inlineStyle.fontSize ?? 16,
         fontWeight: headerStyle?.fontWeight ?? inlineStyle.fontWeight ?? FontWeight.normal,
         fontFamily: headerStyle?.fontFamily ?? inlineStyle.fontFamily ?? arabicPrimaryFont,
-        color: headerStyle?.color ?? inlineStyle.color ?? AppColors.whiteColor,
+        color: headerStyle?.color ?? inlineStyle.color ?? AppColors.readingTextColor,
       );
     }
 
@@ -177,7 +178,7 @@ class ChapterReadingPage extends HookConsumerWidget {
       fontSize: inlineStyle.fontSize ?? 16,
       fontWeight: inlineStyle.fontWeight ?? FontWeight.normal,
       fontFamily: inlineStyle.fontFamily ?? arabicPrimaryFont,
-      color: inlineStyle.color ?? AppColors.whiteColor,
+      color: inlineStyle.color ?? AppColors.readingTextColor,
     );
   }
 }

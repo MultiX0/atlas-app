@@ -1,6 +1,4 @@
-import 'package:atlas_app/core/common/enum/reviews_enum.dart';
 import 'package:atlas_app/features/hashtags/providers/providers.dart';
-import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:atlas_app/router.dart';
 

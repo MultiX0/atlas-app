@@ -106,6 +106,26 @@ class ComicsDb {
     }
   }
 
+  Future<void> insertEmbedding({
+    required String id,
+    required String content,
+    required String userId,
+  }) async {
+    try {
+      final body = jsonEncode({
+        "type": "comic",
+        "content": content,
+        "content_id": id,
+        "user_id": userId,
+      });
+      final headers = await generateAuthHeaders();
+      await dio.post('${appAPI}embedding', options: Options(headers: headers), data: body);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
   Future<void> insertComics(List<ComicModel> comics, List<Map<String, dynamic>> characters) async {
     try {
       if (comics.isEmpty) return;
@@ -170,10 +190,26 @@ class ComicsDb {
 
       // If only one comic, use single insertion endpoint
       if (comicsData.length == 1) {
-        await _apiRequest('insert-comic-data', comicsData.first);
+        await Future.wait([
+          _apiRequest('insert-comic-data', comicsData.first),
+          insertEmbedding(
+            id: comicsData.first['comic'][KeyNames.id],
+            content:
+                "${comicsData.first['comic'][KeyNames.title_english]}\n${comicsData.first['comic'][KeyNames.synopsis]}",
+            userId: '',
+          ),
+        ]);
       } else {
         // Otherwise use batch insertion endpoint
         await _apiRequest('insert-comics-batch', {'comicsData': comicsData, 'concurrencyLimit': 5});
+        for (final comic in comicsData) {
+          await insertEmbedding(
+            id: comic['comic'][KeyNames.id],
+            content:
+                "${comic['comic'][KeyNames.title_english]}\n${comic['comic'][KeyNames.synopsis]}",
+            userId: '',
+          );
+        }
       }
 
       log("Successfully sent ${comicsData.length} comics to API for insertion");
@@ -249,7 +285,7 @@ class ComicsDb {
   Future<List> _searchComicsInLocalDb(String query, int limit) async {
     final comicIds = await _comicsTitlesTable
         .select(KeyNames.comic_id)
-        .textSearch(KeyNames.title, query, type: TextSearchType.plain)
+        .ilike(KeyNames.title, "%$query%")
         .order(KeyNames.title, ascending: true)
         .limit(limit);
 
@@ -427,7 +463,7 @@ class ComicsDb {
     const String query = '''
   query SearchManga(\$search: String, \$limit: Int) {
     Page(page: 1, perPage: \$limit) {
-      media(search: \$search, type: MANGA) {
+      media(search: \$search, type: MANGA, isAdult: false) {
         id
         title {
           romaji
@@ -512,12 +548,89 @@ characters {
 ''';
 
     final variables = {'search': searchQuery, 'limit': limit};
+    const blockedTags = {
+      'Adult',
+      'Adult Themes',
+      'Anal Sex',
+      'Bestiality',
+      'BDSM',
+      'Bondage',
+      'Boys Love',
+      'Cross-dressing',
+      'Cumshot',
+      'Double Penetration',
+      'Ecchi',
+      'Erotica',
+      'Exhibitionism',
+      'Explicit Language',
+      'Explicit Scenes',
+      'Facial',
+      'Fetish',
+      'Fisting',
+      'Furry',
+      'Groping',
+      'Group Sex',
+      'Guro',
+      'Hentai',
+      'Incest',
+      'Incestuous',
+      'Incestuous Relationship',
+      'Lewd',
+      'Lolicon',
+      'Lolita',
+      'Masturbation',
+      'MILF',
+      'Non-Consensual',
+      'NTR (Netorare)',
+      'NSFW',
+      'Nudity',
+      'Oral Sex',
+      'Orgy',
+      'Pegging',
+      'Public Sex',
+      'Rape',
+      'Sexual Assault',
+      'Sexual Content',
+      'Sexual Harassment',
+      'Sexual Humor',
+      'Sexual Violence',
+      'Shotacon',
+      'Shemale',
+      'Smut',
+      'Tentacle Rape',
+      'Tentacles',
+      'Threesome',
+      'Transgender',
+      'Trap',
+      'Underage',
+      'Voyeurism',
+      'Watersports',
+      'Whipping',
+      'Yaoi',
+      'Yuri',
+      "LGBTQ+ Themes",
+      "Handjob",
+      "Boys' Love",
+    };
 
     try {
       final res = await dio.post(aniListAPI, data: {'query': query, 'variables': variables});
       if (res.statusCode! >= 200 && res.statusCode! <= 299) {
         final data = List<Map<dynamic, dynamic>>.from(res.data["data"]["Page"]["media"]);
-        final _data = filterComics(data);
+        final filtered =
+            data.where((manga) {
+              final genres = List<String>.from(manga['genres'] ?? []);
+              final tags =
+                  (manga['tags'] as List?)
+                      ?.map((tag) => tag['name']?.toString() ?? '')
+                      .where((name) => name.isNotEmpty)
+                      .toList() ??
+                  [];
+
+              return !genres.any((g) => blockedTags.contains(g)) &&
+                  !tags.any((t) => blockedTags.contains(t));
+            }).toList();
+        final _data = filterComics(filtered);
         return _data;
       }
       throw DioException(requestOptions: res.requestOptions);
@@ -922,8 +1035,8 @@ characters {
           .map(
             (c) => ComicPreviewModel(
               id: c[KeyNames.id],
-              title: c[KeyNames.title_english],
-              poster: c[KeyNames.image],
+              title: c[KeyNames.title_english] ?? "Uknown",
+              poster: c[KeyNames.image] ?? "",
               banner: c[KeyNames.banner] ?? "",
               description:
                   c[KeyNames.ar_synopsis].toString().isEmpty

@@ -6,11 +6,16 @@ import 'package:atlas_app/core/common/constants/view_names.dart';
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/encrypt.dart';
 import 'package:atlas_app/core/common/utils/hashing.dart';
+import 'package:atlas_app/core/services/secure_storage_service.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:dio/dio.dart';
 
+final authStateProvider = StreamProvider<AuthState>((ref) {
+  return Supabase.instance.client.auth.onAuthStateChange.map((event) => event);
+});
+
 class IsLoggedState extends StateNotifier<bool> {
-  IsLoggedState() : super(false);
+  IsLoggedState() : super(Supabase.instance.client.auth.currentSession != null);
 
   void updateState(bool isLogged) {
     state = isLogged;
@@ -100,7 +105,15 @@ class AuthDb {
 
   Future<UserModel> getUserData(String userId) async {
     try {
-      final data = await _usersView.select("*").eq(KeyNames.id, userId).maybeSingle();
+      var query = _usersView.select("*");
+      if (userId.length == 36) {
+        query = query.eq(KeyNames.id, userId);
+      } else {
+        query = query.eq(KeyNames.username, userId);
+      }
+
+      var data = await query.maybeSingle();
+
       if (data != null) {
         return UserModel.fromMap(data);
       }
@@ -114,7 +127,13 @@ class AuthDb {
 
   Future<void> logout() async {
     try {
+      final secureStorage = SecureLocalStorage();
+      final session = await secureStorage.getSession();
       await client.auth.signOut();
+      if (session != null) {
+        await secureStorage.delete(session);
+        await secureStorage.removePersistedSession();
+      }
     } catch (e) {
       log(e.toString());
       rethrow;

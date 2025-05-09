@@ -6,14 +6,16 @@ import 'dart:io';
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/upload_storage.dart';
 import 'package:atlas_app/features/auth/controller/auth_controller.dart';
-import 'package:atlas_app/features/auth/db/auth_db.dart';
 import 'package:atlas_app/features/profile/db/profile_db.dart';
 import 'package:atlas_app/features/profile/provider/providers.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:uuid/uuid.dart';
 
-final getUserByIdProvider = FutureProvider.family<UserModel, String>((ref, userId) async {
+final getUserByIdProvider = FutureProvider.family.autoDispose<UserModel, String>((
+  ref,
+  userId,
+) async {
   final controller = ref.watch(authControllerProvider.notifier);
 
   final user = await controller.getUserData(userId);
@@ -158,7 +160,7 @@ class ProfileController extends StateNotifier<bool> {
       );
       _ref.read(userState.notifier).updateState(newMe);
 
-      await _profileDb.toggleFollow(targetId);
+      await _profileDb.toggleFollow(targetId, oldUser?.followed ?? false, me);
     } catch (e) {
       _ref.read(selectedUserProvider.notifier).state = oldUser;
       _ref.read(userState.notifier).updateState(me);

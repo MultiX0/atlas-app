@@ -10,7 +10,7 @@ class SingleImageViewer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
-    final provider = images.first as CachedNetworkAvifImageProvider;
+    final provider = images.first as CachedNetworkImageProvider;
     return InkWell(
       onTap: () {
         MultiImageProvider multiImageProvider = MultiImageProvider(images, initialIndex: 0);
@@ -28,11 +28,11 @@ class SingleImageViewer extends StatelessWidget {
           height: 500,
           child: Material(
             color: AppColors.secondBlackColor,
-            child: CachedNetworkAvifImage(
-              provider.url,
+            child: CachedNetworkImage(
+              imageUrl: provider.url,
               fit: BoxFit.cover,
-              cacheHeight: min(size.width.toInt(), 500), // Cap at 500px
-              cacheWidth: min(size.width.toInt(), 500),
+              maxHeightDiskCache: min(size.width.toInt(), 500), // Cap at 500px
+              maxWidthDiskCache: min(size.width.toInt(), 500),
             ),
           ),
         ),

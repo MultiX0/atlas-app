@@ -4,10 +4,10 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
-import 'package:atlas_app/core/common/utils/image_to_avif_convert.dart';
 import 'package:atlas_app/core/common/utils/upload_storage.dart';
 import 'package:atlas_app/features/novels/models/novel_review_model.dart';
 import 'package:atlas_app/features/novels/providers/novel_reviews_state.dart';
+import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/features/reviews/db/reviews_db.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:loader_overlay/loader_overlay.dart';
@@ -96,6 +96,7 @@ class ReviewsController extends StateNotifier<bool> {
   }) async {
     try {
       final me = _ref.read(userState);
+      final novel = _ref.read(selectedNovelProvider)!;
       state = true;
       context.loaderOverlay.show();
       final _images = await uploadImages(images, dir: '/novels/$novelId', userId: userId);
@@ -122,7 +123,7 @@ class ReviewsController extends StateNotifier<bool> {
         reviewsCount: 0,
       );
 
-      await db.insertNovelReview(review, me.user!);
+      await db.insertNovelReview(review, me.user!, novel.userId);
       _ref.read(novelReviewsState(novelId).notifier).addReview(review);
       context.loaderOverlay.hide();
       CustomToast.success("تم نشر مراجعتك بنجاح");
@@ -154,13 +155,14 @@ class ReviewsController extends StateNotifier<bool> {
     }
   }
 
-  Future<void> handleNovelReviewLike(NovelReviewModel review, String userId, int index) async {
+  Future<void> handleNovelReviewLike(NovelReviewModel review, int index) async {
     try {
+      final me = _ref.read(userState.select((s) => s.user!));
       _ref
           .read(novelReviewsState(review.novelId).notifier)
           .handleLocalLike(review.copyWith(i_liked: !review.i_liked), index);
 
-      await db.handleNovelReviewLike(review, userId);
+      await db.handleNovelReviewLike(review, me);
     } catch (e) {
       _ref
           .read(novelReviewsState(review.novelId).notifier)
@@ -276,32 +278,14 @@ class ReviewsController extends StateNotifier<bool> {
   }) async {
     try {
       const uuid = Uuid();
-      String extension = '';
       List<String> _links = [];
       for (final image in images) {
-        // Convert image to AVIF first
-        final avifImage = await AvifConverter.convertToAvif(image, quality: 80);
-        log("avifImage: ${avifImage?.absolute.path}");
-
-        // Check if conversion was successful before proceeding
-        if (avifImage != null) {
-          extension = avifImage.absolute.path.split('.').last.trim().toString();
-          final link = await UploadStorage.uploadImages(
-            image: avifImage,
-            path: '$dir/reviews/$userId-${uuid.v4()}.$extension',
-          );
-          log("avif image uploaded: $link");
-          _links.add(link);
-        } else {
-          // If AVIF conversion fails, use the original image as fallback
-          log('AVIF conversion failed for image. Using original format.');
-          extension = image.absolute.path.split('.').last.trim().toString();
-          final link = await UploadStorage.uploadImages(
-            image: image,
-            path: '$dir/reviews/$userId-${uuid.v4()}.$extension',
-          );
-          _links.add(link);
-        }
+        final link = await UploadStorage.uploadImages(
+          image: image,
+          quiality: 60,
+          path: '$dir/reviews/$userId-${uuid.v4()}',
+        );
+        _links.add(link);
       }
       return _links;
     } catch (e) {

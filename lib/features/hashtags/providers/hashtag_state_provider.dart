@@ -164,6 +164,14 @@ class HashtagStateProvider extends StateNotifier<HashtagStateHelper> {
     state = state.copyWith(posts: posts);
     state = state.copyWith(isLiking: false);
   }
+
+  void updatePost(PostModel post) {
+    final indexOf = state.posts.indexWhere((p) => p.postId == post.postId);
+    if (indexOf == -1) return;
+    List<PostModel> updatedPosts = List<PostModel>.from(state.posts);
+    updatedPosts[indexOf] = post;
+    state = state.copyWith(posts: updatedPosts);
+  }
 }
 
 final hashtagStateProvider =

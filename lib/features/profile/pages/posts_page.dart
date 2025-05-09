@@ -4,6 +4,8 @@ import 'package:atlas_app/core/common/enum/post_like_enum.dart';
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/core/common/widgets/app_refresh.dart';
+import 'package:atlas_app/features/auth/controller/auth_controller.dart';
+import 'package:atlas_app/features/profile/controller/profile_controller.dart';
 import 'package:atlas_app/features/profile/provider/profile_posts_state.dart';
 import 'package:atlas_app/features/profile/widgets/post_widget.dart';
 import 'package:atlas_app/imports.dart';
@@ -19,7 +21,6 @@ class ProfilePostsPage extends ConsumerStatefulWidget {
 
 class _ProfilePostsPageState extends ConsumerState<ProfilePostsPage> {
   final Debouncer _debouncer = Debouncer();
-  double _previousScroll = 0.0;
 
   @override
   void initState() {
@@ -42,7 +43,14 @@ class _ProfilePostsPageState extends ConsumerState<ProfilePostsPage> {
   }
 
   void refresh() async {
+    final me = ref.read(userState.select((s) => s.user!));
     ref.read(profilePostsStateProvider(widget.user.userId).notifier).fetchData(refresh: true);
+    if (widget.user.userId != me.userId) {
+      ref.invalidate(getUserByIdProvider(widget.user.userId));
+    } else {
+      final userData = await ref.read(authControllerProvider.notifier).getUserData(me.userId);
+      ref.read(userState.notifier).updateState(userData);
+    }
   }
 
   @override
@@ -73,9 +81,9 @@ class _ProfilePostsPageState extends ConsumerState<ProfilePostsPage> {
                   final metrics = scrollNotification.metrics;
                   final maxScroll = metrics.maxScrollExtent;
                   final currentScroll = metrics.pixels;
-                  const delta = 200.0;
+                  var threshold = MediaQuery.sizeOf(context).height / 2;
 
-                  if (currentScroll > _previousScroll + 10 && maxScroll - currentScroll <= delta) {
+                  if (maxScroll - currentScroll <= threshold) {
                     log("Near bottom, triggering fetch");
                     const duration = Duration(milliseconds: 500);
                     _debouncer.debounce(
@@ -90,7 +98,6 @@ class _ProfilePostsPageState extends ConsumerState<ProfilePostsPage> {
                       },
                     );
                   }
-                  _previousScroll = currentScroll;
                 }
                 return false;
               },

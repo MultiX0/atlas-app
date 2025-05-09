@@ -17,6 +17,7 @@ import firebase_storage
 import flutter_avif_macos
 import flutter_image_compress_macos
 import flutter_local_notifications
+import flutter_secure_storage_macos
 import gal
 import no_screenshot
 import open_file_mac
@@ -41,6 +42,7 @@ func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   FlutterAvifPlugin.register(with: registry.registrar(forPlugin: "FlutterAvifPlugin"))
   FlutterImageCompressMacosPlugin.register(with: registry.registrar(forPlugin: "FlutterImageCompressMacosPlugin"))
   FlutterLocalNotificationsPlugin.register(with: registry.registrar(forPlugin: "FlutterLocalNotificationsPlugin"))
+  FlutterSecureStoragePlugin.register(with: registry.registrar(forPlugin: "FlutterSecureStoragePlugin"))
   GalPlugin.register(with: registry.registrar(forPlugin: "GalPlugin"))
   NoScreenshotPlugin.register(with: registry.registrar(forPlugin: "NoScreenshotPlugin"))
   OpenFilePlugin.register(with: registry.registrar(forPlugin: "OpenFilePlugin"))

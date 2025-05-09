@@ -1,15 +1,23 @@
+import 'package:atlas_app/core/common/enum/post_like_enum.dart';
 import 'package:atlas_app/core/common/widgets/cached_avatar.dart';
-import 'package:atlas_app/features/posts/providers/providers.dart';
 import 'package:atlas_app/features/posts/widgets/post_options.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:atlas_app/router.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class PostHeaderWidget extends StatelessWidget {
-  const PostHeaderWidget({super.key, required this.post, required this.profileNav});
+  const PostHeaderWidget({
+    super.key,
+    required this.post,
+    required this.profileNav,
+    required this.postType,
+    this.repost = false,
+  });
 
   final PostModel post;
   final bool profileNav;
+  final bool repost;
+  final PostLikeEnum postType;
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +67,7 @@ class PostHeaderWidget extends StatelessWidget {
                       Consumer(
                         builder: (context, ref, _) {
                           final router = ref.read(routerProvider);
-                          bool profile = router.state.uri.toString() == Routes.user;
+                          bool profile = router.state.uri.toString() == Routes.profile;
                           if (!profile) return const SizedBox.shrink();
                           return const Row(
                             children: [
@@ -86,16 +94,17 @@ class PostHeaderWidget extends StatelessWidget {
               ],
             ),
           ),
-          Consumer(
-            builder: (context, ref, _) {
-              final me = ref.watch(userState).user!;
-              return IconButton(
-                onPressed: () => postOptions(context, me, ref),
-                icon: const Icon(TablerIcons.dots, color: AppColors.mutedSilver),
-                iconSize: 18,
-              );
-            },
-          ),
+          if (!repost)
+            Consumer(
+              builder: (context, ref, _) {
+                final me = ref.watch(userState).user!;
+                return IconButton(
+                  onPressed: () => postOptions(context, me, ref),
+                  icon: const Icon(TablerIcons.dots, color: AppColors.mutedSilver),
+                  iconSize: 18,
+                );
+              },
+            ),
         ],
       ),
     );
@@ -106,7 +115,7 @@ class PostHeaderWidget extends StatelessWidget {
     bool isOwner = post.userId == user.userId;
     openSheet(
       context: context,
-      child: PostOptions(isOwner: isOwner, post: post),
+      child: PostOptions(isOwner: isOwner, post: post, postType: postType),
       scrollControlled: true,
     );
   }

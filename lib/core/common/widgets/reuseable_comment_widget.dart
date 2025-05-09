@@ -53,7 +53,13 @@ class CommentRichTextView extends StatelessWidget {
           supportedTypes: [
             EmailParser(onTap: (email) => log('${email.value} clicked')),
             PhoneParser(onTap: (phone) => log('click phone ${phone.value}')),
-            MentionParser(onTap: (mention) => log('${mention.value} clicked')),
+            MentionParser(
+              onTap: (mention) {
+                final username = (mention.value ?? "").trim().replaceFirst("@", '');
+                context.push("${Routes.user}/$username");
+                log(username);
+              },
+            ),
             UrlParser(
               onTap: (url) {
                 final regex = RegExp(r'^(https?://)?([a-zA-Z0-9-]+\.)?atlasmanga\.app(/.*)?$');

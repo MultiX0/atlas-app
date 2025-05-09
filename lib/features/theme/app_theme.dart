@@ -79,6 +79,8 @@ class AppColors {
   static Color textFieldFillColor = HexColor('#1E1F21');
   static Color blackColor = HexColor('#151515');
   static Color secondBlackColor = HexColor("#040606");
+  static Color readingBackgroundColor = HexColor('1f1f1f');
+  static Color readingTextColor = HexColor('eeeeee');
 }
 
 class AppSizes {

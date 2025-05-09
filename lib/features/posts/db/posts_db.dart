@@ -12,7 +12,7 @@ import 'package:atlas_app/core/services/user_vector_service.dart';
 import 'package:atlas_app/features/hashtags/db/hashtags_db.dart';
 import 'package:atlas_app/features/notifications/db/notifications_db.dart';
 import 'package:atlas_app/features/notifications/interfaces/notifications_interface.dart';
-import 'package:atlas_app/features/posts/models/post_interaction_model.dart';
+import 'package:atlas_app/features/interactions/models/post_interaction_model.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -85,6 +85,15 @@ class PostsDb {
       List<String> userMentions =
           extractMentionKeywords(post).where((m) => m != user.username.toLowerCase()).toList();
 
+      if (parentId != null && parentId.isNotEmpty) {
+        final String userId = await getUserIdByPost(parentId);
+        final notification = NotificationsInterface.postRepostNotification(
+          userId: userId,
+          username: user.username,
+        );
+        await notificationsDb.sendNotificatiosn(notification);
+      }
+
       try {
         await Future.wait([
           hashtagDb.insertNewHashTag(hashtags),
@@ -100,6 +109,18 @@ class PostsDb {
         insertEmbedding(id: postId, content: post, userId: userId),
       ]);
       await updateUserVector(userId);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> seePost(String postId, String userId) async {
+    try {
+      await _client.rpc(
+        FunctionNames.mark_post_as_seen,
+        params: {'p_user_id': userId, 'p_post_id': postId},
+      );
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -219,7 +240,11 @@ class PostsDb {
 
   Future<void> insertMentions(List<SlashEntity> mentions, String postId) async {
     try {
-      for (final mention in mentions) {
+      final _mentions =
+          mentions
+              .map((m) => m.type == 'char' ? SlashEntity('character', m.id, m.title) : m)
+              .toList();
+      for (final mention in _mentions) {
         await _client.rpc(
           FunctionNames.upsert_post_mention,
           params: {"p_post_id": postId, "p_entity_id": mention.id, "p_mention_type": mention.type},
@@ -365,6 +390,16 @@ class PostsDb {
   Future<void> insetPostInteraction(PostInteractionModel interactionModel) async {
     try {
       await _postInteractionsTable.insert(interactionModel.toMap());
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<String> getUserIdByPost(String postId) async {
+    try {
+      final data = await _postsTable.select(KeyNames.userId).eq(KeyNames.id, postId).maybeSingle();
+      return data?[KeyNames.userId] ?? "";
     } catch (e) {
       log(e.toString());
       rethrow;

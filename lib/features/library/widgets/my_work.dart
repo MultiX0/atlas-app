@@ -3,6 +3,7 @@ import 'package:atlas_app/core/common/widgets/app_refresh.dart';
 import 'package:atlas_app/features/library/providers/my_work_state.dart';
 import 'package:atlas_app/features/library/widgets/create_new_sheet.dart';
 import 'package:atlas_app/features/library/widgets/work_poster.dart';
+import 'package:atlas_app/features/novels/providers/views_state.dart';
 import 'package:atlas_app/imports.dart';
 
 class MyWork extends ConsumerStatefulWidget {
@@ -70,6 +71,7 @@ class _MyWorkState extends ConsumerState<MyWork> {
     await Future.delayed(const Duration(milliseconds: 400), () {
       final me = ref.read(userState.select((state) => state.user!));
       ref.read(myWorksStateProvider(me.userId).notifier).fetchData(refresh: true);
+      ref.read(novelViewsStateProvider.notifier).clear();
     });
   }
 

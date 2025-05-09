@@ -6,6 +6,7 @@ import 'package:atlas_app/features/characters/models/character_preview_model.dar
 import 'package:atlas_app/features/comics/models/comic_preview_model.dart';
 import 'package:atlas_app/features/novels/models/novel_preview_model.dart';
 import 'package:atlas_app/features/novels/models/novel_review_model.dart';
+import 'package:atlas_app/features/interactions/models/post_interaction_model.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:flutter/foundation.dart';
 
@@ -31,6 +32,7 @@ class PostModel {
   final List<NovelPreviewModel> novelsMentioned;
   final ComicReviewModel? comicReviewMentioned;
   final NovelReviewModel? novelReviewMentioned;
+  final PostInteractionModel? interaction;
 
   final List hashtags;
   final int shares_count;
@@ -65,6 +67,7 @@ class PostModel {
     required this.isPinned,
     required this.isSaved,
     this.novelReviewMentioned,
+    this.interaction,
   });
 
   PostModel copyWith({
@@ -93,6 +96,7 @@ class PostModel {
     DateTime? updatedAt,
     bool? isPinned,
     bool? isSaved,
+    PostInteractionModel? interaction,
   }) {
     return PostModel(
       postId: postId ?? this.postId,
@@ -120,6 +124,7 @@ class PostModel {
       updatedAt: updatedAt ?? this.updatedAt,
       isPinned: isPinned ?? this.isPinned,
       isSaved: isSaved ?? this.isSaved,
+      interaction: interaction ?? this.interaction,
     );
   }
 
@@ -201,6 +206,10 @@ class PostModel {
               ? null
               : NovelReviewModel.fromMap(map[KeyNames.novel_review_mentioned]),
       hashtags: List.from((map[KeyNames.hashtags] ?? [])),
+      interaction:
+          map[KeyNames.interaction] == null
+              ? null
+              : PostInteractionModel.fromMap(map[KeyNames.interaction]),
     );
   }
   @override

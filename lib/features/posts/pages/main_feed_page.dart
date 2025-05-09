@@ -1,12 +1,16 @@
+import 'dart:async';
+
 import 'package:atlas_app/core/common/enum/post_like_enum.dart';
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/core/common/widgets/app_refresh.dart';
 import 'package:atlas_app/features/novels/widgets/empty_chapters.dart';
+import 'package:atlas_app/features/posts/db/posts_db.dart';
 import 'package:atlas_app/features/posts/providers/main_feed_state.dart';
 import 'package:atlas_app/features/posts/widgets/main_feed_appbar.dart';
 import 'package:atlas_app/features/profile/widgets/post_widget.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 class MainFeedPage extends ConsumerStatefulWidget {
   const MainFeedPage({super.key});
@@ -79,11 +83,27 @@ class _MainFeedPageState extends ConsumerState<MainFeedPage> {
     });
   }
 
+  Timer? _seenTimer;
+  final Set<String> _alreadyMarkedSeen = {};
+  void _onVisible(double visibleFraction, String postId) {
+    // Mark as seen only if more than 70% visible and not already marked
+    if (!_alreadyMarkedSeen.contains(postId) && visibleFraction > 0.7) {
+      _seenTimer?.cancel();
+      _seenTimer = Timer(const Duration(milliseconds: 500), () {
+        ref.read(postsDbProvider).seePost(postId, userId);
+        _alreadyMarkedSeen.add(postId);
+      });
+    } else if (visibleFraction <= 0.7) {
+      _seenTimer?.cancel();
+    }
+  }
+
   @override
   void dispose() {
     _debouncer.cancel();
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
+    _seenTimer?.cancel();
     super.dispose();
   }
 
@@ -123,12 +143,20 @@ class _MainFeedPageState extends ConsumerState<MainFeedPage> {
                   }
 
                   final post = posts[i];
-                  return PostWidget(
+                  return VisibilityDetector(
                     key: ValueKey(post.postId),
-                    post: post,
-                    onComment: () => CustomToast.soon(),
-                    onShare: () => CustomToast.soon(),
-                    postLikeType: PostLikeEnum.GENERAL,
+                    onVisibilityChanged: (info) {
+                      final visibleFraction = info.visibleFraction;
+                      _onVisible(visibleFraction, post.postId);
+                    },
+
+                    child: PostWidget(
+                      key: ValueKey(post.postId),
+                      post: post,
+                      onComment: () => CustomToast.soon(),
+                      onShare: () => CustomToast.soon(),
+                      postLikeType: PostLikeEnum.GENERAL,
+                    ),
                   );
                 },
               ),

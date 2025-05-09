@@ -8,8 +8,8 @@ class DoubleImageViewer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
-    final firstProvider = images[0] as CachedNetworkAvifImageProvider;
-    final secondProvider = images[1] as CachedNetworkAvifImageProvider;
+    final firstProvider = images[0] as CachedNetworkImageProvider;
+    final secondProvider = images[1] as CachedNetworkImageProvider;
 
     return InkWell(
       onTap: () {
@@ -24,21 +24,21 @@ class DoubleImageViewer extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: CachedNetworkAvifImage(
-              firstProvider.url,
+            child: CachedNetworkImage(
+              imageUrl: firstProvider.url,
               height: size.width / 2,
-              cacheHeight: (size.width / 2).toInt(),
-              cacheWidth: (size.width / 2).toInt(),
+              maxWidthDiskCache: (size.width / 2).toInt(),
+              maxHeightDiskCache: (size.width / 2).toInt(),
               fit: BoxFit.cover,
             ),
           ),
           const SizedBox(width: 4),
           Expanded(
-            child: CachedNetworkAvifImage(
-              secondProvider.url,
+            child: CachedNetworkImage(
+              imageUrl: secondProvider.url,
               height: size.width / 2,
-              cacheHeight: (size.width / 2).toInt(),
-              cacheWidth: (size.width / 2).toInt(),
+              maxHeightDiskCache: (size.width / 2).toInt(),
+              maxWidthDiskCache: (size.width / 2).toInt(),
               fit: BoxFit.cover,
             ),
           ),
