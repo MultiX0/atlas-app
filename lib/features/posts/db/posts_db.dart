@@ -208,6 +208,7 @@ class PostsDb {
             KeyNames.content: post.content,
             KeyNames.can_reposted: post.canReposted,
             KeyNames.comments_open: post.comments_open,
+            KeyNames.updated_at: DateTime.now().toIso8601String(),
           })
           .eq(KeyNames.id, post.postId);
       await Future.wait([
@@ -226,7 +227,7 @@ class PostsDb {
   Future<void> deletePost(String postId) async {
     try {
       await Future.wait([
-        _postsTable.delete().eq(KeyNames.id, postId),
+        _client.rpc(FunctionNames.soft_delete_post, params: {KeyNames.post_id: postId}),
         removePostVectorPoint(postId),
       ]);
     } catch (e) {

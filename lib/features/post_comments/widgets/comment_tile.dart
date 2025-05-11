@@ -1,13 +1,14 @@
 import 'dart:developer';
 
+import 'package:atlas_app/core/common/enum/comment_type.dart';
 import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/core/common/widgets/cached_avatar.dart';
 import 'package:atlas_app/core/common/widgets/reuseable_comment_widget.dart';
-import 'package:atlas_app/features/novels/controller/novels_controller.dart';
-import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/features/novels/widgets/comment_report_sheet.dart';
+import 'package:atlas_app/features/post_comments/controller/post_comments_controller.dart';
 import 'package:atlas_app/features/post_comments/models/comment_model.dart';
 import 'package:atlas_app/features/post_comments/models/reply_model.dart';
+import 'package:atlas_app/features/post_comments/providers/providers.dart';
 import 'package:atlas_app/features/post_comments/widgets/comment_replies_section.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -19,6 +20,7 @@ class PostCommentTile extends StatelessWidget {
     this.reply,
     this.isReply = false,
     this.parentCommentId,
+    required this.postId,
   }) : assert(
          (comment != null && reply == null) || (comment == null && reply != null),
          'Either comment or reply must be provided, but not both',
@@ -28,6 +30,7 @@ class PostCommentTile extends StatelessWidget {
   final PostCommentReplyModel? reply;
   final bool isReply;
   final String? parentCommentId;
+  final String postId;
   static final Debouncer _debouncer = Debouncer();
 
   @override
@@ -118,7 +121,7 @@ class PostCommentTile extends StatelessWidget {
                       return Directionality(
                         textDirection: TextDirection.ltr,
                         child: CustomLikeButton(
-                          onTap: (_) => handleLike(ref, id, isReply),
+                          onTap: (_) => handleLike(ref, id, isReply, postId: postId),
                           isLiked: isLiked,
                           likeCount: likesCount,
                         ),
@@ -225,9 +228,9 @@ class PostCommentTile extends StatelessWidget {
         'is_reply': isReply,
       };
 
-      ref.read(repliedToProvider.notifier).state = _map;
+      ref.read(postCommentRepliedToProvider.notifier).state = _map;
       if (!isReply) {
-        openSheet(context: context, child: const CommentReportSheet());
+        openSheet(context: context, child: const CommentReportSheet(commentType: CommentType.post));
       }
     } catch (e) {
       log(e.toString());
@@ -263,8 +266,13 @@ class PostCommentTile extends StatelessWidget {
               onPressed: () async {
                 context.pop();
                 ref
-                    .read(novelsControllerProvider.notifier)
-                    .handleCommentDelete(isReply: isReply, id: id, commentId: commentId);
+                    .read(postCommentsControllerProvider(postId).notifier)
+                    .handleCommentDelete(
+                      isReply: isReply,
+                      id: id,
+                      commentId: commentId,
+                      postId: postId,
+                    );
               },
               child: const Text("الااستمرار", style: btnStyle),
             ),
@@ -280,7 +288,7 @@ class PostCommentTile extends StatelessWidget {
     );
   }
 
-  Future<bool?> handleLike(WidgetRef ref, String id, bool isReply) async {
+  Future<bool?> handleLike(WidgetRef ref, String id, bool isReply, {required String postId}) async {
     _debouncer.debounce(
       duration:
           (isReply ? reply!.isLiked : comment!.isLiked)
@@ -289,11 +297,11 @@ class PostCommentTile extends StatelessWidget {
       onDebounce: () {
         if (isReply) {
           // Call the appropriate method for handling reply likes
-          // ref.read(novelsControllerProvider.notifier).handleChapterCommentReplyLike(reply!);
-          // TODO HANDLE THE COMMENT REPLY LIKE
+          ref
+              .read(postCommentsControllerProvider(postId).notifier)
+              .handlePostCommentReplyLike(reply!, postId: postId);
         } else {
-          // ref.read(novelsControllerProvider.notifier).handleChapterCommentLike(comment!);
-          // TODO HANDLE THE COMMENT LIKE
+          ref.read(postCommentsControllerProvider(postId).notifier).handleCommentLike(comment!);
         }
       },
     );

@@ -87,7 +87,7 @@ class PostCommentModel {
       isDeleted: map[KeyNames.is_deleted] ?? false,
       isUpdated: map[KeyNames.is_edited] ?? false,
       userId: map[KeyNames.userId] ?? "",
-      likesCount: map[KeyNames.like_count] ?? 0,
+      likesCount: map[KeyNames.likes_count] ?? 0,
       repliesCount: map[KeyNames.replies_count] ?? 0,
       user: map[KeyNames.user] != null ? UserModel.fromMap(map[KeyNames.user]) : null,
       isLiked: map[KeyNames.is_liked] ?? false,

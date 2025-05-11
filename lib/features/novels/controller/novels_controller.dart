@@ -552,7 +552,6 @@ class NovelsController extends StateNotifier<bool> {
 
   Future<void> addChapterCommentReport({
     required String report,
-    required String reported_id,
     required BuildContext context,
     required bool isReply,
     required String contentId,
@@ -562,7 +561,6 @@ class NovelsController extends StateNotifier<bool> {
       await reportsDb.addChapterCommentReport(
         report: report,
         reporter_id: me.userId,
-        reported_id: reported_id,
         contentId: contentId,
         isReply: isReply,
       );

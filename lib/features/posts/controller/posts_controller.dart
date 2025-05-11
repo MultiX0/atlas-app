@@ -273,6 +273,8 @@ class PostsController extends StateNotifier<bool> {
           break;
       }
 
+      _ref.read(postStateProvider.notifier).updatePost(post.copyWith(isSaved: !post.isSaved));
+
       await Future.wait([
         db.handlePostSave(post, me.userId),
         _interactionsDb.upsertPostInteraction(

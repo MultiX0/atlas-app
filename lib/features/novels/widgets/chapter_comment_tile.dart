@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:atlas_app/core/common/enum/comment_type.dart';
 import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/core/common/widgets/cached_avatar.dart';
 import 'package:atlas_app/core/common/widgets/reuseable_comment_widget.dart';
@@ -227,7 +228,10 @@ class ChapterCommentTile extends StatelessWidget {
 
       ref.read(repliedToProvider.notifier).state = _map;
       if (!isReply) {
-        openSheet(context: context, child: const CommentReportSheet());
+        openSheet(
+          context: context,
+          child: const CommentReportSheet(commentType: CommentType.novel),
+        );
       }
     } catch (e) {
       log(e.toString());

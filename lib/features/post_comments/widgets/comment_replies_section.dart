@@ -44,6 +44,7 @@ class PostCommentRepliesSection extends StatelessWidget {
                 return PostCommentTile(
                   reply: replies[i],
                   isReply: true,
+                  postId: comment.postId,
                   parentCommentId: comment.id,
                 );
               }

@@ -9,6 +9,7 @@ import 'package:atlas_app/features/novels/widgets/chapter_comment_input.dart';
 import 'package:atlas_app/features/novels/widgets/empty_chapters.dart';
 import 'package:atlas_app/features/novels/widgets/reply_status_widget.dart';
 import 'package:atlas_app/features/post_comments/providers/comments_state_provider.dart';
+import 'package:atlas_app/features/post_comments/providers/providers.dart';
 import 'package:atlas_app/features/post_comments/widgets/comment_tile.dart';
 import 'package:atlas_app/features/posts/controller/posts_controller.dart';
 import 'package:atlas_app/features/posts/providers/post_state.dart';
@@ -107,85 +108,96 @@ class _PostPageState extends ConsumerState<PostPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("المنشور")),
-      body: ref
-          .watch(getPostByIDProvider(widget.postId))
-          .when(
-            data: (post) {
-              if (_mounted) {
-                fetchData();
-              }
-              final postLikeType = ref.read(selectedPostLikeTypeProvider);
-              log(postLikeType.name);
-              return Column(
-                children: [
-                  Expanded(
-                    child: Consumer(
-                      builder: (context, ref, _) {
-                        final notifier = postCommentsStateProvider(widget.postId);
-                        final comments = ref.watch(notifier.select((s) => s.comments));
-                        final isLoading = ref.watch(notifier.select((s) => s.isLoading));
-                        final loadingMore = ref.watch(notifier.select((s) => s.loadingMore));
-                        int itemCount =
-                            (comments.isEmpty)
-                                ? 2
-                                : // Post + empty state
-                                comments.length +
-                                    1 +
-                                    (loadingMore ? 1 : 0); // Post + comments + optional loader
+    return PopScope(
+      onPopInvokedWithResult: (_, _) {
+        ref.read(postCommentRepliedToProvider.notifier).state = null;
+      },
+      child: Scaffold(
+        appBar: AppBar(title: const Text("المنشور")),
+        body: ref
+            .watch(getPostByIDProvider(widget.postId))
+            .when(
+              data: (post) {
+                if (_mounted) {
+                  fetchData();
+                }
+                final postLikeType = ref.read(selectedPostLikeTypeProvider);
+                log(postLikeType.name);
+                return Column(
+                  children: [
+                    Expanded(
+                      child: Consumer(
+                        builder: (context, ref, _) {
+                          final notifier = postCommentsStateProvider(widget.postId);
+                          final comments = ref.watch(notifier.select((s) => s.comments));
+                          final isLoading = ref.watch(notifier.select((s) => s.isLoading));
+                          final loadingMore = ref.watch(notifier.select((s) => s.loadingMore));
+                          int itemCount =
+                              isLoading
+                                  ? 2
+                                  : (comments.isEmpty)
+                                  ? 2
+                                  : // Post + empty state
+                                  comments.length +
+                                      1 +
+                                      (loadingMore ? 1 : 0); // Post + comments + optional loader
 
-                        return AppRefresh(
-                          onRefresh: refresh,
-                          child: Align(
-                            child: ListView.builder(
-                              addRepaintBoundaries: true,
-                              cacheExtent: MediaQuery.sizeOf(context).height,
-                              controller: _scrollController,
-                              physics: const AlwaysScrollableScrollPhysics(
-                                parent: BouncingScrollPhysics(),
+                          return AppRefresh(
+                            onRefresh: refresh,
+                            child: Align(
+                              child: ListView.builder(
+                                addRepaintBoundaries: true,
+                                cacheExtent: MediaQuery.sizeOf(context).height,
+                                controller: _scrollController,
+                                physics: const AlwaysScrollableScrollPhysics(
+                                  parent: BouncingScrollPhysics(),
+                                ),
+                                itemCount: itemCount,
+                                itemBuilder: (context, i) {
+                                  if (i == 0) {
+                                    final _post = ref.watch(postStateProvider);
+                                    return PostWidget(
+                                      post: _post ?? post,
+                                      onShare: () {},
+                                      postLikeType: postLikeType,
+                                    );
+                                  }
+                                  if (isLoading) return const Loader();
+
+                                  if (comments.isEmpty) {
+                                    return const EmptyChapters(text: "لايوجد أي تعليقات حاليا");
+                                  }
+                                  if (loadingMore && i == comments.length + 1) {
+                                    return const Padding(
+                                      padding: EdgeInsets.all(16.0),
+                                      child: Center(child: Loader()),
+                                    );
+                                  }
+
+                                  final comment = comments.elementAt(i - 1);
+                                  return PostCommentTile(
+                                    key: ValueKey(comment.id),
+                                    comment: comment,
+                                    postId: post.postId,
+                                  );
+                                },
                               ),
-                              itemCount: itemCount,
-                              itemBuilder: (context, i) {
-                                if (i == 0) {
-                                  final _post = ref.watch(postStateProvider);
-                                  return PostWidget(
-                                    post: _post ?? post,
-                                    onShare: () {},
-                                    postLikeType: postLikeType,
-                                  );
-                                }
-                                if (isLoading) return const Loader();
-
-                                if (comments.isEmpty) {
-                                  return const EmptyChapters(text: "لايوجد أي تعليقات حاليا");
-                                }
-                                if (loadingMore && i == comments.length + 1) {
-                                  return const Padding(
-                                    padding: EdgeInsets.all(16.0),
-                                    child: Center(child: Loader()),
-                                  );
-                                }
-
-                                final comment = comments.elementAt(i - 1);
-                                return PostCommentTile(key: ValueKey(comment.id), comment: comment);
-                              },
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
-                  ),
 
-                  Divider(height: 0.35, color: AppColors.mutedSilver.withValues(alpha: .15)),
-                  const ReplyStatusWidget(commentType: CommentType.post),
-                  const ChaptersCommentInput(commentType: CommentType.post),
-                ],
-              );
-            },
-            error: (error, _) => AtlasErrorPage(message: error.toString()),
-            loading: () => const Loader(),
-          ),
+                    Divider(height: 0.35, color: AppColors.mutedSilver.withValues(alpha: .15)),
+                    const ReplyStatusWidget(commentType: CommentType.post),
+                    const ChaptersCommentInput(commentType: CommentType.post),
+                  ],
+                );
+              },
+              error: (error, _) => AtlasErrorPage(message: error.toString()),
+              loading: () => const Loader(),
+            ),
+      ),
     );
   }
 }

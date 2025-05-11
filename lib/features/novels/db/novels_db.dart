@@ -131,7 +131,7 @@ class NovelsDb {
     NovelModel novel,
   ) async {
     try {
-      final notification = NotificationsInterface.novelChapterLikeCommentNotification(
+      final notification = NotificationsInterface.novelChapterReplyCommentNotification(
         userId: reply.parentCommentAuthorId,
         username: reply.user.username,
         novelTitle: novel.title,

@@ -126,7 +126,11 @@ class _PostCommentsPageState extends ConsumerState<PostCommentsPage> {
                           );
                         }
                         final comment = comments[i];
-                        return PostCommentTile(key: ValueKey(comment.id), comment: comment);
+                        return PostCommentTile(
+                          key: ValueKey(comment.id),
+                          comment: comment,
+                          postId: comment.postId,
+                        );
                       },
                     ),
                   ),

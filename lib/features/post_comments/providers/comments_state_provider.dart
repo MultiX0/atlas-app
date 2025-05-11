@@ -85,10 +85,10 @@ class PostCommentsState extends StateNotifier<_HelperClass> {
       if (refresh) {
         updateState(error: null, isLoading: true);
       } else {
-        updateState(error: null, loadingMore: true, isLoading: true);
+        updateState(error: null, loadingMore: true);
       }
 
-      const _pageSize = 20;
+      const _pageSize = 10;
       final startIndex = refresh ? 0 : state.comments.length;
 
       final comments = await _db.getPostComments(

@@ -33,4 +33,9 @@ class FunctionNames {
   static const toggle_post_like = 'toggle_post_like';
   static const mark_post_as_seen = 'mark_post_as_seen';
   static const upsert_post_interaction = 'upsert_post_interaction';
+  static const toggle_post_comment_like = 'toggle_post_comment_like';
+  static const toggle_post_comment_reply_like = 'toggle_post_comment_reply_like';
+  static const delete_post_comment = 'delete_post_comment';
+  static const delete_post_comment_reply = 'delete_post_comment_reply';
+  static const soft_delete_post = 'soft_delete_post';
 }

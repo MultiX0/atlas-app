@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:atlas_app/core/common/enum/post_like_enum.dart';
 import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/features/posts/controller/posts_controller.dart';
+import 'package:atlas_app/features/posts/providers/post_state.dart';
 import 'package:atlas_app/features/profile/provider/providers.dart';
 import 'package:atlas_app/features/profile/widgets/post_body_widget.dart';
 import 'package:atlas_app/features/profile/widgets/post_header.dart';
@@ -38,11 +39,7 @@ class PostWidget extends ConsumerWidget {
 
     return RepaintBoundary(
       child: GestureDetector(
-        onTap: () {
-          if (postRoute) return;
-          ref.read(selectedPostLikeTypeProvider.notifier).state = postLikeType;
-          context.push("${Routes.postPage}/${post.postId}");
-        },
+        onTap: () => onComment(context, postRoute, ref: ref),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 0),
           child: Column(
@@ -65,7 +62,7 @@ class PostWidget extends ConsumerWidget {
                 post: post,
                 hashtag: hashtag,
                 hasArabic: hasArabic,
-                onComment: () => onComment(context, postRoute),
+                onComment: () => onComment(context, postRoute, ref: ref),
                 onLike: (_) => onLike(ref, me.userId),
                 onRepost: () => onRepost(ref),
                 onShare: onShare,
@@ -78,11 +75,11 @@ class PostWidget extends ConsumerWidget {
     );
   }
 
-  void onComment(BuildContext context, bool postRoute) {
-    if (postRoute) {
-      return;
-    }
-    context.push("{Routes.postComments}");
+  void onComment(BuildContext context, bool postRoute, {required WidgetRef ref}) {
+    if (postRoute) return;
+    ref.read(postStateProvider.notifier).updatePost(post);
+    ref.read(selectedPostLikeTypeProvider.notifier).state = postLikeType;
+    context.push("${Routes.postPage}/${post.postId}");
   }
 
   void onRepost(WidgetRef ref) {

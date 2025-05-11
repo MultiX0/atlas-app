@@ -12,10 +12,10 @@ class ReplyStatusWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return RepaintBoundary(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Directionality(
-          textDirection: TextDirection.rtl,
+      child: Directionality(
+        textDirection: TextDirection.rtl,
+        child: Padding(
+          padding: const EdgeInsets.all(4.0),
           child: Consumer(
             builder: (context, ref, _) {
               Map<String, dynamic>? replitedTo;
@@ -35,38 +35,42 @@ class ReplyStatusWidget extends StatelessWidget {
               final username = replitedTo[KeyNames.username];
               final content = replitedTo[KeyNames.content];
 
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Flexible(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "رد على $username",
-                          style: const TextStyle(
-                            color: AppColors.primary,
-                            fontFamily: arabicAccentFont,
+              return Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "رد على $username",
+                            style: const TextStyle(
+                              color: AppColors.primary,
+                              fontFamily: arabicAccentFont,
+                            ),
                           ),
-                        ),
-                        CommentRichTextView(
-                          text: content,
-                          style: const TextStyle(
-                            color: AppColors.mutedSilver,
-                            fontFamily: arabicAccentFont,
+                          CommentRichTextView(
+                            text: content,
+                            style: const TextStyle(
+                              color: AppColors.mutedSilver,
+                              fontFamily: arabicAccentFont,
+                            ),
+                            maxLines: 1,
                           ),
-                          maxLines: 1,
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      ref.read(repliedToProvider.notifier).state = null;
-                    },
-                    icon: Icon(Icons.close, color: AppColors.whiteColor),
-                  ),
-                ],
+                    IconButton(
+                      onPressed: () {
+                        ref.read(repliedToProvider.notifier).state = null;
+                        ref.read(postCommentRepliedToProvider.notifier).state = null;
+                      },
+                      icon: Icon(Icons.close, color: AppColors.whiteColor),
+                    ),
+                  ],
+                ),
               );
             },
           ),
