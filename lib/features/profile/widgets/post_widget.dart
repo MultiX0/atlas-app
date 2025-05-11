@@ -49,7 +49,7 @@ class PostWidget extends ConsumerWidget {
               Divider(height: 0.25, color: AppColors.mutedSilver.withValues(alpha: .1)),
               const SizedBox(height: 15),
               if (post.parent != null) ...[
-                PostReplyedWidget(post: post),
+                PostReplyedWidget(post: post, postLikeType: postLikeType),
                 const SizedBox(height: 8),
               ],
               if (post.comicReviewMentioned != null || post.novelReviewMentioned != null) ...[

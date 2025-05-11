@@ -1,14 +1,18 @@
+import 'package:atlas_app/core/common/enum/post_like_enum.dart';
 import 'package:atlas_app/core/common/widgets/cached_avatar.dart';
+import 'package:atlas_app/features/posts/providers/post_state.dart';
+import 'package:atlas_app/features/profile/provider/providers.dart';
 // import 'package:atlas_app/core/common/widgets/slash_parser.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:intl/intl.dart';
 import 'dart:ui' as ui;
 
 class PostReplyedWidget extends StatelessWidget {
-  const PostReplyedWidget({super.key, required this.post});
+  const PostReplyedWidget({super.key, required this.post, required this.postLikeType});
 
   final PostModel post;
   // static final parser = buildSlashEntityParser();
+  final PostLikeEnum postLikeType;
 
   @override
   Widget build(BuildContext context) {
@@ -16,8 +20,16 @@ class PostReplyedWidget extends StatelessWidget {
     // final value = result.value as SlashEntity;
 
     return RepaintBoundary(
-      child: InkWell(
-        onTap: () {},
+      child: Consumer(
+        builder: (context, ref, _) {
+          return InkWell(
+            onTap: () {
+              ref.read(postStateProvider.notifier).updatePost(post);
+              ref.read(selectedPostLikeTypeProvider.notifier).state = postLikeType;
+              context.push("${Routes.postPage}/${post.postId}");
+            },
+          );
+        },
         child: Padding(
           padding: const EdgeInsets.only(left: 10),
           child: Row(
