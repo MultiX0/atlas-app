@@ -554,6 +554,8 @@ class NovelsController extends StateNotifier<bool> {
     required String report,
     required String reported_id,
     required BuildContext context,
+    required bool isReply,
+    required String contentId,
   }) async {
     try {
       final me = _ref.read(userState.select((s) => s.user!));
@@ -561,6 +563,8 @@ class NovelsController extends StateNotifier<bool> {
         report: report,
         reporter_id: me.userId,
         reported_id: reported_id,
+        contentId: contentId,
+        isReply: isReply,
       );
     } catch (e) {
       log(e.toString());

@@ -30,12 +30,16 @@ class ReportsDb {
     required String report,
     required String reporter_id,
     required String reported_id,
+    required bool isReply,
+    required String contentId,
   }) async {
     try {
       await _novelChaptersCommentReport.insert({
         KeyNames.reporter_id: reporter_id,
         KeyNames.reported_id: reported_id,
         KeyNames.content: report,
+        KeyNames.is_reply: isReply,
+        KeyNames.content_id: contentId,
       });
     } catch (e) {
       log(e.toString());

@@ -10,9 +10,11 @@ class KeyNames {
   static const id = 'id';
   static const external_links = 'external_links';
   static const comic_id = 'comic_id';
+  static const is_reply = 'is_reply';
   static const favorite_count = 'favorite_count';
   static const mentioned_posts = 'mentioned_posts';
   static const tags = 'tags';
+  static const content_id = 'content_id';
   static const user_favorite = 'user_favorite';
   static const is_viewed = 'is_viewed';
   static const banner = 'banner';

@@ -137,7 +137,6 @@ class _ProfilePostsPageState extends ConsumerState<ProfilePostsPage> {
                       key: ValueKey(post.postId),
                       profileNav: false,
                       post: post,
-                      onComment: () => CustomToast.soon(),
                       postLikeType: PostLikeEnum.PROFILE,
                       onShare: () => CustomToast.soon(),
                     );

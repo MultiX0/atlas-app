@@ -205,11 +205,14 @@ class _CommentReportConfirmationState extends State<CommentReportConfirmation> {
                         widget.title == null && widget.subtitle == null
                             ? _controller.text.trim()
                             : widget.title!;
-
+                    final isReply = replitedTo['is_reply'];
+                    final commentId = replitedTo[KeyNames.comment_id];
                     ref
                         .read(novelsControllerProvider.notifier)
                         .addChapterCommentReport(
                           context: context,
+                          contentId: commentId ?? "",
+                          isReply: isReply,
                           report: report,
                           reported_id: userId,
                         );

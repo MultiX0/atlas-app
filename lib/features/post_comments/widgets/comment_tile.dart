@@ -4,16 +4,16 @@ import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/core/common/widgets/cached_avatar.dart';
 import 'package:atlas_app/core/common/widgets/reuseable_comment_widget.dart';
 import 'package:atlas_app/features/novels/controller/novels_controller.dart';
-import 'package:atlas_app/features/novels/models/novel_chapter_comment_model.dart';
-import 'package:atlas_app/features/novels/models/novel_chapter_comment_reply_model.dart';
-import 'package:atlas_app/features/novels/providers/chapter_comments_replies.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/features/novels/widgets/comment_report_sheet.dart';
+import 'package:atlas_app/features/post_comments/models/comment_model.dart';
+import 'package:atlas_app/features/post_comments/models/reply_model.dart';
+import 'package:atlas_app/features/post_comments/widgets/comment_replies_section.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-class ChapterCommentTile extends StatelessWidget {
-  const ChapterCommentTile({
+class PostCommentTile extends StatelessWidget {
+  const PostCommentTile({
     super.key,
     this.comment,
     this.reply,
@@ -24,8 +24,8 @@ class ChapterCommentTile extends StatelessWidget {
          'Either comment or reply must be provided, but not both',
        );
 
-  final NovelChapterCommentWithMeta? comment;
-  final NovelChapterCommentReplyWithLikes? reply;
+  final PostCommentModel? comment;
+  final PostCommentReplyModel? reply;
   final bool isReply;
   final String? parentCommentId;
   static final Debouncer _debouncer = Debouncer();
@@ -36,14 +36,15 @@ class ChapterCommentTile extends StatelessWidget {
     final String content = isReply ? reply!.content : comment!.content;
     final DateTime createdAt = isReply ? reply!.createdAt : comment!.createdAt;
     final DateTime? updatedAt = isReply ? reply!.updatedAt : comment!.updatedAt;
-    final bool isEdited = isReply ? reply!.isEdited : comment!.isEdited;
+    final bool isEdited = isReply ? reply!.isEdited : comment!.isUpdated;
     final bool isLiked = isReply ? reply!.isLiked : comment!.isLiked;
-    final int likesCount = isReply ? reply!.likesCount : comment!.likesCount;
-    final UserModel user = isReply ? reply!.user : comment!.user;
+    final int likesCount = isReply ? reply!.likeCounts : comment!.likesCount;
+    final UserModel user = isReply ? reply!.user! : comment!.user!;
     final String id = isReply ? reply!.id : comment!.id;
     final String parentUserId = isReply ? reply!.userId : comment!.userId;
     final String commentId = isReply ? reply!.commentId : comment!.id;
-    final UserModel parentUser = isReply ? reply!.user : comment!.user;
+    final UserModel parentUser = isReply ? reply!.user! : comment!.user!;
+    final String creatorId = isReply ? reply!.userId : comment!.userId;
 
     return RepaintBoundary(
       child: Directionality(
@@ -129,8 +130,7 @@ class ChapterCommentTile extends StatelessWidget {
               Consumer(
                 builder: (context, ref, _) {
                   final me = ref.read(userState.select((s) => s.user!));
-                  final novel = ref.read(selectedNovelProvider)!;
-                  final isMeOrCreator = (me.userId == novel.userId) || (user.userId == me.userId);
+                  final isMeOrCreator = (me.userId == creatorId) || (user.userId == me.userId);
                   final isMe = user.userId == me.userId;
                   return Row(
                     children: [
@@ -195,7 +195,7 @@ class ChapterCommentTile extends StatelessWidget {
                 },
               ),
               if (!isReply && comment != null && comment!.repliesCount > 0) ...[
-                CommentRepliesSection(comment: comment!),
+                PostCommentRepliesSection(comment: comment!),
               ],
               const SizedBox(height: 10),
             ],
@@ -289,118 +289,14 @@ class ChapterCommentTile extends StatelessWidget {
       onDebounce: () {
         if (isReply) {
           // Call the appropriate method for handling reply likes
-          ref.read(novelsControllerProvider.notifier).handleChapterCommentReplyLike(reply!);
+          // ref.read(novelsControllerProvider.notifier).handleChapterCommentReplyLike(reply!);
+          // TODO HANDLE THE COMMENT REPLY LIKE
         } else {
-          ref.read(novelsControllerProvider.notifier).handleChapterCommentLike(comment!);
+          // ref.read(novelsControllerProvider.notifier).handleChapterCommentLike(comment!);
+          // TODO HANDLE THE COMMENT LIKE
         }
       },
     );
     return true;
-  }
-}
-
-class CommentRepliesSection extends StatelessWidget {
-  const CommentRepliesSection({super.key, required this.comment});
-
-  final NovelChapterCommentWithMeta comment;
-
-  @override
-  Widget build(BuildContext context) {
-    final notifier = novelChapterCommentRepliesState(comment.id);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-      child: Consumer(
-        builder: (context, ref, child) {
-          final replies = ref.watch(notifier.select((s) => s.comments));
-          final loadMore = ref.watch(notifier.select((s) => s.loadingMore));
-          final loading = ref.watch(notifier.select((s) => s.isLoading));
-          final hasMore = ref.watch(notifier.select((s) => !s.hasReachedEnd));
-          if (loading && replies.isEmpty) {
-            return const Text(
-              "جاري التحميل...",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.white70,
-                fontFamily: arabicAccentFont,
-              ),
-            );
-          }
-
-          if (replies.isEmpty) return child!;
-
-          return ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: replies.length + (loadMore || hasMore ? 1 : 0),
-            addRepaintBoundaries: true,
-            addSemanticIndexes: true,
-            itemBuilder: (context, i) {
-              // Display regular replies
-              if (i < replies.length) {
-                return ChapterCommentTile(
-                  reply: replies[i],
-                  isReply: true,
-                  parentCommentId: comment.id,
-                );
-              }
-
-              // Display loading indicator or "load more" button
-              if (loadMore) {
-                return const Padding(
-                  padding: EdgeInsets.only(top: 10, bottom: 10),
-                  child: Loader(),
-                );
-              } else if (hasMore) {
-                return GestureDetector(
-                  onTap: () => ref.read(notifier.notifier).fetchData(),
-                  child: const Padding(
-                    padding: EdgeInsets.only(top: 10, bottom: 10),
-                    child: Row(
-                      children: [
-                        Text(
-                          "المزيد...",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white70,
-                            fontFamily: arabicAccentFont,
-                          ),
-                        ),
-                        SizedBox(width: 15),
-                        Icon(LucideIcons.chevron_down, size: 14),
-                      ],
-                    ),
-                  ),
-                );
-              }
-
-              return const SizedBox.shrink();
-            },
-          );
-        },
-        child: Consumer(
-          builder: (context, ref, _) {
-            return GestureDetector(
-              onTap: () {
-                ref.read(notifier.notifier).fetchData();
-              },
-              child: Row(
-                children: [
-                  Text(
-                    comment.repliesCount == 1 ? 'رد واحد...' : "${comment.repliesCount} ردود",
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white70,
-                      fontFamily: arabicAccentFont,
-                    ),
-                  ),
-                  const SizedBox(width: 15),
-                  const Icon(LucideIcons.chevron_left, size: 14),
-                ],
-              ),
-            );
-          },
-        ),
-      ),
-    );
   }
 }

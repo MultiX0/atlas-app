@@ -43,4 +43,5 @@ class TableNames {
   static const user_fcm_tokens = 'user_fcm_tokens';
   static const post_interactions = 'post_interactions';
   static const user_seen_posts = 'user_seen_posts';
+  static const post_comment_reports = 'post_comment_reports';
 }

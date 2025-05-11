@@ -14,17 +14,19 @@ class Routes {
   static const user = '/user';
   static const profile = '/profile';
   static const search = '/searchPage';
-  static const manhwaPage = '/manhwaPage';
+  static const manhwaPage = '/manhwa';
   static const addComicReview = '/addComicReviewPage';
   static const makePostPage = '/makePostPage';
-  static const hashtagsPage = '/hashtagsPage';
+  static const hashtagsPage = '/hashtag';
   static const addNovelPage = '/addNovelPage';
-  static const novelPage = '/novelPage';
+  static const novelPage = '/novel';
   static const addNovelChapterPage = '/addChapterPage';
   static const novelChapterDrafts = '/chapterDraftsPage';
   static const novelReadChapter = '/novelReadChapter';
   static const chapterCommentsPage = '/chapterCommentsPage';
-  static const comicPage = '/comicPage';
+  static const comicPage = '/comic';
   static const editProfile = '/editProfile';
   static const forgotPassword = '/forgotPassword';
+  static const postPage = '/post';
+  static const postComments = '/comments';
 }

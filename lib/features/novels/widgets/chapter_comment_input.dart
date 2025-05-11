@@ -1,10 +1,12 @@
+import 'package:atlas_app/core/common/enum/comment_type.dart';
 import 'package:atlas_app/core/common/widgets/markdown_field.dart';
 import 'package:atlas_app/features/novels/controller/novels_controller.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
 
 class ChaptersCommentInput extends StatefulWidget {
-  const ChaptersCommentInput({super.key});
+  const ChaptersCommentInput({super.key, required this.commentType});
+  final CommentType commentType;
 
   @override
   State<ChaptersCommentInput> createState() => _ChaptersCommentInputState();
@@ -39,22 +41,27 @@ class _ChaptersCommentInputState extends State<ChaptersCommentInput> {
               return IconButton(
                 style: IconButton.styleFrom(backgroundColor: AppColors.primary),
                 onPressed: () {
-                  if (input.trim().isEmpty) return;
-                  final replitedTo = ref.read(repliedToProvider);
-                  if (replitedTo == null || replitedTo.isEmpty) {
-                    ref.read(novelsControllerProvider.notifier).addChapterComment(input);
-                    _postFieldKey.currentState?.clearText();
-                    return;
-                  }
+                  if (widget.commentType == CommentType.novel) {
+                    if (input.trim().isEmpty) return;
+                    final replitedTo = ref.read(repliedToProvider);
+                    if (replitedTo == null || replitedTo.isEmpty) {
+                      ref.read(novelsControllerProvider.notifier).addChapterComment(input);
+                      _postFieldKey.currentState?.clearText();
+                      return;
+                    }
 
-                  ref
-                      .read(novelsControllerProvider.notifier)
-                      .replyToComment(
-                        commentId: replitedTo[KeyNames.comment_id],
-                        replyContent: input,
-                      );
+                    ref
+                        .read(novelsControllerProvider.notifier)
+                        .replyToComment(
+                          commentId: replitedTo[KeyNames.comment_id],
+                          replyContent: input,
+                        );
 
-                  ref.read(repliedToProvider.notifier).state = null;
+                    ref.read(repliedToProvider.notifier).state = null;
+                  } else if (widget.commentType == CommentType.post) {
+                    // TODO IMPLEMENT THE POST COMMENT HANDLE HERE
+                  } else {}
+
                   _postFieldKey.currentState?.clearText();
                 },
                 icon: const Icon(TablerIcons.send_2),

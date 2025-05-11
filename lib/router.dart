@@ -1,5 +1,8 @@
 import 'dart:developer';
 
+import 'package:atlas_app/features/post_comments/pages/post_comments_page.dart';
+import 'package:atlas_app/features/posts/pages/post_page.dart';
+
 import 'imports.dart';
 
 final navigationShellProvider = Provider<StatefulNavigationShell>((ref) {
@@ -232,6 +235,35 @@ final routerProvider = Provider<GoRouter>((ref) {
 
           return CustomTransitionPage(
             child: NovelLoader(novelId: id),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+          );
+        },
+      ),
+
+      GoRoute(
+        path: "${Routes.postPage}/:id",
+        redirect: authRedirect,
+        pageBuilder: (context, state) {
+          final id = state.pathParameters["id"] ?? "";
+
+          return CustomTransitionPage(
+            child: PostPage(postId: id),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+          );
+        },
+      ),
+
+      GoRoute(
+        path: "${Routes.postComments}/:id",
+        redirect: authRedirect,
+        pageBuilder: (context, state) {
+          final id = state.pathParameters["id"] ?? "";
+          return CustomTransitionPage(
+            child: PostCommentsPage(postId: id, withAppBar: true),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);
             },

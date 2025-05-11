@@ -53,6 +53,17 @@ class PostsDb {
     }
   }
 
+  Future<PostModel> getPostByID(String postId) async {
+    try {
+      final postData = await _postsView.select("*").eq(KeyNames.post_id, postId).maybeSingle();
+      if (postData != null) return PostModel.fromMap(postData);
+      throw Exception("Post with id: $postId is not found");
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
   Future<void> insertPost(
     String postId,
     String post,

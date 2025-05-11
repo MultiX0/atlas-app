@@ -16,6 +16,7 @@ import 'package:atlas_app/features/novels/providers/novel_reviews_state.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/features/posts/db/posts_db.dart';
 import 'package:atlas_app/features/posts/providers/main_feed_state.dart';
+import 'package:atlas_app/features/posts/providers/post_state.dart';
 import 'package:atlas_app/features/profile/provider/profile_posts_state.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:loader_overlay/loader_overlay.dart';
@@ -23,6 +24,15 @@ import 'package:uuid/uuid.dart';
 
 final postsControllerProvider = StateNotifierProvider<PostsController, bool>((ref) {
   return PostsController(ref: ref);
+});
+
+final getPostByIDProvider = FutureProvider.family.autoDispose<PostModel, String>((
+  ref,
+  postId,
+) async {
+  final controller = ref.watch(postsControllerProvider.notifier);
+  final post = await controller.getPostByID(postId);
+  return post;
 });
 
 class PostsController extends StateNotifier<bool> {
@@ -148,11 +158,11 @@ class PostsController extends StateNotifier<bool> {
       switch (postType) {
         case PostLikeEnum.HASHTAG:
           _ref.read(hashtagStateProvider(hashtag).notifier).likePost(postModel: newPost);
-          _ref.read(profilePostsStateProvider(me.userId).notifier).likePost(postModel: newPost);
+          _ref.read(profilePostsStateProvider(post.userId).notifier).likePost(postModel: newPost);
           log("After state update: expecting userLiked = ${newPost.userLiked}");
           break;
         case PostLikeEnum.PROFILE:
-          _ref.read(profilePostsStateProvider(me.userId).notifier).likePost(postModel: newPost);
+          _ref.read(profilePostsStateProvider(post.userId).notifier).likePost(postModel: newPost);
           _ref.read(hashtagStateProvider(hashtag).notifier).likePost(postModel: newPost);
           log("After state update: expecting userLiked = ${newPost.userLiked}");
           break;
@@ -161,6 +171,7 @@ class PostsController extends StateNotifier<bool> {
           log("After state update: expecting userLiked = ${newPost.userLiked}");
           break;
       }
+      _ref.read(postStateProvider.notifier).updatePost(newPost);
 
       await Future.wait([
         db.handleUserLike(post, me),
@@ -169,6 +180,8 @@ class PostsController extends StateNotifier<bool> {
     } catch (e) {
       CustomToast.error(errorMsg);
       log(e.toString());
+      _ref.read(postStateProvider.notifier).updatePost(post);
+
       switch (postType) {
         case PostLikeEnum.HASHTAG:
           _ref
@@ -279,6 +292,17 @@ class PostsController extends StateNotifier<bool> {
   Future<List<Map<String, dynamic>>> slashMentionSearch(String query) async {
     try {
       return await db.slashMentionSearch(query);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<PostModel> getPostByID(String postId) async {
+    try {
+      final post = await db.getPostByID(postId);
+      _ref.read(postStateProvider.notifier).updatePost(post);
+      return post;
     } catch (e) {
       log(e.toString());
       rethrow;
