@@ -1,18 +1,14 @@
-import 'package:atlas_app/core/common/enum/post_like_enum.dart';
 import 'package:atlas_app/core/common/widgets/cached_avatar.dart';
-import 'package:atlas_app/features/posts/providers/post_state.dart';
-import 'package:atlas_app/features/profile/provider/providers.dart';
 // import 'package:atlas_app/core/common/widgets/slash_parser.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:intl/intl.dart';
 import 'dart:ui' as ui;
 
 class PostReplyedWidget extends StatelessWidget {
-  const PostReplyedWidget({super.key, required this.post, required this.postLikeType});
+  const PostReplyedWidget({super.key, required this.post});
 
   final PostModel post;
   // static final parser = buildSlashEntityParser();
-  final PostLikeEnum postLikeType;
 
   @override
   Widget build(BuildContext context) {
@@ -20,52 +16,38 @@ class PostReplyedWidget extends StatelessWidget {
     // final value = result.value as SlashEntity;
 
     return RepaintBoundary(
-      child: Consumer(
-        builder: (context, ref, _) {
-          return InkWell(
-            onTap: () {
-              ref.read(postStateProvider.notifier).updatePost(post);
-              ref.read(selectedPostLikeTypeProvider.notifier).state = postLikeType;
-              context.push("${Routes.postPage}/${post.postId}");
-            },
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.only(left: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Flexible(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text.rich(
-                      TextSpan(
-                        text: "ردا على منشور  ",
-                        style: const TextStyle(
-                          color: AppColors.mutedSilver,
-                          fontFamily: arabicAccentFont,
-                        ),
-                        children: [
-                          TextSpan(
-                            text: post.parent!.user.username,
-                            style: const TextStyle(
-                              color: AppColors.primary,
-                              fontFamily: accentFont,
-                            ),
-                          ),
-                        ],
+      child: Padding(
+        padding: const EdgeInsets.only(left: 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text.rich(
+                    TextSpan(
+                      text: "ردا على منشور  ",
+                      style: const TextStyle(
+                        color: AppColors.mutedSilver,
+                        fontFamily: arabicAccentFont,
                       ),
-                      textDirection: ui.TextDirection.rtl,
+                      children: [
+                        TextSpan(
+                          text: post.parent!.user.username,
+                          style: const TextStyle(color: AppColors.primary, fontFamily: accentFont),
+                        ),
+                      ],
                     ),
-                    ReplyedPostContent(post: post),
-                  ],
-                ),
+                    textDirection: ui.TextDirection.rtl,
+                  ),
+                  ReplyedPostContent(post: post),
+                ],
               ),
-              const SizedBox(width: 15),
-              CachedAvatar(avatar: post.parent!.user.avatar, raduis: 15),
-            ],
-          ),
+            ),
+            const SizedBox(width: 15),
+            CachedAvatar(avatar: post.parent!.user.avatar, raduis: 15),
+          ],
         ),
       ),
     );

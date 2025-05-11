@@ -35,7 +35,7 @@ class PostPreviewModel {
 
   factory PostPreviewModel.fromMap(Map<String, dynamic> map) {
     return PostPreviewModel(
-      postId: map[KeyNames.post_id] ?? '',
+      postId: map[KeyNames.id] ?? '',
       content: map[KeyNames.content] ?? '',
       images: [],
       createdAt: DateTime.parse(map[KeyNames.created_at]),

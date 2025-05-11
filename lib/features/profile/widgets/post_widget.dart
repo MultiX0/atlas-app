@@ -49,7 +49,14 @@ class PostWidget extends ConsumerWidget {
               Divider(height: 0.25, color: AppColors.mutedSilver.withValues(alpha: .1)),
               const SizedBox(height: 15),
               if (post.parent != null) ...[
-                PostReplyedWidget(post: post, postLikeType: postLikeType),
+                InkWell(
+                  onTap: () {
+                    ref.read(postStateProvider.notifier).updatePost(post);
+                    ref.read(selectedPostLikeTypeProvider.notifier).state = postLikeType;
+                    context.push("${Routes.postPage}/${post.parent!.postId}");
+                  },
+                  child: PostReplyedWidget(post: post),
+                ),
                 const SizedBox(height: 8),
               ],
               if (post.comicReviewMentioned != null || post.novelReviewMentioned != null) ...[
