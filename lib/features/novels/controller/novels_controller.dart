@@ -306,7 +306,11 @@ class NovelsController extends StateNotifier<bool> {
     try {
       final chapter = _ref.read(selectedChapterProvider)!;
       if (chapter.has_viewed_recently) return;
+      final me = _ref.read(userState.select((s) => s.user!));
+      final novel = _ref.read(selectedNovelProvider)!;
       await db.handleChapterView(chapter.id);
+      final interacion = await newNovelInteraction(novel: novel, user: me, upsert: true);
+      await _interactionsDb.upsertNovelInteraction(interacion);
       _ref
           .read(chaptersStateProvider(chapter.novelId).notifier)
           .updateChapter(chapter.copyWith(has_viewed_recently: true, views: chapter.views + 1));
@@ -371,20 +375,22 @@ class NovelsController extends StateNotifier<bool> {
   Future<NovelInteraction> newNovelInteraction({
     required NovelModel novel,
     required UserModel user,
+    bool upsert = false,
   }) async {
     final count = novel.interaction != null ? 0 : await getUserChaptersReadCount(novel.id);
     final interaction =
-        novel.interaction ??
-        NovelInteraction(
-          id: uuid.v4(),
-          userId: user.userId,
-          novelId: novel.id,
-          isFavoried: novel.isFavorite,
-          chapterReadCount: count,
-          timeSpent: 0,
-          shared: true,
-          createdAt: DateTime.now(),
-        );
+        (novel.interaction == null || upsert)
+            ? NovelInteraction(
+              id: uuid.v4(),
+              userId: user.userId,
+              novelId: novel.id,
+              isFavoried: novel.isFavorite,
+              chapterReadCount: count,
+              timeSpent: novel.interaction != null ? novel.interaction!.timeSpent : 0,
+              shared: true,
+              createdAt: DateTime.now(),
+            )
+            : novel.interaction!;
     return interaction;
   }
 
