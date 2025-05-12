@@ -1017,21 +1017,61 @@ characters {
         .toList();
   }
 
-  Future<List<ComicPreviewModel>> getExploreComics({required int pageSize}) async {
+  Future<List<String>> fetchUserRecommendation({required String userId, required int page}) async {
     try {
-      final idsRaw = await client.rpc(
-        FunctionNames.get_random_comic_ids,
-        params: {'limit_num': pageSize},
+      final url = '${appAPI}recommend-comics?user_id=$userId&page=$page';
+      final headers = await generateAuthHeaders();
+      final options = Options(headers: headers);
+      final res = await dio.get(url, options: options);
+      if (res.statusCode != null && res.statusCode! >= 200 && res.statusCode! <= 299) {
+        if (res.data == null) {
+          log('Error: Response data is null');
+          return [];
+        }
+
+        final data = jsonDecode(res.data.toString());
+
+        if (data is List) {
+          return List<String>.from(
+            data.where((item) => item != null).map((item) => item.toString()),
+          );
+        } else {
+          log('Error: Expected a List but got ${data.runtimeType}');
+          return [];
+        }
+      }
+      return [];
+    } catch (e) {
+      log(e.toString());
+      return [];
+    }
+  }
+
+  Future<List<ComicPreviewModel>> getExploreComics({
+    required int pageSize,
+    required String userId,
+    required int page,
+    required int startAt,
+  }) async {
+    try {
+      final ids = await fetchUserRecommendation(userId: userId, page: page);
+      log(ids.toString());
+      var query = _comicsTable.select("*");
+
+      if (ids.isNotEmpty) {
+        log("there is recommendation data");
+        query = query.inFilter(KeyNames.id, ids);
+      } else {
+        query.range(startAt, startAt + pageSize - 1);
+      }
+
+      final data = await query;
+      final idIndexMap = {for (var i = 0; i < ids.length; i++) ids[i]: i};
+      data.sort(
+        (a, b) => (idIndexMap[a[KeyNames.id]] ?? ids.length).compareTo(
+          idIndexMap[b[KeyNames.id]] ?? ids.length,
+        ),
       );
-
-      final ids =
-          (idsRaw as List)
-              .whereType<Map<String, dynamic>>()
-              .map((row) => row['id']?.toString())
-              .whereType<String>()
-              .toList();
-
-      final data = await _comicsTable.select("*").inFilter(KeyNames.id, ids);
       return data
           .map(
             (c) => ComicPreviewModel(
