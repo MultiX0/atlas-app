@@ -38,4 +38,6 @@ class FunctionNames {
   static const delete_post_comment = 'delete_post_comment';
   static const delete_post_comment_reply = 'delete_post_comment_reply';
   static const soft_delete_post = 'soft_delete_post';
+  static const upsert_novel_interaction = 'upsert_novel_interaction';
+  static const get_user_chapters_read_count = 'get_user_chapters_read_count';
 }

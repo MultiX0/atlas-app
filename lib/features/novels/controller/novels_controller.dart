@@ -5,6 +5,8 @@ import 'dart:io';
 
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/upload_storage.dart';
+import 'package:atlas_app/core/services/user_vector_service.dart';
+import 'package:atlas_app/features/interactions/db/interactions_db.dart';
 import 'package:atlas_app/features/library/models/my_work_model.dart';
 import 'package:atlas_app/features/library/providers/my_favorite_state.dart';
 import 'package:atlas_app/features/library/providers/my_work_state.dart';
@@ -13,6 +15,7 @@ import 'package:atlas_app/features/novels/models/chapter_draft_model.dart';
 import 'package:atlas_app/features/novels/models/chapter_model.dart';
 import 'package:atlas_app/features/novels/models/novel_chapter_comment_model.dart';
 import 'package:atlas_app/features/novels/models/novel_chapter_comment_reply_model.dart';
+import 'package:atlas_app/features/novels/models/novel_interaction.dart';
 import 'package:atlas_app/features/novels/models/novel_model.dart';
 import 'package:atlas_app/features/novels/models/novel_preview_model.dart';
 import 'package:atlas_app/features/novels/models/novels_genre_model.dart';
@@ -45,6 +48,7 @@ class NovelsController extends StateNotifier<bool> {
 
   NovelsDb get db => _ref.watch(novelsDbProvider);
   ReportsDb get reportsDb => _ref.watch(reportsDbProvider);
+  InteractionsDb get _interactionsDb => InteractionsDb();
   final uuid = const Uuid();
 
   Future<NovelModel?> getNovel(String id) async {
@@ -346,6 +350,53 @@ class NovelsController extends StateNotifier<bool> {
     }
   }
 
+  Future<void> handleNovelInteraction() async {
+    try {
+      final novel = _ref.read(selectedNovelProvider)!;
+      final me = _ref.read(userState.select((s) => s.user!));
+      final interaction = await _interactionsDb.getNovelInteraction(novel.id);
+      if (novel.interaction == null && interaction == null) {
+        final interaction = await newNovelInteraction(novel: novel, user: me);
+        await _interactionsDb.upsertNovelInteraction(interaction);
+        _ref.read(selectedNovelProvider.notifier).state = novel.copyWith(interaction: interaction);
+      } else {
+        _ref.read(selectedNovelProvider.notifier).state = novel.copyWith(interaction: interaction);
+      }
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<NovelInteraction> newNovelInteraction({
+    required NovelModel novel,
+    required UserModel user,
+  }) async {
+    final count = novel.interaction != null ? 0 : await getUserChaptersReadCount(novel.id);
+    final interaction =
+        novel.interaction ??
+        NovelInteraction(
+          id: uuid.v4(),
+          userId: user.userId,
+          novelId: novel.id,
+          isFavoried: novel.isFavorite,
+          chapterReadCount: count,
+          timeSpent: 0,
+          shared: true,
+          createdAt: DateTime.now(),
+        );
+    return interaction;
+  }
+
+  Future<int> getUserChaptersReadCount(String novelId) async {
+    try {
+      return await db.getUserChaptersReadCount(novelId);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
   Future<void> handleFavorite(NovelModel novel) async {
     final me = _ref.read(userState.select((s) => s.user!));
 
@@ -353,6 +404,7 @@ class NovelsController extends StateNotifier<bool> {
       final newNovel = novel.copyWith(
         isFavorite: !novel.isFavorite,
         favoriteCount: novel.isFavorite ? novel.favoriteCount - 1 : novel.favoriteCount + 1,
+        interaction: novel.interaction?.copyWith(isFavoried: !novel.isFavorite),
       );
       _ref.read(novelViewsStateProvider.notifier).updateNovel(newNovel);
       _ref.read(selectedNovelProvider.notifier).state = newNovel;
@@ -361,7 +413,13 @@ class NovelsController extends StateNotifier<bool> {
           .addWork(
             MyWorkModel(title: novel.title, type: 'novel', poster: novel.poster, id: novel.id),
           );
-      await db.handleFavorite(novel, me);
+
+      await Future.wait([
+        db.handleFavorite(novel, me),
+        if (novel.interaction != null) _interactionsDb.upsertNovelInteraction(novel.interaction!),
+      ]);
+
+      if (novel.interaction != null) await updateUserVector(me.userId);
       CustomToast.success(
         "تمت ${novel.isFavorite ? "ازالة" : "اضافة"} الرواية ${novel.isFavorite ? "من" : "الى"} المفضلة بنجاح",
       );
@@ -371,6 +429,37 @@ class NovelsController extends StateNotifier<bool> {
       _ref.read(novelViewsStateProvider.notifier).updateNovel(novel);
       _ref.read(selectedNovelProvider.notifier).state = novel;
 
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> handleShareNovel(NovelModel novel) async {
+    try {
+      final me = _ref.read(userState.select((s) => s.user!));
+      final interaction = novel.interaction ?? await newNovelInteraction(novel: novel, user: me);
+      if (!interaction.shared) {
+        await _interactionsDb.upsertNovelInteraction(interaction.copyWith(shared: true));
+        await updateUserVector(me.userId);
+      }
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  void handleSaveReadingTime(int time) async {
+    try {
+      final novel = _ref.read(selectedNovelProvider)!;
+      final me = _ref.read(userState.select((s) => s.user!));
+
+      final interacion = novel.interaction ?? await newNovelInteraction(novel: novel, user: me);
+
+      await _interactionsDb.upsertNovelInteraction(
+        interacion.copyWith(timeSpent: interacion.timeSpent + time),
+      );
+      await updateUserVector(me.userId);
+    } catch (e) {
       log(e.toString());
       rethrow;
     }

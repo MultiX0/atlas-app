@@ -480,6 +480,30 @@ class NovelsDb {
     }
   }
 
+  Future<int> getUserChaptersReadCount(String novelId) async {
+    try {
+      final count = await _client.rpc(
+        FunctionNames.get_user_chapters_read_count,
+        params: {KeyNames.novel_id: novelId},
+      );
+
+      if (count == null) return 0;
+
+      if (count is int) return count;
+      if (count is double) return count.toInt();
+      if (count is num) return count.toInt();
+
+      return int.tryParse(count.toString()) ?? 0;
+    } catch (e, stackTrace) {
+      log(
+        'Error getting chapters read count for novel $novelId: $e',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
   Future<void> handleInsertNewNovel({
     required String id,
     required String title,

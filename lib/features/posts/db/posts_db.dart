@@ -10,6 +10,7 @@ import 'package:atlas_app/core/common/utils/extract_key_words.dart';
 import 'package:atlas_app/core/common/widgets/slash_parser.dart';
 import 'package:atlas_app/core/services/user_vector_service.dart';
 import 'package:atlas_app/features/hashtags/db/hashtags_db.dart';
+import 'package:atlas_app/features/interactions/db/interactions_db.dart';
 import 'package:atlas_app/features/notifications/db/notifications_db.dart';
 import 'package:atlas_app/features/notifications/interfaces/notifications_interface.dart';
 import 'package:atlas_app/features/interactions/models/post_interaction_model.dart';
@@ -28,11 +29,12 @@ class PostsDb {
   SupabaseQueryBuilder get _mentionsTable => _client.from(TableNames.post_mentions);
   SupabaseQueryBuilder get _pinnedPostsTable => _client.from(TableNames.pinned_posts);
   SupabaseQueryBuilder get _savedPostsTable => _client.from(TableNames.saved_posts);
-  SupabaseQueryBuilder get _postInteractionsTable => _client.from(TableNames.post_interactions);
+  // SupabaseQueryBuilder get _postInteractionsTable => _client.from(TableNames.post_interactions);
 
   static Dio get _dio => Dio();
   HashtagsDb get hashtagDb => HashtagsDb();
   NotificationsDb get notificationsDb => NotificationsDb();
+  InteractionsDb get _interactionsDb => InteractionsDb();
 
   Future<List<PostModel>> getUserPosts({
     required int startIndex,
@@ -401,7 +403,7 @@ class PostsDb {
 
   Future<void> insetPostInteraction(PostInteractionModel interactionModel) async {
     try {
-      await _postInteractionsTable.insert(interactionModel.toMap());
+      await _interactionsDb.upsertPostInteraction(interactionModel);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -420,7 +422,7 @@ class PostsDb {
 
   Future<void> updateInteractionModel(PostInteractionModel interactionModel) async {
     try {
-      await _postInteractionsTable.insert(interactionModel.toMap());
+      await _interactionsDb.upsertPostInteraction(interactionModel);
     } catch (e) {
       log(e.toString());
       rethrow;

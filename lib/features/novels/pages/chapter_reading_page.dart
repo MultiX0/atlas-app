@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:atlas_app/core/common/utils/custom_action_sheet.dart';
 import 'package:atlas_app/core/common/utils/delta_parser.dart';
 import 'package:atlas_app/core/common/widgets/reports/report_widget.dart';
@@ -25,9 +27,33 @@ class ChapterReadingPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    int timeSpent = 0;
+    int lastSavedTime = -60;
+
+    void updateTime() {
+      timeSpent += 1;
+
+      if (timeSpent % 60 == 0 && timeSpent != lastSavedTime) {
+        lastSavedTime = timeSpent;
+        ref.read(novelsControllerProvider.notifier).handleSaveReadingTime(timeSpent);
+      }
+    }
+
+    void useInterval(VoidCallback callback, Duration delay) {
+      final savedCallback = useRef(callback);
+      savedCallback.value = callback;
+
+      useEffect(() {
+        final timer = Timer.periodic(delay, (_) => savedCallback.value());
+        return timer.cancel;
+      }, [delay]);
+    }
+
     // Initialize screenshot handling
     final noScreenshot = useMemoized(() => NoScreenshot.instance);
     useEffect(() {
+      useInterval(updateTime, const Duration(seconds: 1));
+
       if (!kDebugMode) {
         noScreenshot.screenshotOff();
       }
@@ -59,6 +85,7 @@ class ChapterReadingPage extends HookConsumerWidget {
       canPop: true,
       onPopInvokedWithResult: (_, _) {
         noScreenshot.screenshotOn();
+        ref.read(novelsControllerProvider.notifier).handleSaveReadingTime(timeSpent);
       },
       child: Scaffold(
         backgroundColor: AppColors.readingBackgroundColor,
