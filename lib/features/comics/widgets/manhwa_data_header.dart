@@ -23,6 +23,7 @@ class _ManhwaDataHeaderState extends ConsumerState<ManhwaDataHeader> {
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
     final comic = ref.watch(selectedComicProvider)!;
+    final color = comic.color != null ? HexColor(comic.color!) : AppColors.primary;
     final shadowColor =
         comic.color != null
             ? HexColor(comic.color!).withValues(alpha: .25)
@@ -183,7 +184,7 @@ class _ManhwaDataHeaderState extends ConsumerState<ManhwaDataHeader> {
                     CircleAvatar(
                       backgroundColor: AppColors.scaffoldBackground,
                       child: IconButton(
-                        color: comic.user_favorite ? AppColors.primary : AppColors.whiteColor,
+                        color: comic.user_favorite ? color : AppColors.whiteColor,
                         onPressed: () {
                           _debouncer.debounce(
                             duration: const Duration(milliseconds: 300),

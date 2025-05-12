@@ -3,10 +3,13 @@ import 'dart:developer';
 
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/features/comics/db/comics_db.dart';
+import 'package:atlas_app/features/comics/models/comic_interacion_model.dart';
+import 'package:atlas_app/features/interactions/db/interactions_db.dart';
 import 'package:atlas_app/features/library/models/my_work_model.dart';
 import 'package:atlas_app/features/library/providers/my_favorite_state.dart';
 import 'package:atlas_app/features/novels/providers/comic_views.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:uuid/uuid.dart';
 
 final comicsControllerProvider = StateNotifierProvider<ComicsController, bool>(
   (ref) => ComicsController(ref: ref),
@@ -24,6 +27,9 @@ class ComicsController extends StateNotifier<bool> {
   final Ref _ref;
   ComicsController({required Ref ref}) : _ref = ref, super(false);
   ComicsDb get db => _ref.watch(comicsDBProvider);
+  InteractionsDb get _interactionsDb => InteractionsDb();
+
+  Uuid uuid = const Uuid();
 
   Future<List<ComicModel>> searchComics(String query, {int limit = 20, bool more = false}) async {
     try {
@@ -35,13 +41,57 @@ class ComicsController extends StateNotifier<bool> {
     }
   }
 
-  Future<void> viewComic({required String userId, required String comicId}) async {
+  Future<void> viewComic() async {
     try {
-      await db.viewComic(userId: userId, comicId: comicId);
+      final comic = _ref.read(selectedComicProvider)!;
+      if (!comic.is_viewed) {
+        final me = _ref.read(userState).user!;
+        await db.viewComic(userId: me.userId, comicId: comic.comicId);
+      } else {
+        log("i already view this manhwa");
+      }
     } catch (e) {
       log(e.toString());
       rethrow;
     }
+  }
+
+  Future<ComicInteracionModel> handleInteracion() async {
+    try {
+      final comic = _ref.read(selectedComicProvider)!;
+      final me = _ref.read(userState.select((s) => s.user!));
+      if (comic.interaction == null) {
+        log("new interacion inserting...");
+        final interacion = await newComicInteraction(comic: comic, user: me);
+        log(interacion.toString());
+        _ref.read(selectedComicProvider.notifier).state = comic.copyWith(interacion: interacion);
+        await _interactionsDb.upsertComicInteraction(interacion);
+        return interacion;
+      }
+      return comic.interaction!;
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<ComicInteracionModel> newComicInteraction({
+    required ComicModel comic,
+    required UserModel user,
+    bool upsert = false,
+  }) async {
+    final interaction =
+        (comic.interaction == null || upsert)
+            ? ComicInteracionModel(
+              id: uuid.v4(),
+              userId: user.userId,
+              comicId: comic.comicId,
+              favorite: comic.user_favorite,
+              shared: false,
+              liked: comic.user_favorite,
+            )
+            : comic.interaction!;
+    return interaction;
   }
 
   Future<void> handleComicUpdate(ComicModel comic, bool fromSearch) async {
@@ -80,7 +130,18 @@ class ComicsController extends StateNotifier<bool> {
             );
       }
 
-      await db.toggleFavoriteComic(comic.comicId);
+      ComicInteracionModel interacionModel;
+      if (comic.interaction == null) {
+        interacionModel = await handleInteracion();
+      } else {
+        interacionModel = comic.interaction!;
+      }
+      await Future.wait([
+        db.toggleFavoriteComic(comic.comicId),
+        _interactionsDb.upsertComicInteraction(
+          interacionModel.copyWith(favorite: !comic.user_favorite, liked: !comic.user_favorite),
+        ),
+      ]);
       CustomToast.success(
         "تمت ${comic.user_favorite ? "ازالة" : "اضافة"} العمل ${comic.user_favorite ? "من" : "الى"} المفضلة بنجاح",
       );

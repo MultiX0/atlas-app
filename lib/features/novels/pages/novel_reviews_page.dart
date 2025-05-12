@@ -34,20 +34,18 @@ class _ReviewsPageState extends ConsumerState<NovelReviewsPage> {
     super.initState();
   }
 
-  void fetchData() {
-    Future.microtask(() async {
+  void fetchData() async {
+    await Future.microtask(() async {
       ref.read(novelReviewsState(widget.novel.id).notifier).fetchReviews();
       final _count = await ref
           .read(reviewsControllerProvider.notifier)
           .getNovelReviewsCount(widget.novel.id);
-      setState(() {
-        fetched = true;
-        reviewsCount = _count;
-      });
+      fetched = true;
+      reviewsCount = _count;
       final initialReviews = ref.read(novelReviewsState(widget.novel.id)).reviews.take(3);
       for (var review in initialReviews) {
         for (var image in review.images) {
-          // ignore: use_build_context_synchronously
+          if (!mounted) continue;
           precacheImage(CachedNetworkAvifImageProvider(image), context);
         }
       }
@@ -61,9 +59,7 @@ class _ReviewsPageState extends ConsumerState<NovelReviewsPage> {
           .read(reviewsControllerProvider.notifier)
           .getNovelReviewsCount(widget.novel.id);
 
-      setState(() {
-        reviewsCount = _count;
-      });
+      reviewsCount = _count;
     });
   }
 

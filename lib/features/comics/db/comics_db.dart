@@ -195,7 +195,7 @@ class ComicsDb {
           insertEmbedding(
             id: comicsData.first['comic'][KeyNames.id],
             content:
-                "${comicsData.first['comic'][KeyNames.title_english]}\n${comicsData.first['comic'][KeyNames.synopsis]}",
+                "${comicsData.first['comic'][KeyNames.title_english]}\n${comicsData.first['comic'][KeyNames.synopsis]}\n${comicsData.first["title_english"]}\ntags:\n${comicsData.first['tags']}\n\ngenreses:${comicsData.first['genres']}",
             userId: '',
           ),
         ]);
@@ -206,7 +206,8 @@ class ComicsDb {
           await insertEmbedding(
             id: comic['comic'][KeyNames.id],
             content:
-                "${comic['comic'][KeyNames.title_english]}\n${comic['comic'][KeyNames.synopsis]}",
+                "${comic['comic'][KeyNames.title_english]}\n${comic['comic'][KeyNames.synopsis]}\n${comic["title_english"]}\ntags:\n${comic['tags']}\n\ngenreses:${comic['genres']}",
+
             userId: '',
           );
         }

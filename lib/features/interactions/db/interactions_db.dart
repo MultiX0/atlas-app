@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:atlas_app/core/common/constants/function_names.dart';
 import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/core/services/user_vector_service.dart';
+import 'package:atlas_app/features/comics/models/comic_interacion_model.dart';
 import 'package:atlas_app/features/interactions/models/post_interaction_model.dart';
 import 'package:atlas_app/features/novels/models/novel_interaction.dart';
 import 'package:atlas_app/imports.dart';
@@ -28,6 +29,19 @@ class InteractionsDb {
     try {
       await _client.rpc(
         FunctionNames.upsert_novel_interaction,
+        params: {'data': interaction.toMap()},
+      );
+      await updateUserVector(interaction.userId);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> upsertComicInteraction(ComicInteracionModel interaction) async {
+    try {
+      await _client.rpc(
+        FunctionNames.handle_comic_interaction,
         params: {'data': interaction.toMap()},
       );
       await updateUserVector(interaction.userId);

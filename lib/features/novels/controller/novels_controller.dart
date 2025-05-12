@@ -387,7 +387,7 @@ class NovelsController extends StateNotifier<bool> {
               isFavoried: novel.isFavorite,
               chapterReadCount: count,
               timeSpent: novel.interaction != null ? novel.interaction!.timeSpent : 0,
-              shared: true,
+              shared: false,
               createdAt: DateTime.now(),
             )
             : novel.interaction!;

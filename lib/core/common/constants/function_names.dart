@@ -40,4 +40,5 @@ class FunctionNames {
   static const soft_delete_post = 'soft_delete_post';
   static const upsert_novel_interaction = 'upsert_novel_interaction';
   static const get_user_chapters_read_count = 'get_user_chapters_read_count';
+  static const handle_comic_interaction = 'handle_comic_interaction';
 }

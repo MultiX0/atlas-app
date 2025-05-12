@@ -347,8 +347,6 @@ class PostsDb {
           return [];
         }
 
-        log('Response data: ${res.data.toString()}');
-
         final data = jsonDecode(res.data.toString());
 
         if (data is List) {

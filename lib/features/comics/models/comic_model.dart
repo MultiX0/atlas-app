@@ -2,6 +2,7 @@
 
 import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/features/characters/models/comic_characters_model.dart';
+import 'package:atlas_app/features/comics/models/comic_interacion_model.dart';
 import 'package:atlas_app/features/comics/models/comic_published_model.dart';
 import 'package:atlas_app/features/comics/models/external_links_model.dart';
 import 'package:atlas_app/imports.dart';
@@ -36,6 +37,7 @@ class ComicModel {
   final bool user_favorite;
   final bool is_viewed;
   final List<ComicCharacterModel>? characters;
+  final ComicInteracionModel? interaction;
   final int views;
   ComicModel({
     required this.aniId,
@@ -64,6 +66,7 @@ class ComicModel {
     required this.tags,
     required this.is_viewed,
     required this.user_favorite,
+    this.interaction,
   });
 
   ComicModel copyWith({
@@ -95,6 +98,7 @@ class ComicModel {
     List<String>? tags,
     bool? is_viewed,
     bool? user_favorite,
+    ComicInteracionModel? interacion,
   }) {
     return ComicModel(
       aniId: aniId ?? this.aniId,
@@ -123,6 +127,7 @@ class ComicModel {
       tags: tags ?? this.tags,
       is_viewed: is_viewed ?? this.is_viewed,
       user_favorite: user_favorite ?? this.user_favorite,
+      interaction: interacion ?? this.interaction,
     );
   }
 
@@ -222,6 +227,10 @@ class ComicModel {
           map[KeyNames.image] ??
           map['images']?['jpg']?['large_image_url'] ??
           "",
+      interaction:
+          map[KeyNames.interaction] == null
+              ? null
+              : ComicInteracionModel.fromMap(map[KeyNames.interaction]),
     );
   }
 
