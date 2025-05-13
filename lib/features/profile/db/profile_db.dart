@@ -59,6 +59,7 @@ class ProfileDb {
       final notification = NotificationsInterface.followUserNotification(
         userId: targetId,
         username: me.username,
+        data: {'route': '${Routes.postPage}/${me.userId}'},
       );
       await Future.wait([
         if (!isFollowed) notificationsDb.sendNotificatiosn(notification),

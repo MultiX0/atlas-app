@@ -135,7 +135,7 @@ class _PostPageState extends ConsumerState<PostPage> {
                           int itemCount =
                               isLoading
                                   ? 2
-                                  : (comments.isEmpty)
+                                  : (comments.isEmpty || !post.comments_open)
                                   ? 2
                                   : // Post + empty state
                                   comments.length +
@@ -158,11 +158,15 @@ class _PostPageState extends ConsumerState<PostPage> {
                                     final _post = ref.watch(postStateProvider);
                                     return PostWidget(
                                       post: _post ?? post,
-                                      onShare: () {},
+                                      onShare: () => CustomToast.soon(),
                                       postLikeType: postLikeType,
                                     );
                                   }
                                   if (isLoading) return const Loader();
+
+                                  if (!post.comments_open) {
+                                    return const EmptyChapters(text: "التعليقات مغلقة");
+                                  }
 
                                   if (comments.isEmpty) {
                                     return const EmptyChapters(text: "لايوجد أي تعليقات حاليا");
@@ -176,6 +180,7 @@ class _PostPageState extends ConsumerState<PostPage> {
 
                                   final comment = comments.elementAt(i - 1);
                                   return PostCommentTile(
+                                    postCreator: post.userId,
                                     key: ValueKey(comment.id),
                                     comment: comment,
                                     postId: post.postId,
@@ -187,10 +192,11 @@ class _PostPageState extends ConsumerState<PostPage> {
                         },
                       ),
                     ),
-
-                    Divider(height: 0.35, color: AppColors.mutedSilver.withValues(alpha: .15)),
-                    const ReplyStatusWidget(commentType: CommentType.post),
-                    const ChaptersCommentInput(commentType: CommentType.post),
+                    if (post.comments_open) ...[
+                      Divider(height: 0.35, color: AppColors.mutedSilver.withValues(alpha: .15)),
+                      const ReplyStatusWidget(commentType: CommentType.post),
+                      const ChaptersCommentInput(commentType: CommentType.post),
+                    ],
                   ],
                 );
               },

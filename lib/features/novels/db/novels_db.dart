@@ -135,6 +135,7 @@ class NovelsDb {
         userId: reply.parentCommentAuthorId,
         username: reply.user.username,
         novelTitle: novel.title,
+        data: {'route': "${Routes.novelPage}/${novel.id}"},
       );
       await Future.wait([
         if (reply.userId != reply.parentCommentAuthorId)
@@ -167,6 +168,7 @@ class NovelsDb {
       final notification = NotificationsInterface.novelLikeNotification(
         userId: novel.userId,
         username: user.username,
+        data: {'route': "${Routes.novelPage}/${novel.id}"},
       );
       Future.wait([
         if (novel.userId != user.userId && !novel.isFavorite)
@@ -193,6 +195,7 @@ class NovelsDb {
       final notification = NotificationsInterface.novelChapterLikeNotification(
         userId: novel.userId,
         username: user.username,
+        data: {'route': "${Routes.novelPage}/${novel.id}"},
         novelTitle: novel.title,
       );
       Future.wait([
@@ -221,11 +224,13 @@ class NovelsDb {
     required String content,
     required UserModel user,
     required String novelAuthor,
+    required String novelId,
   }) async {
     try {
       final notification = NotificationsInterface.novelChapterCommentNotification(
         userId: novelAuthor,
         username: user.username,
+        data: {'route': "${Routes.novelPage}/$novelId"},
       );
       await Future.wait([
         if (user.userId != novelAuthor) _notificationsDb.sendNotificatiosn(notification),
@@ -265,6 +270,7 @@ class NovelsDb {
         userId: commentOwnerId,
         username: me.username,
         novelTitle: novel.title,
+        data: {'route': "${Routes.novelPage}/${novel.id}"},
       );
 
       await Future.wait([

@@ -88,7 +88,7 @@ class PostCommentReplyModel {
       content: map[KeyNames.content] ?? "",
       isDeleted: map[KeyNames.is_deleted] ?? false,
       isEdited: map[KeyNames.is_edited] ?? false,
-      likeCounts: map[KeyNames.like_count] ?? 0,
+      likeCounts: map[KeyNames.likes_count] ?? 0,
       user: map[KeyNames.user] != null ? UserModel.fromMap(map[KeyNames.user]) : null,
       createdAt: DateTime.parse(map[KeyNames.created_at]),
       isLiked: map[KeyNames.is_liked] ?? false,

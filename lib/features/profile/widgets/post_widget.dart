@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:atlas_app/core/common/enum/post_like_enum.dart';
+import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/features/posts/controller/posts_controller.dart';
 import 'package:atlas_app/features/posts/providers/post_state.dart';
@@ -82,8 +83,17 @@ class PostWidget extends ConsumerWidget {
     );
   }
 
-  void onComment(BuildContext context, bool postRoute, {required WidgetRef ref}) {
+  void onComment(
+    BuildContext context,
+    bool postRoute, {
+    required WidgetRef ref,
+    bool commentPage = false,
+  }) {
     if (postRoute) return;
+    if (commentPage) {
+      CustomToast.error("التعليقات مغلقة لهذا المنشور");
+      return;
+    }
     ref.read(postStateProvider.notifier).updatePost(post);
     ref.read(selectedPostLikeTypeProvider.notifier).state = postLikeType;
     context.push("${Routes.postPage}/${post.postId}");

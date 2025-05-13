@@ -65,12 +65,14 @@ class PostCommentsDb {
     required UserModel me,
     required String ownerId,
     required String postAuthorName,
+    required String postId,
   }) async {
     try {
       final notification = NotificationsInterface.postReplyCommentNotification(
         userId: ownerId,
         username: me.username,
         postTitle: postAuthorName,
+        data: {'route': '${Routes.postPage}/$postId'},
       );
       await Future.wait([
         _client.rpc(FunctionNames.toggle_post_comment_like, params: {'p_comment_id': id}),
@@ -87,12 +89,14 @@ class PostCommentsDb {
     required UserModel me,
     required String ownerId,
     required String postAuthorName,
+    required String postId,
   }) async {
     try {
       final notification = NotificationsInterface.postReplyCommentNotification(
         userId: ownerId,
         username: me.username,
         postTitle: postAuthorName,
+        data: {'route': '${Routes.postPage}/$postId'},
       );
       await Future.wait([
         _client.rpc(FunctionNames.toggle_post_comment_reply_like, params: {'p_reply_id': id}),
@@ -122,11 +126,15 @@ class PostCommentsDb {
     }
   }
 
-  Future<void> handleAddNewCommentReply(PostCommentReplyModel reply) async {
+  Future<void> handleAddNewCommentReply(
+    PostCommentReplyModel reply, {
+    required String postId,
+  }) async {
     try {
       final notification = NotificationsInterface.commentReplyNotification(
         userId: reply.parentAuthorId,
         username: reply.user!.username,
+        data: {'route': '${Routes.postPage}/$postId'},
       );
       await Future.wait([
         if (reply.userId != reply.parentAuthorId) _notificationsDb.sendNotificatiosn(notification),
@@ -149,6 +157,7 @@ class PostCommentsDb {
       final notification = NotificationsInterface.postCommentNotification(
         userId: post.userId,
         username: me.username,
+        data: {'route': '${Routes.postPage}/${post.postId}'},
       );
       await Future.wait([
         if (post.userId != me.userId) _notificationsDb.sendNotificatiosn(notification),

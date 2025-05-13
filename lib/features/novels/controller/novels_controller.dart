@@ -548,6 +548,7 @@ class NovelsController extends StateNotifier<bool> {
         content: content,
         user: comment.user,
         novelAuthor: novel.userId,
+        novelId: novel.id,
       );
       final newChapter = chapter.copyWith(commentsCount: chapter.commentsCount + 1);
       _ref.read(chaptersStateProvider(chapter.novelId).notifier).updateChapter(newChapter);

@@ -123,7 +123,7 @@ class PostCommentsController extends StateNotifier<bool> {
         _ref.read(postStateProvider.notifier).updatePost(newPost);
         postModel = newPost;
       }
-      await db.handleAddNewCommentReply(replyModel);
+      await db.handleAddNewCommentReply(replyModel, postId: post.postId);
     } catch (e) {
       CustomToast.error(errorMsg);
       _ref.read(postCommentReplisStateNotifier(comment.id).notifier).deleteComment(id);
@@ -157,6 +157,7 @@ class PostCommentsController extends StateNotifier<bool> {
         me: me,
         ownerId: reply.userId,
         postAuthorName: post.user.username,
+        postId: post.postId,
       );
     } catch (e) {
       _ref.read(postCommentReplisStateNotifier(reply.commentId).notifier).updateComment(reply);
@@ -184,6 +185,7 @@ class PostCommentsController extends StateNotifier<bool> {
         me: me,
         ownerId: post.userId,
         postAuthorName: post.user.username,
+        postId: post.postId,
       );
     } catch (e) {
       _ref.read(postCommentsStateProvider(comment.postId).notifier).updateComment(comment);

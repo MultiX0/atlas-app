@@ -103,6 +103,7 @@ class PostsDb {
         final notification = NotificationsInterface.postRepostNotification(
           userId: userId,
           username: user.username,
+          data: {'route': '${Routes.postPage}/$postId'},
         );
         await notificationsDb.sendNotificatiosn(notification);
       }
@@ -298,6 +299,7 @@ class PostsDb {
       final notification = NotificationsInterface.postLikeNotification(
         userId: post.userId,
         username: user.username,
+        data: {'route': '${Routes.postPage}/${post.postId}'},
       );
       await Future.wait([
         if ((user.userId != post.userId) && !post.userLiked)

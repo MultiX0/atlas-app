@@ -151,11 +151,9 @@ class FCMService {
 
   void _handleNavigation(String route, BuildContext context) {
     try {
-      // Navigate using go_router
-      context.go(route);
+      context.push(route);
     } catch (e) {
       log('Navigation error: $e');
-      // Fallback navigation to home
       context.go('/');
     }
   }
