@@ -76,6 +76,8 @@ class ComicsExploreState extends StateNotifier<_HelperClass> {
 
   Future<void> fetchData({bool refresh = false}) async {
     try {
+      if (state.loadingMore) return;
+
       if (!refresh && state.hasReachedEnd) {
         log("reach end of the data");
         return;

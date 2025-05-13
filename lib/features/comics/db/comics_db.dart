@@ -1062,7 +1062,7 @@ characters {
         log("there is recommendation data");
         query = query.inFilter(KeyNames.id, ids);
       } else {
-        query.range(startAt, startAt + pageSize - 1);
+        query.range(startAt, startAt + pageSize - 1).order(KeyNames.created_at, ascending: false);
       }
 
       final data = await query;
