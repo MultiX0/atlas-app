@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/features/comics/controller/comics_controller.dart';
 import 'package:atlas_app/features/comics/widgets/manhwa_characters_widget.dart';
@@ -32,16 +30,11 @@ class _ManhwaPageState extends ConsumerState<ManhwaPage> with SingleTickerProvid
     super.initState();
   }
 
-  void handleView() {
-    final comic = ref.read(selectedComicProvider)!;
-    if (!comic.is_viewed) {
-      final me = ref.read(userState).user!;
-      ref
-          .read(comicsControllerProvider.notifier)
-          .viewComic(userId: me.userId, comicId: comic.comicId);
-    } else {
-      log("i already view this manhwa");
-    }
+  void handleView() async {
+    await Future.microtask(() {
+      ref.read(comicsControllerProvider.notifier).viewComic();
+      ref.read(comicsControllerProvider.notifier).handleInteracion();
+    });
   }
 
   void initTabController() {

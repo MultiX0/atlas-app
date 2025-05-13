@@ -10,6 +10,7 @@ import 'package:atlas_app/core/common/utils/extract_key_words.dart';
 import 'package:atlas_app/core/common/widgets/slash_parser.dart';
 import 'package:atlas_app/core/services/user_vector_service.dart';
 import 'package:atlas_app/features/hashtags/db/hashtags_db.dart';
+import 'package:atlas_app/features/interactions/db/interactions_db.dart';
 import 'package:atlas_app/features/notifications/db/notifications_db.dart';
 import 'package:atlas_app/features/notifications/interfaces/notifications_interface.dart';
 import 'package:atlas_app/features/interactions/models/post_interaction_model.dart';
@@ -28,11 +29,12 @@ class PostsDb {
   SupabaseQueryBuilder get _mentionsTable => _client.from(TableNames.post_mentions);
   SupabaseQueryBuilder get _pinnedPostsTable => _client.from(TableNames.pinned_posts);
   SupabaseQueryBuilder get _savedPostsTable => _client.from(TableNames.saved_posts);
-  SupabaseQueryBuilder get _postInteractionsTable => _client.from(TableNames.post_interactions);
+  // SupabaseQueryBuilder get _postInteractionsTable => _client.from(TableNames.post_interactions);
 
   static Dio get _dio => Dio();
   HashtagsDb get hashtagDb => HashtagsDb();
   NotificationsDb get notificationsDb => NotificationsDb();
+  InteractionsDb get _interactionsDb => InteractionsDb();
 
   Future<List<PostModel>> getUserPosts({
     required int startIndex,
@@ -47,6 +49,17 @@ class PostsDb {
           .range(startIndex, startIndex + pageSize - 1);
 
       return _data.map((post) => PostModel.fromMap(post)).toList();
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<PostModel> getPostByID(String postId) async {
+    try {
+      final postData = await _postsView.select("*").eq(KeyNames.post_id, postId).maybeSingle();
+      if (postData != null) return PostModel.fromMap(postData);
+      throw Exception("Post with id: $postId is not found");
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -197,6 +210,7 @@ class PostsDb {
             KeyNames.content: post.content,
             KeyNames.can_reposted: post.canReposted,
             KeyNames.comments_open: post.comments_open,
+            KeyNames.updated_at: DateTime.now().toIso8601String(),
           })
           .eq(KeyNames.id, post.postId);
       await Future.wait([
@@ -215,7 +229,7 @@ class PostsDb {
   Future<void> deletePost(String postId) async {
     try {
       await Future.wait([
-        _postsTable.delete().eq(KeyNames.id, postId),
+        _client.rpc(FunctionNames.soft_delete_post, params: {KeyNames.post_id: postId}),
         removePostVectorPoint(postId),
       ]);
     } catch (e) {
@@ -333,8 +347,6 @@ class PostsDb {
           return [];
         }
 
-        log('Response data: ${res.data.toString()}');
-
         final data = jsonDecode(res.data.toString());
 
         if (data is List) {
@@ -389,7 +401,7 @@ class PostsDb {
 
   Future<void> insetPostInteraction(PostInteractionModel interactionModel) async {
     try {
-      await _postInteractionsTable.insert(interactionModel.toMap());
+      await _interactionsDb.upsertPostInteraction(interactionModel);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -408,7 +420,7 @@ class PostsDb {
 
   Future<void> updateInteractionModel(PostInteractionModel interactionModel) async {
     try {
-      await _postInteractionsTable.insert(interactionModel.toMap());
+      await _interactionsDb.upsertPostInteraction(interactionModel);
     } catch (e) {
       log(e.toString());
       rethrow;

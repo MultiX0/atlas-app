@@ -25,7 +25,6 @@ class _MainFeedPageState extends ConsumerState<MainFeedPage> {
 
   bool fetched = false;
   final Debouncer _debouncer = Debouncer();
-  double _previousScroll = 0.0;
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -39,7 +38,6 @@ class _MainFeedPageState extends ConsumerState<MainFeedPage> {
 
   DateTime? _lastCheck;
   void _onScroll() {
-    final currentScroll = _scrollController.position.pixels;
     final now = DateTime.now();
     if (_lastCheck != null && now.difference(_lastCheck!).inMilliseconds < 500) return;
     _lastCheck = now;
@@ -52,15 +50,15 @@ class _MainFeedPageState extends ConsumerState<MainFeedPage> {
         },
       );
     }
-    _previousScroll = currentScroll;
   }
 
   bool get _isBottom {
     if (!_scrollController.hasClients) return false;
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.offset;
-    const delta = 300.0;
-    return currentScroll > _previousScroll + 10 && maxScroll - currentScroll <= delta;
+    var threshold = MediaQuery.sizeOf(context).height / 2;
+
+    return maxScroll - currentScroll <= threshold;
   }
 
   void fetchData() async {
@@ -86,14 +84,14 @@ class _MainFeedPageState extends ConsumerState<MainFeedPage> {
   Timer? _seenTimer;
   final Set<String> _alreadyMarkedSeen = {};
   void _onVisible(double visibleFraction, String postId) {
-    // Mark as seen only if more than 70% visible and not already marked
-    if (!_alreadyMarkedSeen.contains(postId) && visibleFraction > 0.7) {
+    // Mark as seen only if more than 60% visible and not already marked
+    if (!_alreadyMarkedSeen.contains(postId) && visibleFraction > 0.6) {
       _seenTimer?.cancel();
       _seenTimer = Timer(const Duration(milliseconds: 500), () {
         ref.read(postsDbProvider).seePost(postId, userId);
         _alreadyMarkedSeen.add(postId);
       });
-    } else if (visibleFraction <= 0.7) {
+    } else if (visibleFraction <= 0.6) {
       _seenTimer?.cancel();
     }
   }
@@ -123,7 +121,7 @@ class _MainFeedPageState extends ConsumerState<MainFeedPage> {
         child: CustomScrollView(
           controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-          cacheExtent: MediaQuery.sizeOf(context).height * 1.5,
+          cacheExtent: MediaQuery.sizeOf(context).height,
           slivers: [
             const MainFeedAppbar(),
             if (state.isLoading)
@@ -153,7 +151,6 @@ class _MainFeedPageState extends ConsumerState<MainFeedPage> {
                     child: PostWidget(
                       key: ValueKey(post.postId),
                       post: post,
-                      onComment: () => CustomToast.soon(),
                       onShare: () => CustomToast.soon(),
                       postLikeType: PostLikeEnum.GENERAL,
                     ),

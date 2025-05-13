@@ -10,7 +10,7 @@ class AtlasErrorPage extends StatelessWidget {
   const AtlasErrorPage({
     super.key,
     this.code = "Oops!",
-    required this.title,
+    this.title = 'Error',
     required this.message,
     this.onRetry,
     this.onHome,

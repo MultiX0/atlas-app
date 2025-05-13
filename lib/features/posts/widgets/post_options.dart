@@ -146,7 +146,7 @@ class _PostOptionsSheetState extends State<PostOptions> {
                 "نسخ الرابط",
                 LucideIcons.link_2,
                 onTap: () {
-                  FlutterClipboard.copy("$appDomain/posts/${widget.post.postId}");
+                  FlutterClipboard.copy("$appDomain/${Routes.postPage}/${widget.post.postId}");
                   CustomToast.success("تم نسخ رابط المنشور بنجاح");
                   context.pop();
                 },

@@ -1,10 +1,16 @@
+import 'package:atlas_app/core/common/enum/comment_type.dart';
+import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/widgets/markdown_field.dart';
 import 'package:atlas_app/features/novels/controller/novels_controller.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
+import 'package:atlas_app/features/post_comments/controller/post_comments_controller.dart';
+import 'package:atlas_app/features/post_comments/providers/providers.dart';
+import 'package:atlas_app/features/posts/providers/post_state.dart';
 import 'package:atlas_app/imports.dart';
 
 class ChaptersCommentInput extends StatefulWidget {
-  const ChaptersCommentInput({super.key});
+  const ChaptersCommentInput({super.key, required this.commentType});
+  final CommentType commentType;
 
   @override
   State<ChaptersCommentInput> createState() => _ChaptersCommentInputState();
@@ -16,7 +22,7 @@ class _ChaptersCommentInputState extends State<ChaptersCommentInput> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 25),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 15),
       child: Row(
         children: [
           Expanded(
@@ -40,22 +46,47 @@ class _ChaptersCommentInputState extends State<ChaptersCommentInput> {
                 style: IconButton.styleFrom(backgroundColor: AppColors.primary),
                 onPressed: () {
                   if (input.trim().isEmpty) return;
-                  final replitedTo = ref.read(repliedToProvider);
-                  if (replitedTo == null || replitedTo.isEmpty) {
-                    ref.read(novelsControllerProvider.notifier).addChapterComment(input);
-                    _postFieldKey.currentState?.clearText();
-                    return;
-                  }
+                  if (widget.commentType == CommentType.novel) {
+                    final replitedTo = ref.read(repliedToProvider);
+                    if (replitedTo == null || replitedTo.isEmpty) {
+                      ref.read(novelsControllerProvider.notifier).addChapterComment(input);
+                      _postFieldKey.currentState?.clearText();
+                      return;
+                    }
 
-                  ref
-                      .read(novelsControllerProvider.notifier)
-                      .replyToComment(
-                        commentId: replitedTo[KeyNames.comment_id],
-                        replyContent: input,
-                      );
+                    ref
+                        .read(novelsControllerProvider.notifier)
+                        .replyToComment(
+                          commentId: replitedTo[KeyNames.comment_id],
+                          replyContent: input,
+                        );
+                  } else if (widget.commentType == CommentType.post) {
+                    final replitedTo = ref.read(postCommentRepliedToProvider);
+                    final post = ref.read(postStateProvider);
+                    if (post == null) {
+                      CustomToast.error("خطأ الرجاء اغلاق الصفحة والدخول مجددا ثم اعادة المحاولة");
+                      return;
+                    }
+                    if (replitedTo == null || replitedTo.isEmpty) {
+                      ref
+                          .read(postCommentsControllerProvider(post.postId).notifier)
+                          .addChapterComment(content: input, postId: post.postId);
+                      _postFieldKey.currentState?.clearText();
+                      return;
+                    }
 
-                  ref.read(repliedToProvider.notifier).state = null;
+                    ref
+                        .read(postCommentsControllerProvider(post.postId).notifier)
+                        .replyToComment(
+                          commentId: replitedTo[KeyNames.comment_id],
+                          replyContent: input,
+                          postId: post.postId,
+                        );
+                  } else {}
+
                   _postFieldKey.currentState?.clearText();
+                  ref.read(repliedToProvider.notifier).state = null;
+                  ref.read(postCommentRepliedToProvider.notifier).state = null;
                 },
                 icon: const Icon(TablerIcons.send_2),
               );

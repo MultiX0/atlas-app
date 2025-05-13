@@ -103,6 +103,30 @@ class NotificationsInterface {
     data: data,
   );
 
+  static NotificationContainerModel postLikeCommentNotification({
+    required String userId,
+    Map<String, dynamic>? data,
+    required String username,
+    required String postTitle,
+  }) => NotificationContainerModel(
+    title: "اعجاب جديد",
+    body: 'قام $username بالإعجاب بتعليقك على المنشور: $postTitle',
+    userId: userId,
+    data: data,
+  );
+
+  static NotificationContainerModel postReplyCommentNotification({
+    required String userId,
+    Map<String, dynamic>? data,
+    required String username,
+    required String postTitle,
+  }) => NotificationContainerModel(
+    title: "رد على تعليقك",
+    body: 'قام $username بالرد على تعليقك على المنشور: $postTitle',
+    userId: userId,
+    data: data,
+  );
+
   static NotificationContainerModel novelReviewNotification({
     required String userId,
     Map<String, dynamic>? data,

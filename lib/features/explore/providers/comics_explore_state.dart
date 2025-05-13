@@ -76,6 +76,8 @@ class ComicsExploreState extends StateNotifier<_HelperClass> {
 
   Future<void> fetchData({bool refresh = false}) async {
     try {
+      if (state.loadingMore) return;
+
       if (!refresh && state.hasReachedEnd) {
         log("reach end of the data");
         return;
@@ -92,8 +94,17 @@ class ComicsExploreState extends StateNotifier<_HelperClass> {
         delayFactor: const Duration(milliseconds: 400),
         maxDelay: const Duration(milliseconds: 800),
         () async {
+          final user = _ref.read(userState.select((s) => s.user!));
           const _pageSize = 20;
-          final comics = await _db.getExploreComics(pageSize: _pageSize);
+          final currentPage = refresh ? 1 : state.currentPage;
+          final startIndex = refresh ? 0 : state.comics.length;
+
+          final comics = await _db.getExploreComics(
+            pageSize: _pageSize,
+            userId: user.userId,
+            startAt: startIndex,
+            page: currentPage,
+          );
 
           bool hasReachedEnd = comics.length < _pageSize;
           final updatedComics = refresh ? comics : [...state.comics, ...comics];

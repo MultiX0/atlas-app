@@ -1,4 +1,5 @@
 import 'package:atlas_app/core/common/constants/table_names.dart';
+import 'package:atlas_app/features/novels/models/novel_interaction.dart';
 import 'package:atlas_app/features/novels/models/novels_genre_model.dart';
 import 'package:atlas_app/imports.dart';
 
@@ -19,6 +20,7 @@ class NovelModel {
   final String userId;
   final UserModel user;
   final Color color;
+  final NovelInteraction? interaction;
   NovelModel({
     required this.id,
     required this.title,
@@ -36,6 +38,7 @@ class NovelModel {
     required this.userId,
     required this.color,
     required this.poster,
+    this.interaction,
   });
 
   NovelModel copyWith({
@@ -55,6 +58,7 @@ class NovelModel {
     UserModel? user,
     Color? color,
     String? poster,
+    NovelInteraction? interaction,
   }) {
     return NovelModel(
       id: id ?? this.id,
@@ -73,25 +77,9 @@ class NovelModel {
       userId: user_id ?? userId,
       color: color ?? this.color,
       poster: poster ?? this.poster,
+      interaction: interaction ?? this.interaction,
     );
   }
-
-  // Map<String, dynamic> toMap() {
-  //   return <String, dynamic>{
-  //     'id': id,
-  //     'title': title,
-  //     'synopsis': synopsis,
-  //     'banner': banner,
-  //     'publishedAt': publishedAt.millisecondsSinceEpoch,
-  //     'ageRating': ageRating,
-  //     'genrese': genrese.map((x) => x.toMap()).toList(),
-  //     'favoriteCount': favoriteCount,
-  //     'isFavorite': isFavorite,
-  //     'viewsCount': viewsCount,
-  //     'isViewed': isViewed,
-  //     'postsCount': postsCount,
-  //   };
-  // }
 
   factory NovelModel.fromMap(Map<String, dynamic> map) {
     return NovelModel(
@@ -119,6 +107,10 @@ class NovelModel {
       poster: map[KeyNames.poster] ?? "",
       userId: map[KeyNames.userId] ?? "",
       color: map[KeyNames.color] == null ? AppColors.primary : HexColor(map[KeyNames.color]),
+      interaction:
+          map[KeyNames.interaction] != null
+              ? NovelInteraction.fromMap(map[KeyNames.interaction])
+              : null,
     );
   }
 }

@@ -71,7 +71,6 @@ class HashtagsBody extends StatelessWidget {
           hashtag: hashtag,
           key: ValueKey(post.postId),
           post: post,
-          onComment: () => CustomToast.soon(),
           postLikeType: PostLikeEnum.HASHTAG,
           onShare: () => CustomToast.soon(),
         );

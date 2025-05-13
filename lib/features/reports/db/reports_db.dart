@@ -11,6 +11,9 @@ final reportsDbProvider = Provider<ReportsDb>((ref) {
 class ReportsDb {
   SupabaseClient get _client => Supabase.instance.client;
   SupabaseQueryBuilder get _postReportsTable => _client.from(TableNames.post_reports);
+  SupabaseQueryBuilder get _postCommentsReportsTable =>
+      _client.from(TableNames.post_comment_reports);
+
   SupabaseQueryBuilder get _novelChaptersCommentReport =>
       _client.from(TableNames.novel_chapters_comment_report);
   SupabaseQueryBuilder get _novelChapterReports => _client.from(TableNames.novel_chapter_reports);
@@ -29,13 +32,34 @@ class ReportsDb {
   Future<void> addChapterCommentReport({
     required String report,
     required String reporter_id,
-    required String reported_id,
+    required bool isReply,
+    required String contentId,
   }) async {
     try {
       await _novelChaptersCommentReport.insert({
         KeyNames.reporter_id: reporter_id,
-        KeyNames.reported_id: reported_id,
         KeyNames.content: report,
+        KeyNames.is_reply: isReply,
+        KeyNames.content_id: contentId,
+      });
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> addPostCommentReport({
+    required String report,
+    required String reporter_id,
+    required bool isReply,
+    required String contentId,
+  }) async {
+    try {
+      await _postCommentsReportsTable.insert({
+        KeyNames.reporter_id: reporter_id,
+        KeyNames.content: report,
+        KeyNames.is_reply: isReply,
+        KeyNames.content_id: contentId,
       });
     } catch (e) {
       log(e.toString());

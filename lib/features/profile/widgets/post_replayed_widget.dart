@@ -16,44 +16,38 @@ class PostReplyedWidget extends StatelessWidget {
     // final value = result.value as SlashEntity;
 
     return RepaintBoundary(
-      child: InkWell(
-        onTap: () {},
-        child: Padding(
-          padding: const EdgeInsets.only(left: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Flexible(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text.rich(
-                      TextSpan(
-                        text: "ردا على منشور  ",
-                        style: const TextStyle(
-                          color: AppColors.mutedSilver,
-                          fontFamily: arabicAccentFont,
-                        ),
-                        children: [
-                          TextSpan(
-                            text: post.parent!.user.username,
-                            style: const TextStyle(
-                              color: AppColors.primary,
-                              fontFamily: accentFont,
-                            ),
-                          ),
-                        ],
+      child: Padding(
+        padding: const EdgeInsets.only(left: 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text.rich(
+                    TextSpan(
+                      text: "ردا على منشور  ",
+                      style: const TextStyle(
+                        color: AppColors.mutedSilver,
+                        fontFamily: arabicAccentFont,
                       ),
-                      textDirection: ui.TextDirection.rtl,
+                      children: [
+                        TextSpan(
+                          text: post.parent!.user.username,
+                          style: const TextStyle(color: AppColors.primary, fontFamily: accentFont),
+                        ),
+                      ],
                     ),
-                    ReplyedPostContent(post: post),
-                  ],
-                ),
+                    textDirection: ui.TextDirection.rtl,
+                  ),
+                  ReplyedPostContent(post: post),
+                ],
               ),
-              const SizedBox(width: 15),
-              CachedAvatar(avatar: post.parent!.user.avatar, raduis: 15),
-            ],
-          ),
+            ),
+            const SizedBox(width: 15),
+            CachedAvatar(avatar: post.parent!.user.avatar, raduis: 15),
+          ],
         ),
       ),
     );

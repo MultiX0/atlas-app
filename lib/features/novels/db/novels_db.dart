@@ -131,7 +131,7 @@ class NovelsDb {
     NovelModel novel,
   ) async {
     try {
-      final notification = NotificationsInterface.novelChapterLikeCommentNotification(
+      final notification = NotificationsInterface.novelChapterReplyCommentNotification(
         userId: reply.parentCommentAuthorId,
         username: reply.user.username,
         novelTitle: novel.title,
@@ -442,12 +442,14 @@ class NovelsDb {
     }
   }
 
-  Future<void> insertNovel(Map<String, dynamic> data) async {
+  Future<void> insertNovel(Map<String, dynamic> data, List<NovelsGenreModel> genres) async {
     try {
+      final genresString = genres.map((g) => "${g.name}\n${g.description}\n").toList();
+      final string = genresString.join('');
       await Future.wait([
         _novelsTable.upsert(data, ignoreDuplicates: false, onConflict: KeyNames.id),
         insertEmbedding(
-          content: "${data[KeyNames.title]}\n${data[KeyNames.story]}",
+          content: "${data[KeyNames.title]}\n${data[KeyNames.story]}\ntags:\n$string",
           id: data[KeyNames.id],
           userId: data[KeyNames.userId],
         ),
@@ -480,6 +482,30 @@ class NovelsDb {
     }
   }
 
+  Future<int> getUserChaptersReadCount(String novelId) async {
+    try {
+      final count = await _client.rpc(
+        FunctionNames.get_user_chapters_read_count,
+        params: {'p_novel_id': novelId},
+      );
+
+      if (count == null) return 0;
+
+      if (count is int) return count;
+      if (count is double) return count.toInt();
+      if (count is num) return count.toInt();
+
+      return int.tryParse(count.toString()) ?? 0;
+    } catch (e, stackTrace) {
+      log(
+        'Error getting chapters read count for novel $novelId: $e',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
   Future<void> handleInsertNewNovel({
     required String id,
     required String title,
@@ -502,7 +528,7 @@ class NovelsDb {
         KeyNames.src_lang: src_lang,
         KeyNames.id: id,
       };
-      await insertNovel(data);
+      await insertNovel(data, genres);
       await insertNovelGenreses(genres, id);
     } catch (e) {
       log(e.toString());
@@ -535,7 +561,7 @@ class NovelsDb {
         KeyNames.src_lang: src_lang,
         KeyNames.id: id,
       };
-      await insertNovel(data);
+      await insertNovel(data, genres);
       await insertNovelGenreses(genres, id);
       return genres;
     } catch (e) {
@@ -556,7 +582,7 @@ class NovelsDb {
           return [];
         }
 
-        log('Response data: ${res.data.toString()}');
+        // log('Response data: ${res.data.toString()}');
 
         final data = jsonDecode(res.data.toString());
 
@@ -584,11 +610,11 @@ class NovelsDb {
   }) async {
     try {
       final ids = await fetchUserRecommendation(userId: userId, page: page);
+      log(ids.toString());
       var query = _novelsTable.select("*");
 
       if (ids.isNotEmpty) {
         log("there is recommendation data");
-        log(ids.toString());
         query = query.inFilter(KeyNames.id, ids).filter(KeyNames.published_at, 'not.is', null);
       } else {
         query.filter(KeyNames.published_at, 'not.is', null).range(startAt, startAt + pageSize - 1);
@@ -597,8 +623,8 @@ class NovelsDb {
       final novelData = await query;
       final idIndexMap = {for (var i = 0; i < ids.length; i++) ids[i]: i};
       novelData.sort(
-        (a, b) => (idIndexMap[a[KeyNames.post_id]] ?? ids.length).compareTo(
-          idIndexMap[b[KeyNames.post_id]] ?? ids.length,
+        (a, b) => (idIndexMap[a[KeyNames.id]] ?? ids.length).compareTo(
+          idIndexMap[b[KeyNames.id]] ?? ids.length,
         ),
       );
 

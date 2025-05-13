@@ -13,8 +13,6 @@ class TableNames {
   static const post_likes = 'post_likes';
   static const post_mentions = 'post_mentions';
   static const posts = 'posts';
-  static const user_comic_interactions = 'user_comic_interactions';
-  static const user_novel_interactions = 'user_novel_interactions';
   static const comic_reviews = 'comic_reviews';
   static const characters = 'characters';
   static const comic_characters = 'comic_characters';
@@ -43,4 +41,7 @@ class TableNames {
   static const user_fcm_tokens = 'user_fcm_tokens';
   static const post_interactions = 'post_interactions';
   static const user_seen_posts = 'user_seen_posts';
+  static const post_comment_reports = 'post_comment_reports';
+  static const post_comment_replies = 'post_comment_replies';
+  static const novel_interactions = 'novel_interactions';
 }

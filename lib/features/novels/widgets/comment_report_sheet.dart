@@ -1,10 +1,15 @@
+import 'package:atlas_app/core/common/enum/comment_type.dart';
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/features/novels/controller/novels_controller.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
+import 'package:atlas_app/features/post_comments/controller/post_comments_controller.dart';
+import 'package:atlas_app/features/post_comments/providers/providers.dart';
+import 'package:atlas_app/features/posts/providers/post_state.dart';
 import 'package:atlas_app/imports.dart';
 
 class CommentReportSheet extends StatelessWidget {
-  const CommentReportSheet({super.key});
+  const CommentReportSheet({super.key, required this.commentType});
+  final CommentType commentType;
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +60,7 @@ class CommentReportSheet extends StatelessWidget {
     context.pop();
     openSheet(
       context: context,
-      child: CommentReportConfirmation(subtitle: subtitle, title: title),
+      child: CommentReportConfirmation(subtitle: subtitle, title: title, commentType: commentType),
       scrollControlled: true,
     );
   }
@@ -114,10 +119,16 @@ class CommentReportSheet extends StatelessWidget {
 }
 
 class CommentReportConfirmation extends StatefulWidget {
-  const CommentReportConfirmation({super.key, this.subtitle, this.title});
+  const CommentReportConfirmation({
+    super.key,
+    this.subtitle,
+    this.title,
+    required this.commentType,
+  });
 
   final String? title;
   final String? subtitle;
+  final CommentType commentType;
 
   @override
   State<CommentReportConfirmation> createState() => _CommentReportConfirmationState();
@@ -199,20 +210,45 @@ class _CommentReportConfirmationState extends State<CommentReportConfirmation> {
                       reason = widget.subtitle!;
                     }
 
-                    final replitedTo = ref.watch(repliedToProvider)!;
-                    final userId = (replitedTo[KeyNames.parent_user] as UserModel).userId;
+                    Map<String, dynamic> replitedTo;
+
+                    if (widget.commentType == CommentType.novel) {
+                      replitedTo = ref.watch(repliedToProvider)!;
+                    } else {
+                      replitedTo = ref.watch(postCommentRepliedToProvider)!;
+                    }
                     final report =
                         widget.title == null && widget.subtitle == null
                             ? _controller.text.trim()
                             : widget.title!;
+                    final isReply = replitedTo['is_reply'];
+                    final commentId = replitedTo[KeyNames.comment_id];
+                    if (widget.commentType == CommentType.novel) {
+                      ref
+                          .read(novelsControllerProvider.notifier)
+                          .addChapterCommentReport(
+                            context: context,
+                            contentId: commentId ?? "",
+                            isReply: isReply,
+                            report: report,
+                          );
+                    } else if (widget.commentType == CommentType.post) {
+                      final post = ref.read(postStateProvider);
+                      if (post == null) {
+                        context.pop();
+                        CustomToast.error("الرجاء اغلاق الصفحة والمحاولة مرة أخرى");
+                        return;
+                      }
+                      ref
+                          .read(postCommentsControllerProvider(post.postId).notifier)
+                          .addPostCommentReport(
+                            context: context,
+                            contentId: commentId ?? "",
+                            isReply: isReply,
+                            report: report,
+                          );
+                    }
 
-                    ref
-                        .read(novelsControllerProvider.notifier)
-                        .addChapterCommentReport(
-                          context: context,
-                          report: report,
-                          reported_id: userId,
-                        );
                     context.pop();
                     CustomToast.success("تم تقديم البلاغ بنجاح، نشكرك على مساهمتك");
                   },

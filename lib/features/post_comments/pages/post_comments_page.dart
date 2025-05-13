@@ -1,25 +1,27 @@
+import 'package:atlas_app/core/common/enum/comment_type.dart';
+import 'package:atlas_app/features/post_comments/providers/comments_state_provider.dart';
+import 'package:atlas_app/features/post_comments/widgets/comment_tile.dart';
+import 'package:atlas_app/imports.dart';
+
 import 'dart:developer';
 
-import 'package:atlas_app/core/common/enum/comment_type.dart';
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/core/common/widgets/app_refresh.dart';
-import 'package:atlas_app/features/novels/providers/chapter_comments_state.dart';
-import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/features/novels/widgets/chapter_comment_input.dart';
-import 'package:atlas_app/features/novels/widgets/chapter_comment_tile.dart';
 import 'package:atlas_app/features/novels/widgets/empty_chapters.dart';
 import 'package:atlas_app/features/novels/widgets/reply_status_widget.dart';
-import 'package:atlas_app/imports.dart';
 
-class ChapterCommentsPage extends ConsumerStatefulWidget {
-  const ChapterCommentsPage({super.key});
+class PostCommentsPage extends ConsumerStatefulWidget {
+  const PostCommentsPage({super.key, required this.postId, required this.withAppBar});
 
+  final String postId;
+  final bool withAppBar;
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _ChapterCommentsPageState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _PostCommentsPageState();
 }
 
-class _ChapterCommentsPageState extends ConsumerState<ChapterCommentsPage> {
+class _PostCommentsPageState extends ConsumerState<PostCommentsPage> {
   late ScrollController _scrollController;
   final _debouncer = Debouncer();
 
@@ -39,12 +41,11 @@ class _ChapterCommentsPageState extends ConsumerState<ChapterCommentsPage> {
     if (_lastCheck != null && now.difference(_lastCheck!).inMilliseconds < 500) return;
     _lastCheck = now;
     if (_isBottom) {
-      const duration = Duration(milliseconds: 500);
+      const duration = Duration(milliseconds: 300);
       _debouncer.debounce(
         duration: duration,
         onDebounce: () {
-          final chapter = ref.read(selectedChapterProvider)!;
-          ref.read(novelChapterCommentsStateProvider(chapter.id).notifier).fetchData();
+          ref.read(postCommentsStateProvider(widget.postId).notifier).fetchData();
         },
       );
     }
@@ -69,8 +70,7 @@ class _ChapterCommentsPageState extends ConsumerState<ChapterCommentsPage> {
 
   Future<void> fetchData({bool refresh = false}) async {
     await Future.microtask(() {
-      final chapter = ref.read(selectedChapterProvider)!;
-      ref.read(novelChapterCommentsStateProvider(chapter.id).notifier).fetchData(refresh: refresh);
+      ref.read(postCommentsStateProvider(widget.postId).notifier).fetchData(refresh: refresh);
     });
   }
 
@@ -89,22 +89,13 @@ class _ChapterCommentsPageState extends ConsumerState<ChapterCommentsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Consumer(
-          builder: (context, ref, _) {
-            final chapter = ref.read(selectedChapterProvider)!;
-            final text = chapter.title ?? "فصل رقم: ${chapter.number.toInt()}";
-            return Text(text);
-          },
-        ),
-      ),
+      appBar: widget.withAppBar ? AppBar(title: const Text("التعليقات")) : null,
       body: Column(
         children: [
           Expanded(
             child: Consumer(
               builder: (context, ref, _) {
-                final chapter = ref.read(selectedChapterProvider)!;
-                final notifier = novelChapterCommentsStateProvider(chapter.id);
+                final notifier = postCommentsStateProvider(widget.postId);
                 final comments = ref.watch(notifier.select((s) => s.comments));
                 final isLoading = ref.watch(notifier.select((s) => s.isLoading));
                 final loadingMore = ref.watch(notifier.select((s) => s.loadingMore));
@@ -117,7 +108,7 @@ class _ChapterCommentsPageState extends ConsumerState<ChapterCommentsPage> {
                     child: ListView.builder(
                       shrinkWrap: comments.isEmpty,
                       addRepaintBoundaries: true,
-                      cacheExtent: MediaQuery.sizeOf(context).height * 1.5,
+                      cacheExtent: MediaQuery.sizeOf(context).height,
                       controller: _scrollController,
                       physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
                       itemCount: comments.isEmpty ? 1 : comments.length + (loadingMore ? 1 : 0),
@@ -135,7 +126,11 @@ class _ChapterCommentsPageState extends ConsumerState<ChapterCommentsPage> {
                           );
                         }
                         final comment = comments[i];
-                        return ChapterCommentTile(key: ValueKey(comment.id), comment: comment);
+                        return PostCommentTile(
+                          key: ValueKey(comment.id),
+                          comment: comment,
+                          postId: comment.postId,
+                        );
                       },
                     ),
                   ),
@@ -145,8 +140,8 @@ class _ChapterCommentsPageState extends ConsumerState<ChapterCommentsPage> {
           ),
 
           Divider(height: 0.35, color: AppColors.mutedSilver.withValues(alpha: .15)),
-          const ReplyStatusWidget(commentType: CommentType.novel),
-          const ChaptersCommentInput(commentType: CommentType.novel),
+          const ReplyStatusWidget(commentType: CommentType.post),
+          const ChaptersCommentInput(commentType: CommentType.post),
         ],
       ),
     );
