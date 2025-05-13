@@ -31,6 +31,10 @@ class _ChaptersCommentInputState extends State<ChaptersCommentInput> {
               key: _postFieldKey,
               showUserData: false,
               onMarkupChanged: (text) {
+                if (text.length > 500) {
+                  CustomToast.error("أقصى طول للتعليق هو 500 حرف");
+                  return;
+                }
                 setState(() {
                   input = text;
                 });

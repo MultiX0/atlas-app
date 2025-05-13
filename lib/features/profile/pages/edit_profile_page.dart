@@ -260,6 +260,7 @@ class EditBody extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(6),
             child: TextField(
+              maxLength: 20,
               controller: fullNameController,
               decoration: InputDecoration(
                 labelText: "الاسم الكامل",

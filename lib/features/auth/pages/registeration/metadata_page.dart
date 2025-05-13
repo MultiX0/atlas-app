@@ -223,8 +223,8 @@ class _MetadataPageState extends ConsumerState<MetadataPage> {
     if (!RegExp(r'^[\u0621-\u064A\u0660-\u0669a-zA-Z0-9 ]+$').hasMatch(value)) {
       return "اللقب يمكن أن يحتوي فقط على الحروف، الأرقام، والمسافات.";
     }
-    if (value.trim().length < 3 || value.trim().length > 15) {
-      return "يجب أن يكون اللقب بين 3 و 15 أحرف.";
+    if (value.trim().length < 3 || value.trim().length > 20) {
+      return "يجب أن يكون اللقب بين 3 و 20 أحرف.";
     }
     return null; // Valid
   }
