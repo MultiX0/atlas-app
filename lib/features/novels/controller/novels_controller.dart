@@ -611,7 +611,9 @@ class NovelsController extends StateNotifier<bool> {
         .read(novelChapterCommentsStateProvider(_chapter.id).notifier)
         .getById(commentId);
     try {
-      final _map = _ref.read(repliedToProvider)!;
+      final _map = Map.from(_ref.read(repliedToProvider) ?? {});
+      _ref.read(repliedToProvider.notifier).state = null;
+
       final parentCommentUserId = _map[KeyNames.parent_comment_author_id];
       final me = _ref.read(userState.select((s) => s.user!));
       final replyModel = NovelChapterCommentReplyWithLikes(

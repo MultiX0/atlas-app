@@ -48,7 +48,7 @@ class _ChaptersCommentInputState extends State<ChaptersCommentInput> {
             builder: (context, ref, _) {
               return IconButton(
                 style: IconButton.styleFrom(backgroundColor: AppColors.primary),
-                onPressed: () {
+                onPressed: () async {
                   if (input.trim().isEmpty) return;
                   if (widget.commentType == CommentType.novel) {
                     final replitedTo = ref.read(repliedToProvider);
@@ -74,7 +74,7 @@ class _ChaptersCommentInputState extends State<ChaptersCommentInput> {
                     if (replitedTo == null || replitedTo.isEmpty) {
                       ref
                           .read(postCommentsControllerProvider(post.postId).notifier)
-                          .addChapterComment(content: input, postId: post.postId);
+                          .addPostComment(content: input, postId: post.postId);
                       _postFieldKey.currentState?.clearText();
                       return;
                     }
@@ -89,8 +89,6 @@ class _ChaptersCommentInputState extends State<ChaptersCommentInput> {
                   } else {}
 
                   _postFieldKey.currentState?.clearText();
-                  ref.read(repliedToProvider.notifier).state = null;
-                  ref.read(postCommentRepliedToProvider.notifier).state = null;
                 },
                 icon: const Icon(TablerIcons.send_2),
               );

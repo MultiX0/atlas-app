@@ -7,6 +7,7 @@ import 'package:atlas_app/features/notifications/models/notification_container_m
 import 'package:atlas_app/features/profile/db/profile_db.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 class NotificationsDb {
   // SupabaseClient get _client => Supabase.instance.client;
@@ -23,6 +24,9 @@ class NotificationsDb {
       );
     } catch (e) {
       log(e.toString());
+      if (kDebugMode) {
+        print(e);
+      }
       rethrow;
     }
   }

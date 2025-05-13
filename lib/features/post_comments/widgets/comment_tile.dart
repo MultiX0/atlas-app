@@ -231,6 +231,11 @@ class PostCommentTile extends StatelessWidget {
       };
 
       ref.read(postCommentRepliedToProvider.notifier).state = _map;
+      final repliedToMap = ref.read(postCommentRepliedToProvider);
+      if (repliedToMap == null) {
+        ref.read(postCommentRepliedToProvider.notifier).state = _map;
+      }
+
       if (!isReply) {
         openSheet(context: context, child: const CommentReportSheet(commentType: CommentType.post));
       }

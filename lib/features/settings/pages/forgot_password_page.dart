@@ -50,7 +50,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
 
   void initTimer() async {
     final prefs = await SharedPreferences.getInstance();
-    final d = prefs.getInt("forgot_password_timer") ?? 60;
+    final d = prefs.getInt("forgot_password_timer") ?? 0;
     setState(() {
       duration = d;
     });
