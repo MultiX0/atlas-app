@@ -64,7 +64,7 @@ class ComicsController extends StateNotifier<bool> {
         log("new interacion inserting...");
         final interacion = await newComicInteraction(comic: comic, user: me);
         log(interacion.toString());
-        _ref.read(selectedComicProvider.notifier).state = comic.copyWith(interacion: interacion);
+        _ref.read(selectedComicProvider.notifier).state = comic.copyWith(interaction: interacion);
         await _interactionsDb.upsertComicInteraction(interacion);
         return interacion;
       }

@@ -1066,6 +1066,7 @@ characters {
       }
 
       final data = await query;
+
       final idIndexMap = {for (var i = 0; i < ids.length; i++) ids[i]: i};
       data.sort(
         (a, b) => (idIndexMap[a[KeyNames.id]] ?? ids.length).compareTo(

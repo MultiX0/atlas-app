@@ -98,7 +98,7 @@ class ComicModel {
     List<String>? tags,
     bool? is_viewed,
     bool? user_favorite,
-    ComicInteracionModel? interacion,
+    ComicInteracionModel? interaction,
   }) {
     return ComicModel(
       aniId: aniId ?? this.aniId,
@@ -127,7 +127,7 @@ class ComicModel {
       tags: tags ?? this.tags,
       is_viewed: is_viewed ?? this.is_viewed,
       user_favorite: user_favorite ?? this.user_favorite,
-      interaction: interacion ?? this.interaction,
+      interaction: interaction ?? this.interaction,
     );
   }
 
