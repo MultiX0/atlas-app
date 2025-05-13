@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'package:atlas_app/features/auth/providers/user_state.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:atlas_app/imports.dart';
 import 'package:atlas_app/features/comics/widgets/review_content.dart';
 import 'package:atlas_app/features/comics/widgets/review_header.dart';
 import 'package:atlas_app/features/comics/widgets/review_images.dart';
@@ -26,6 +24,7 @@ class UserReviewCard extends ConsumerStatefulWidget {
     required this.likeCount,
     required this.reviewsCount,
     required this.onLike,
+    required this.spoilers,
     this.updatedAt,
     this.onRepost,
     this.onMenuPressed,
@@ -53,6 +52,7 @@ class UserReviewCard extends ConsumerStatefulWidget {
   final bool? isArabic;
   final EdgeInsets padding;
   final EdgeInsets cardPadding;
+  final bool spoilers;
 
   @override
   ConsumerState<UserReviewCard> createState() => _UserReviewCardState();
@@ -60,6 +60,19 @@ class UserReviewCard extends ConsumerStatefulWidget {
 
 class _UserReviewCardState extends ConsumerState<UserReviewCard> {
   Timer? _debounce;
+  late bool see;
+
+  @override
+  void initState() {
+    see = !widget.spoilers;
+    super.initState();
+  }
+
+  void toggleSpoilers() {
+    setState(() {
+      see = true;
+    });
+  }
 
   Future<bool?> handleLike({
     required WidgetRef ref,
@@ -84,58 +97,94 @@ class _UserReviewCardState extends ConsumerState<UserReviewCard> {
     final isMe = widget.userId == currentUserId;
     final isArabic = widget.isArabic ?? Bidi.hasAnyRtl(widget.reviewText);
 
+    var column = Column(
+      crossAxisAlignment: isArabic ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      children: [
+        ReviewHeader(
+          userId: widget.userId,
+          username: widget.username,
+          avatarUrl: widget.avatarUrl,
+          rating: widget.rating,
+          color: widget.color,
+          isMe: isMe,
+          onMenuPressed: widget.onMenuPressed,
+        ),
+        const SizedBox(height: 8),
+        ReviewTimeInfo(createdAt: widget.createdAt, updatedAt: widget.updatedAt),
+        const SizedBox(height: 15),
+        ReviewContent(reviewText: widget.reviewText, isArabic: isArabic),
+        if (widget.images.isNotEmpty) ...[
+          const SizedBox(height: 15),
+          GestureDetector(
+            onDoubleTap:
+                () => handleLike(
+                  ref: ref,
+                  index: widget.index,
+                  userId: currentUserId,
+                  isLiked: widget.isLiked,
+                ),
+            child: ReviewImages(imageUrls: widget.images),
+          ),
+          const SizedBox(height: 15),
+        ],
+        ReviewActions(
+          userId: widget.userId,
+          isLiked: widget.isLiked,
+          likeCount: widget.likeCount,
+          reviewsCount: widget.reviewsCount,
+          onLike:
+              (_) => handleLike(
+                ref: ref,
+                index: widget.index,
+                userId: currentUserId,
+                isLiked: widget.isLiked,
+              ),
+          onRepost: widget.onRepost,
+        ),
+      ],
+    );
     return RepaintBoundary(
       child: Padding(
         padding: widget.padding,
         child: CardContainer(
           padding: widget.cardPadding,
-          child: Column(
-            crossAxisAlignment: isArabic ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-            children: [
-              ReviewHeader(
-                userId: widget.userId,
-                username: widget.username,
-                avatarUrl: widget.avatarUrl,
-                rating: widget.rating,
-                color: widget.color,
-                isMe: isMe,
-                onMenuPressed: widget.onMenuPressed,
-              ),
-              const SizedBox(height: 8),
-              ReviewTimeInfo(createdAt: widget.createdAt, updatedAt: widget.updatedAt),
-              const SizedBox(height: 15),
-              ReviewContent(reviewText: widget.reviewText, isArabic: isArabic),
-              if (widget.images.isNotEmpty) ...[
-                const SizedBox(height: 15),
-                GestureDetector(
-                  onDoubleTap:
-                      () => handleLike(
-                        ref: ref,
-                        index: widget.index,
-                        userId: currentUserId,
-                        isLiked: widget.isLiked,
-                      ),
-                  child: ReviewImages(imageUrls: widget.images),
-                ),
-                const SizedBox(height: 15),
-              ],
-              ReviewActions(
-                userId: widget.userId,
-                isLiked: widget.isLiked,
-                likeCount: widget.likeCount,
-                reviewsCount: widget.reviewsCount,
-                onLike:
-                    (_) => handleLike(
-                      ref: ref,
-                      index: widget.index,
-                      userId: currentUserId,
-                      isLiked: widget.isLiked,
-                    ),
-                onRepost: widget.onRepost,
-              ),
-            ],
-          ),
+          child: see ? column : SpoilersCard(callback: toggleSpoilers),
         ),
+      ),
+    );
+  }
+}
+
+class SpoilersCard extends StatelessWidget {
+  const SpoilersCard({super.key, required this.callback});
+
+  final VoidCallback callback;
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset('assets/images/spoilers.png', height: size.width * .25),
+          const SizedBox(height: 15),
+          const Text("يحتوي على حرق", style: TextStyle(fontFamily: arabicAccentFont, fontSize: 16)),
+          const SizedBox(height: 15),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.secondBlackColor,
+              shadowColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(Spacing.normalRaduis),
+              ),
+              foregroundColor: AppColors.primary,
+            ),
+            onPressed: callback,
+            child: const Text("مشاهدة", style: TextStyle(fontFamily: arabicAccentFont)),
+          ),
+        ],
       ),
     );
   }

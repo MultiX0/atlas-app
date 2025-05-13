@@ -69,6 +69,7 @@ class _ReviewsWidgetState extends ConsumerState<NovelReviewsWidget> {
         final isMe = review.userId == me.userId;
         return UserReviewCard(
           key: ValueKey(review.id),
+          spoilers: review.spoilers,
           avatarUrl: review.user!.avatar,
           color: color,
           rating: review.overall,
