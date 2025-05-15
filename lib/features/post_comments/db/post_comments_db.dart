@@ -1,13 +1,15 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:atlas_app/core/common/constants/function_names.dart';
-import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/core/common/constants/view_names.dart';
+import 'package:atlas_app/core/common/utils/encrypt.dart';
 import 'package:atlas_app/features/notifications/db/notifications_db.dart';
 import 'package:atlas_app/features/notifications/interfaces/notifications_interface.dart';
 import 'package:atlas_app/features/post_comments/models/comment_model.dart';
 import 'package:atlas_app/features/post_comments/models/reply_model.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:dio/dio.dart';
 
 final postCommentsDbProvider = Provider<PostCommentsDb>((ref) {
   return PostCommentsDb();
@@ -15,12 +17,14 @@ final postCommentsDbProvider = Provider<PostCommentsDb>((ref) {
 
 class PostCommentsDb {
   SupabaseClient get _client => Supabase.instance.client;
-  SupabaseQueryBuilder get _commentsTable => _client.from(TableNames.post_comments);
-  SupabaseQueryBuilder get _commentRepliesTable => _client.from(TableNames.post_comment_replies);
+  // SupabaseQueryBuilder get _commentsTable => _client.from(TableNames.post_comments);
+  // SupabaseQueryBuilder get _commentRepliesTable => _client.from(TableNames.post_comment_replies);
   SupabaseQueryBuilder get _postCommetnRepliesView =>
       _client.from(ViewNames.post_comment_replies_with_likes);
   SupabaseQueryBuilder get _postCommentsView => _client.from(ViewNames.post_comments_with_meta);
   NotificationsDb get _notificationsDb => NotificationsDb();
+
+  Dio get _dio => Dio();
 
   Future<List<PostCommentReplyModel>> getPostCommentsReplies({
     required String commentId,
@@ -136,15 +140,22 @@ class PostCommentsDb {
         username: reply.user!.username,
         data: {'route': '${Routes.postPage}/$postId'},
       );
+      final headers = await generateAuthHeaders();
+
       await Future.wait([
         if (reply.userId != reply.parentAuthorId) _notificationsDb.sendNotificatiosn(notification),
-        _commentRepliesTable.insert({
-          KeyNames.id: reply.id,
-          KeyNames.userId: reply.userId,
-          KeyNames.content: reply.content,
-          KeyNames.parent_comment_author_id: reply.parentAuthorId,
-          KeyNames.comment_id: reply.commentId,
-        }),
+        _dio.post(
+          '${appAPI}post-comment-reply',
+          options: Options(headers: headers),
+          data: jsonEncode({
+            KeyNames.id: reply.id,
+            KeyNames.userId: reply.userId,
+            KeyNames.comment_id: reply.commentId,
+            KeyNames.content: reply.content,
+            'token': _client.auth.currentSession!.accessToken,
+            KeyNames.parent_comment_author_id: reply.parentAuthorId,
+          }),
+        ),
       ]);
     } catch (e) {
       log(e.toString());
@@ -159,14 +170,20 @@ class PostCommentsDb {
         username: me.username,
         data: {'route': '${Routes.postPage}/${post.postId}'},
       );
+      final headers = await generateAuthHeaders();
       await Future.wait([
         if (post.userId != me.userId) _notificationsDb.sendNotificatiosn(notification),
-        _commentsTable.insert({
-          KeyNames.id: comment.id,
-          KeyNames.userId: comment.userId,
-          KeyNames.content: comment.content,
-          KeyNames.post_id: post.postId,
-        }),
+        _dio.post(
+          '${appAPI}post-comment',
+          options: Options(headers: headers),
+          data: jsonEncode({
+            KeyNames.id: comment.id,
+            KeyNames.userId: me.userId,
+            KeyNames.post_id: post.postId,
+            KeyNames.content: comment.content,
+            'token': _client.auth.currentSession!.accessToken,
+          }),
+        ),
       ]);
     } catch (e) {
       log(e.toString());

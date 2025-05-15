@@ -65,7 +65,7 @@ class ReviewOptionsSheet extends ConsumerWidget {
     ),
     child: Column(
       children: [
-        if (isCreator) buildTile("تعديل", TablerIcons.edit, onTap: () => update(ref, context)),
+        // if (isCreator) buildTile("تعديل", TablerIcons.edit, onTap: () => update(ref, context)),
         if (isCreator) buildTile("حذف", TablerIcons.trash, onTap: () => delete(ref, context)),
       ],
     ),

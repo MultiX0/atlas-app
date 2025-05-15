@@ -5,11 +5,16 @@ import 'package:atlas_app/core/common/constants/function_names.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 // Background message handler
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   log('Handling background message: ${message.messageId}');
   // You can add custom handling for background messages here
+  String? route = message.data['route'];
+  if (route != null) {
+    await launchUrlString('https://app.atlasapp.app/$route');
+  }
 }
 
 class FCMService {
@@ -154,7 +159,7 @@ class FCMService {
       context.push(route);
     } catch (e) {
       log('Navigation error: $e');
-      context.go('/');
+      // context.go('/');
     }
   }
 

@@ -102,7 +102,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
     final prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      duration = duration > 0 ? duration : 60;
+      duration = duration > 0 ? duration : 120;
       _timer = Timer.periodic(const Duration(seconds: 1), (_) {
         if (duration > 0) {
           setState(() {

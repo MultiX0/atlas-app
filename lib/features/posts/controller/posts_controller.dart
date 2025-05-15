@@ -77,6 +77,7 @@ class PostsController extends StateNotifier<bool> {
         canRepost: canRepost,
         parentId: parentId,
       );
+
       if (postType == PostType.comic_review) {
         final review = _ref.read(selectedReview);
         await db.insertMentions([SlashEntity('comic_review', review!.id, 'Review')], postId);
@@ -100,6 +101,7 @@ class PostsController extends StateNotifier<bool> {
       }
 
       await _ref.read(profilePostsStateProvider(user.userId).notifier).fetchData(refresh: true);
+      _ref.read(postInputProvider.notifier).state = '';
       context.loaderOverlay.hide();
       CustomToast.success("تم النشر");
       context.pop();

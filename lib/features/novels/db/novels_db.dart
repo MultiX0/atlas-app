@@ -41,8 +41,8 @@ class NovelsDb {
   SupabaseQueryBuilder get _novelChapterCommentsTable =>
       _client.from(TableNames.novel_chapter_comments);
 
-  SupabaseQueryBuilder get _novelChapterCommentRepliesTable =>
-      _client.from(TableNames.novel_chapter_comment_replies);
+  // SupabaseQueryBuilder get _novelChapterCommentRepliesTable =>
+  //     _client.from(TableNames.novel_chapter_comment_replies);
 
   static Dio get _dio => Dio();
   NotificationsDb get _notificationsDb => NotificationsDb();
@@ -137,16 +137,23 @@ class NovelsDb {
         novelTitle: novel.title,
         data: {'route': "${Routes.novelPage}/${novel.id}"},
       );
+      final headers = await generateAuthHeaders();
+
       await Future.wait([
         if (reply.userId != reply.parentCommentAuthorId)
           _notificationsDb.sendNotificatiosn(notification),
-        _novelChapterCommentRepliesTable.insert({
-          KeyNames.id: reply.id,
-          KeyNames.userId: reply.userId,
-          KeyNames.content: reply.content,
-          KeyNames.parent_comment_author_id: reply.parentCommentAuthorId,
-          KeyNames.comment_id: reply.commentId,
-        }),
+        _dio.post(
+          '${appAPI}novel-chapter-comment-reply',
+          options: Options(headers: headers),
+          data: jsonEncode({
+            KeyNames.id: reply.id,
+            KeyNames.userId: reply.userId,
+            KeyNames.comment_id: reply.commentId,
+            KeyNames.content: reply.content,
+            'token': _client.auth.currentSession!.accessToken,
+            KeyNames.parent_comment_author_id: reply.parentCommentAuthorId,
+          }),
+        ),
       ]);
     } catch (e) {
       log(e.toString());
@@ -232,6 +239,8 @@ class NovelsDb {
         username: user.username,
         data: {'route': "${Routes.novelPage}/$novelId"},
       );
+      final headers = await generateAuthHeaders();
+
       await Future.wait([
         if (user.userId != novelAuthor) _notificationsDb.sendNotificatiosn(notification),
         _novelChapterCommentsTable.insert({
@@ -240,6 +249,17 @@ class NovelsDb {
           KeyNames.userId: user.userId,
           KeyNames.chapter_id: chapterId,
         }),
+        _dio.post(
+          '${appAPI}novel-chapter-comment',
+          options: Options(headers: headers),
+          data: jsonEncode({
+            KeyNames.id: commentId,
+            KeyNames.userId: user.userId,
+            KeyNames.chapter_id: chapterId,
+            KeyNames.content: content,
+            'token': _client.auth.currentSession!.accessToken,
+          }),
+        ),
       ]);
     } catch (e) {
       log(e.toString());
@@ -488,11 +508,11 @@ class NovelsDb {
     }
   }
 
-  Future<int> getUserChaptersReadCount(String novelId) async {
+  Future<int> getUserChaptersReadCount(String novelId, String userId) async {
     try {
       final count = await _client.rpc(
         FunctionNames.get_user_chapters_read_count,
-        params: {'p_novel_id': novelId},
+        params: {'p_novel_id': novelId, 'p_user_id': userId},
       );
 
       if (count == null) return 0;

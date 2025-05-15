@@ -359,7 +359,7 @@ class NovelsController extends StateNotifier<bool> {
       final novel = _ref.read(selectedNovelProvider)!;
       final me = _ref.read(userState.select((s) => s.user!));
       final interaction = await _interactionsDb.getNovelInteraction(novel.id);
-      if (novel.interaction == null && interaction == null) {
+      if (novel.interaction == null || interaction == null) {
         final interaction = await newNovelInteraction(novel: novel, user: me);
         await _interactionsDb.upsertNovelInteraction(interaction);
         _ref.read(selectedNovelProvider.notifier).state = novel.copyWith(interaction: interaction);
@@ -377,11 +377,11 @@ class NovelsController extends StateNotifier<bool> {
     required UserModel user,
     bool upsert = false,
   }) async {
-    final count = novel.interaction != null ? 0 : await getUserChaptersReadCount(novel.id);
+    final count =
+        novel.interaction != null ? 0 : await getUserChaptersReadCount(novel.id, user.userId);
     final interaction =
         (novel.interaction == null || upsert)
             ? NovelInteraction(
-              id: uuid.v4(),
               userId: user.userId,
               novelId: novel.id,
               isFavoried: novel.isFavorite,
@@ -390,13 +390,13 @@ class NovelsController extends StateNotifier<bool> {
               shared: false,
               createdAt: DateTime.now(),
             )
-            : novel.interaction!;
+            : novel.interaction!.copyWith(chapterReadCount: count);
     return interaction;
   }
 
-  Future<int> getUserChaptersReadCount(String novelId) async {
+  Future<int> getUserChaptersReadCount(String novelId, String userId) async {
     try {
-      return await db.getUserChaptersReadCount(novelId);
+      return await db.getUserChaptersReadCount(novelId, userId);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -414,15 +414,21 @@ class NovelsController extends StateNotifier<bool> {
       );
       _ref.read(novelViewsStateProvider.notifier).updateNovel(newNovel);
       _ref.read(selectedNovelProvider.notifier).state = newNovel;
-      _ref
-          .read(userFavoriteState(me.userId).notifier)
-          .addWork(
-            MyWorkModel(title: novel.title, type: 'novel', poster: novel.poster, id: novel.id),
-          );
+
+      if (novel.isFavorite) {
+        _ref.read(userFavoriteState(me.userId).notifier).deleteWork(novel.id);
+      } else {
+        _ref
+            .read(userFavoriteState(me.userId).notifier)
+            .addWork(
+              MyWorkModel(title: novel.title, type: 'novel', poster: novel.poster, id: novel.id),
+            );
+      }
 
       await Future.wait([
         db.handleFavorite(novel, me),
-        if (novel.interaction != null) _interactionsDb.upsertNovelInteraction(novel.interaction!),
+        if (novel.interaction != null)
+          _interactionsDb.upsertNovelInteraction(newNovel.interaction!),
       ]);
 
       if (novel.interaction != null) await updateUserVector(me.userId);
@@ -460,10 +466,10 @@ class NovelsController extends StateNotifier<bool> {
       final me = _ref.read(userState.select((s) => s.user!));
 
       final interacion = novel.interaction ?? await newNovelInteraction(novel: novel, user: me);
+      final newInteracion = interacion.copyWith(timeSpent: interacion.timeSpent + time);
+      _ref.read(selectedNovelProvider.notifier).state = novel.copyWith(interaction: newInteracion);
 
-      await _interactionsDb.upsertNovelInteraction(
-        interacion.copyWith(timeSpent: interacion.timeSpent + time),
-      );
+      await _interactionsDb.upsertNovelInteraction(newInteracion);
       await updateUserVector(me.userId);
     } catch (e) {
       log(e.toString());
