@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+// import io.flutter.plugins.firebase.messaging.FlutterFirebaseMessagingPlugin
 
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "com.example.avif_converter"  // Match exactly with Dart side

@@ -28,7 +28,7 @@ class _AppState extends ConsumerState<App> {
     Future.microtask(() async {
       if (!kIsWeb) {
         await Future.wait([
-          fcmService.initLocalFlutterNotifications(context),
+          fcmService.initLocalFlutterNotifications(),
           fcmService.initialize(context),
         ]);
       }
