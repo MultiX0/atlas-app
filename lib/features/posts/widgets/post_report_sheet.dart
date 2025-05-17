@@ -194,6 +194,7 @@ class _PostReportConfirmationState extends State<PostReportConfirmation> {
                       reason = _controller.text.trim();
                       if (reason.length < 20) {
                         CustomToast.error("محتوى البلاغ يجب أن يكون 20 حرف أو أكثر");
+                        return;
                       }
                     } else {
                       reason = widget.subtitle!;

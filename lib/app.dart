@@ -28,8 +28,8 @@ class _AppState extends ConsumerState<App> {
     Future.microtask(() async {
       if (!kIsWeb) {
         await Future.wait([
-          fcmService.initLocalFlutterNotifications(),
-          fcmService.initialize(context),
+          fcmService.initLocalFlutterNotifications(context),
+          fcmService.initialize(context, ref: ref),
         ]);
       }
     });
@@ -53,11 +53,9 @@ class _AppState extends ConsumerState<App> {
                 GlobalWidgetsLocalizations.delegate,
                 FlutterQuillLocalizations.delegate,
               ],
+
               debugShowCheckedModeBanner: false,
               theme: AppTheme.darkModeAppTheme,
-              // routeInformationParser: router.routeInformationParser,
-              // routeInformationProvider: router.routeInformationProvider,
-              // routerDelegate: router.routerDelegate,
               routerConfig: router,
             ),
           ),

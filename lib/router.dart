@@ -28,6 +28,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: Routes.splashPage,
     refreshListenable: authState,
+
     redirect: (context, state) {
       final splashRoute = state.uri.toString() == Routes.splashPage;
       if (splashRoute) {
@@ -65,6 +66,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       return null;
     },
+
     routes: [
       StatefulShellRoute.indexedStack(
         branches: [
