@@ -169,6 +169,7 @@ class PostCommentsController extends StateNotifier<bool> {
         ownerId: reply.userId,
         postAuthorName: post.user.username,
         postId: post.postId,
+        commentId: reply.commentId,
       );
     } catch (e) {
       _ref.read(postCommentReplisStateNotifier(reply.commentId).notifier).updateComment(reply);

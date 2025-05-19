@@ -13,17 +13,12 @@ import 'imports.dart';
 Future<void> main() async {
   timeago.setLocaleMessages('ar', timeago.ArMessages());
   WidgetsFlutterBinding.ensureInitialized();
-  await _initEnv();
   await Future.wait([langdetect.initLangDetect(), supabaseInit(), _firebaseInit()]);
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
 
   editChromeSystem();
 
   runApp(const ProviderScope(child: App()));
-}
-
-Future<void> _initEnv() async {
-  await dotenv.load(fileName: '.env');
 }
 
 Future<void> _firebaseInit() async {
@@ -40,16 +35,15 @@ bool _supaInit = false;
 Future<void> supabaseInit() async {
   try {
     if (_supaInit) return;
-    await _initEnv();
-    final key = dotenv.env["DB_KEY"];
-    final url = dotenv.env["DB_URL"];
+    const key = String.fromEnvironment('DB_KEY');
+    const url = String.fromEnvironment('DB_URL');
 
     final secureStorage = SecureLocalStorage();
     await secureStorage.initialize();
 
     await Supabase.initialize(
-      url: url!,
-      anonKey: key!,
+      url: url,
+      anonKey: key,
       debug: kDebugMode,
       authOptions: FlutterAuthClientOptions(
         localStorage: secureStorage,

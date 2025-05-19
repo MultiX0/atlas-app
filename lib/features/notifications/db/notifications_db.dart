@@ -1,18 +1,21 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:atlas_app/core/common/enum/notificaion_type.dart';
 import 'package:atlas_app/core/common/utils/encrypt.dart';
 import 'package:atlas_app/features/notifications/interfaces/notifications_interface.dart';
 import 'package:atlas_app/features/notifications/models/notification_container_model.dart';
+import 'package:atlas_app/features/notifications/models/notification_event_model.dart';
 import 'package:atlas_app/features/profile/db/profile_db.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 class NotificationsDb {
-  // SupabaseClient get _client => Supabase.instance.client;
+  SupabaseClient get _client => Supabase.instance.client;
   static Dio get _dio => Dio();
   ProfileDb get _profileDb => ProfileDb();
+  String get token => _client.auth.currentSession!.accessToken;
 
   Future<void> sendNotificatiosn(NotificationContainerModel notification) async {
     try {
@@ -27,6 +30,447 @@ class NotificationsDb {
       if (kDebugMode) {
         print(e);
       }
+      rethrow;
+    }
+  }
+
+  Future<void> sendEvent(NotificationEventRequest event) async {
+    try {
+      final headers = await generateAuthHeaders();
+      await _dio.post(
+        "${appAPI}event",
+        options: Options(headers: headers),
+        data: jsonEncode(event.toJson()),
+      );
+    } catch (e) {
+      log(e.toString());
+      if (kDebugMode) {
+        print(e);
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> newNovelReviewNotification({
+    required String novelTitle,
+    required String novelAuthorId,
+    required String username,
+    required String novelId,
+    required String senderId,
+    required String reviewId,
+  }) async {
+    try {
+      final notification = NotificationsInterface.novelReviewNotification(
+        novelTitle: novelTitle,
+        userId: novelAuthorId,
+        username: username,
+        data: {'route': '${Routes.novelPage}/$novelId'},
+      );
+
+      final event = NotificationEventRequest(
+        recipientId: novelAuthorId,
+        senderId: senderId,
+        type: notificationEnumToString(NotificationType.newNovelReview),
+        token: token,
+        novelId: novelId,
+        novelReviewId: reviewId,
+      );
+
+      await Future.wait([sendNotificatiosn(notification), sendEvent(event)]);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> novelReviewLikeNotification({
+    required String novelTitle,
+    required String reviewAuthorId,
+    required String username,
+    required String novelId,
+    required String senderId,
+    required String reviewId,
+  }) async {
+    try {
+      final notification = NotificationsInterface.novelReviewLike(
+        novelTitle: novelTitle,
+        userId: reviewAuthorId,
+        username: username,
+        data: {'route': '${Routes.novelPage}/$novelId'},
+      );
+
+      final event = NotificationEventRequest(
+        recipientId: reviewAuthorId,
+        senderId: senderId,
+        type: notificationEnumToString(NotificationType.novelReviewLike),
+        token: token,
+        novelId: novelId,
+        novelReviewId: reviewId,
+      );
+
+      await Future.wait([sendNotificatiosn(notification), sendEvent(event)]);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> repostNotification({
+    required String username,
+    required String userId,
+    required String senderId,
+    required String postId,
+  }) async {
+    try {
+      final notification = NotificationsInterface.postRepostNotification(
+        userId: userId,
+        username: username,
+        data: {'route': '${Routes.postPage}/$postId'},
+      );
+      final event = NotificationEventRequest(
+        recipientId: userId,
+        senderId: senderId,
+        type: notificationEnumToString(NotificationType.postRepost),
+        token: token,
+        postId: postId,
+      );
+
+      await Future.wait([sendNotificatiosn(notification), sendEvent(event)]);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> postLikeNotification({
+    required String userId,
+    required String username,
+    required String postId,
+    required String senderId,
+  }) async {
+    try {
+      final notification = NotificationsInterface.postLikeNotification(
+        userId: userId,
+        username: username,
+        data: {'route': '${Routes.postPage}/$postId'},
+      );
+
+      final event = NotificationEventRequest(
+        recipientId: userId,
+        senderId: senderId,
+        type: notificationEnumToString(NotificationType.postLike),
+        token: token,
+        postId: postId,
+      );
+
+      await Future.wait([sendNotificatiosn(notification), sendEvent(event)]);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> novelChapterCommentReplyNotification({
+    required String parentCommentAuthorId,
+    required String username,
+    required String novelTitle,
+    required String senderId,
+    required String novelId,
+    required String chapterId,
+    required String replyId,
+  }) async {
+    try {
+      final notification = NotificationsInterface.novelChapterReplyCommentNotification(
+        userId: parentCommentAuthorId,
+        username: username,
+        novelTitle: novelTitle,
+        data: {'route': "${Routes.novelPage}/$novelId"},
+      );
+
+      final event = NotificationEventRequest(
+        recipientId: parentCommentAuthorId,
+        senderId: senderId,
+        type: notificationEnumToString(NotificationType.novelChapterCommentReply),
+        token: token,
+        novelId: novelId,
+        chapterId: chapterId,
+        chapterReplyId: replyId,
+      );
+
+      await Future.wait([sendNotificatiosn(notification), sendEvent(event)]);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> novelChapterCommentNotification({
+    required String username,
+    required String authorId,
+    required String novelId,
+    required String senderId,
+    required String chapterId,
+    required String commentId,
+  }) async {
+    try {
+      final notification = NotificationsInterface.novelChapterCommentNotification(
+        userId: authorId,
+        username: username,
+        data: {'route': "${Routes.novelPage}/$novelId"},
+      );
+
+      final event = NotificationEventRequest(
+        recipientId: authorId,
+        senderId: senderId,
+        type: notificationEnumToString(NotificationType.novelChapterComment),
+        token: token,
+        novelId: novelId,
+        chapterId: chapterId,
+        chapterCommentId: commentId,
+      );
+
+      await Future.wait([sendNotificatiosn(notification), sendEvent(event)]);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> addNovelToFavoriteNotification({
+    required String authorId,
+    required String username,
+    required String senderId,
+    required String novelId,
+  }) async {
+    try {
+      final notification = NotificationsInterface.novelLikeNotification(
+        userId: authorId,
+        username: username,
+        data: {'route': "${Routes.novelPage}/$novelId"},
+      );
+      final event = NotificationEventRequest(
+        recipientId: authorId,
+        senderId: senderId,
+        type: notificationEnumToString(NotificationType.novelFavorite),
+        token: token,
+        novelId: novelId,
+      );
+
+      await Future.wait([sendNotificatiosn(notification), sendEvent(event)]);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> novelChapterLikeNotification({
+    required String authorId,
+    required String username,
+    required String senderId,
+    required String novelId,
+    required String chapterId,
+    required String novelTitle,
+  }) async {
+    try {
+      final notification = NotificationsInterface.novelChapterLikeNotification(
+        userId: authorId,
+        username: username,
+        data: {'route': "${Routes.novelPage}/$novelId"},
+        novelTitle: novelTitle,
+      );
+      final event = NotificationEventRequest(
+        recipientId: authorId,
+        senderId: senderId,
+        type: notificationEnumToString(NotificationType.novelChapterLike),
+        token: token,
+        chapterId: chapterId,
+        novelId: novelId,
+      );
+
+      await Future.wait([sendNotificatiosn(notification), sendEvent(event)]);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> novelChapterLikeCommentNotification({
+    required String commentOwnerId,
+    required String username,
+    required String novelId,
+    required String senderId,
+    required String chapterId,
+    required String novelTitle,
+  }) async {
+    try {
+      final notification = NotificationsInterface.novelChapterLikeCommentNotification(
+        userId: commentOwnerId,
+        username: username,
+        data: {'route': "${Routes.novelPage}/$novelId"},
+        novelTitle: novelTitle,
+      );
+      final event = NotificationEventRequest(
+        recipientId: commentOwnerId,
+        senderId: senderId,
+        type: notificationEnumToString(NotificationType.novelChapterCommentLike),
+        token: token,
+        chapterId: chapterId,
+        novelId: novelId,
+      );
+
+      await Future.wait([sendNotificatiosn(notification), sendEvent(event)]);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> userFollowNotification({
+    required String targetId,
+    required String username,
+    required String userId,
+  }) async {
+    try {
+      final notification = NotificationsInterface.followUserNotification(
+        userId: targetId,
+        username: username,
+        data: {'route': '${Routes.postPage}/$userId'},
+      );
+
+      final event = NotificationEventRequest(
+        recipientId: targetId,
+        senderId: userId,
+        type: notificationEnumToString(NotificationType.follow),
+        token: token,
+      );
+
+      await Future.wait([sendNotificatiosn(notification), sendEvent(event)]);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> postCommentLikeNotification({
+    required String ownerId,
+    required String postAuthorName,
+    required String username,
+    required String senderId,
+    required String postId,
+    required String commentId,
+  }) async {
+    try {
+      final notification = NotificationsInterface.postLikeCommentNotification(
+        userId: ownerId,
+        username: username,
+        postTitle: postAuthorName,
+        data: {'route': '${Routes.postPage}/$postId'},
+      );
+      final event = NotificationEventRequest(
+        recipientId: ownerId,
+        senderId: senderId,
+        postCommentId: commentId,
+        postId: postId,
+        type: notificationEnumToString(NotificationType.commentLike),
+        token: token,
+      );
+
+      await Future.wait([sendNotificatiosn(notification), sendEvent(event)]);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> postCommentReplyLikeNotification({
+    required String ownerId,
+    required String postAuthorName,
+    required String username,
+    required String senderId,
+    required String postId,
+    required String commentId,
+    required String replyId,
+  }) async {
+    try {
+      final notification = NotificationsInterface.postLikeCommentNotification(
+        userId: ownerId,
+        username: username,
+        postTitle: postAuthorName,
+        data: {'route': '${Routes.postPage}/$postId'},
+      );
+      final event = NotificationEventRequest(
+        recipientId: ownerId,
+        senderId: senderId,
+        postCommentId: commentId,
+        postId: postId,
+        postReplyId: replyId,
+        type: notificationEnumToString(NotificationType.replyLike),
+        token: token,
+      );
+
+      await Future.wait([sendNotificatiosn(notification), sendEvent(event)]);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> postCommentReplyNotification({
+    required String parentAuthorId,
+    required String username,
+    required String senderId,
+    required String postId,
+    required String commentId,
+    required String replyId,
+  }) async {
+    try {
+      final notification = NotificationsInterface.commentReplyNotification(
+        userId: parentAuthorId,
+        username: username,
+        data: {'route': '${Routes.postPage}/$postId'},
+      );
+      final event = NotificationEventRequest(
+        recipientId: parentAuthorId,
+        senderId: senderId,
+        postCommentId: commentId,
+        postId: postId,
+        postReplyId: replyId,
+        type: notificationEnumToString(NotificationType.postCommentReply),
+        token: token,
+      );
+
+      await Future.wait([sendNotificatiosn(notification), sendEvent(event)]);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> postCommentNotification({
+    required String username,
+    required String senderId,
+    required String postId,
+    required String commentId,
+    required String ownerId,
+  }) async {
+    try {
+      final notification = NotificationsInterface.postCommentNotification(
+        userId: ownerId,
+        username: username,
+        data: {'route': '${Routes.postPage}/$postId'},
+      );
+      final event = NotificationEventRequest(
+        recipientId: ownerId,
+        senderId: senderId,
+        postCommentId: commentId,
+        postId: postId,
+        type: notificationEnumToString(NotificationType.postComment),
+        token: token,
+      );
+
+      await Future.wait([sendNotificatiosn(notification), sendEvent(event)]);
+    } catch (e) {
+      log(e.toString());
       rethrow;
     }
   }

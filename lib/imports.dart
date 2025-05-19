@@ -11,7 +11,6 @@ export 'package:flutter_avif/flutter_avif.dart';
 export 'package:pinput/pinput.dart';
 export './core/common/widgets/app_logo_widget.dart';
 export 'package:atlas_app/core/common/constants/key_names.dart';
-export 'package:flutter_dotenv/flutter_dotenv.dart';
 export 'package:shared_preferences/shared_preferences.dart';
 export 'package:atlas_app/core/common/widgets/custom_button.dart';
 export 'package:atlas_app/core/common/constants/app_constants.dart';

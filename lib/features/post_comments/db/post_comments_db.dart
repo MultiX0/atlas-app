@@ -5,7 +5,6 @@ import 'package:atlas_app/core/common/constants/function_names.dart';
 import 'package:atlas_app/core/common/constants/view_names.dart';
 import 'package:atlas_app/core/common/utils/encrypt.dart';
 import 'package:atlas_app/features/notifications/db/notifications_db.dart';
-import 'package:atlas_app/features/notifications/interfaces/notifications_interface.dart';
 import 'package:atlas_app/features/post_comments/models/comment_model.dart';
 import 'package:atlas_app/features/post_comments/models/reply_model.dart';
 import 'package:atlas_app/imports.dart';
@@ -72,15 +71,17 @@ class PostCommentsDb {
     required String postId,
   }) async {
     try {
-      final notification = NotificationsInterface.postReplyCommentNotification(
-        userId: ownerId,
-        username: me.username,
-        postTitle: postAuthorName,
-        data: {'route': '${Routes.postPage}/$postId'},
-      );
       await Future.wait([
         _client.rpc(FunctionNames.toggle_post_comment_like, params: {'p_comment_id': id}),
-        if (me.userId != ownerId) _notificationsDb.sendNotificatiosn(notification),
+        if (me.userId != ownerId)
+          _notificationsDb.postCommentLikeNotification(
+            commentId: id,
+            ownerId: ownerId,
+            senderId: me.userId,
+            postAuthorName: postAuthorName,
+            postId: postId,
+            username: me.username,
+          ),
       ]);
     } catch (e) {
       log(e.toString());
@@ -94,17 +95,21 @@ class PostCommentsDb {
     required String ownerId,
     required String postAuthorName,
     required String postId,
+    required String commentId,
   }) async {
     try {
-      final notification = NotificationsInterface.postReplyCommentNotification(
-        userId: ownerId,
-        username: me.username,
-        postTitle: postAuthorName,
-        data: {'route': '${Routes.postPage}/$postId'},
-      );
       await Future.wait([
         _client.rpc(FunctionNames.toggle_post_comment_reply_like, params: {'p_reply_id': id}),
-        if (me.userId != ownerId) _notificationsDb.sendNotificatiosn(notification),
+        if (me.userId != ownerId)
+          _notificationsDb.postCommentReplyLikeNotification(
+            replyId: id,
+            ownerId: ownerId,
+            commentId: commentId,
+            postAuthorName: postAuthorName,
+            postId: postId,
+            senderId: me.userId,
+            username: me.username,
+          ),
       ]);
     } catch (e) {
       log(e.toString());
@@ -135,15 +140,18 @@ class PostCommentsDb {
     required String postId,
   }) async {
     try {
-      final notification = NotificationsInterface.commentReplyNotification(
-        userId: reply.parentAuthorId,
-        username: reply.user!.username,
-        data: {'route': '${Routes.postPage}/$postId'},
-      );
       final headers = await generateAuthHeaders();
 
       await Future.wait([
-        if (reply.userId != reply.parentAuthorId) _notificationsDb.sendNotificatiosn(notification),
+        if (reply.userId != reply.parentAuthorId)
+          _notificationsDb.postCommentReplyNotification(
+            commentId: reply.commentId,
+            replyId: reply.id,
+            parentAuthorId: reply.parentAuthorId,
+            postId: postId,
+            senderId: reply.user!.userId,
+            username: reply.user!.username,
+          ),
         _dio.post(
           '${appAPI}post-comment-reply',
           options: Options(headers: headers),
@@ -165,14 +173,16 @@ class PostCommentsDb {
 
   Future<void> handleAddNewComment(PostModel post, PostCommentModel comment, UserModel me) async {
     try {
-      final notification = NotificationsInterface.postCommentNotification(
-        userId: post.userId,
-        username: me.username,
-        data: {'route': '${Routes.postPage}/${post.postId}'},
-      );
       final headers = await generateAuthHeaders();
       await Future.wait([
-        if (post.userId != me.userId) _notificationsDb.sendNotificatiosn(notification),
+        if (post.userId != me.userId)
+          _notificationsDb.postCommentNotification(
+            commentId: comment.id,
+            ownerId: post.userId,
+            postId: post.postId,
+            senderId: me.userId,
+            username: me.username,
+          ),
         _dio.post(
           '${appAPI}post-comment',
           options: Options(headers: headers),

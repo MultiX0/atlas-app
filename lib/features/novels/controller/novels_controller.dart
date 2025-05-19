@@ -569,6 +569,9 @@ class NovelsController extends StateNotifier<bool> {
 
   Future<void> handleChapterCommentLike(NovelChapterCommentWithMeta comment) async {
     try {
+      final me = _ref.read(userState.select((s) => s.user!));
+      final novel = _ref.read(selectedNovelProvider)!;
+
       _ref
           .read(novelChapterCommentsStateProvider(comment.chapterId).notifier)
           .updateComment(
@@ -577,7 +580,7 @@ class NovelsController extends StateNotifier<bool> {
               isLiked: !comment.isLiked,
             ),
           );
-      await db.handleChapterCommentLike(comment.id);
+      await db.handleChapterCommentLike(comment.id, me, comment.userId, comment.chapterId, novel);
     } catch (e) {
       _ref
           .read(novelChapterCommentsStateProvider(comment.chapterId).notifier)
@@ -591,6 +594,7 @@ class NovelsController extends StateNotifier<bool> {
   Future<void> handleChapterCommentReplyLike(NovelChapterCommentReplyWithLikes reply) async {
     try {
       final me = _ref.read(userState.select((s) => s.user!));
+      final chapter = _ref.read(selectedChapterProvider);
       final novel = _ref.read(selectedNovelProvider)!;
       _ref
           .read(novelChapterCommentRepliesState(reply.commentId).notifier)
@@ -600,7 +604,13 @@ class NovelsController extends StateNotifier<bool> {
               isLiked: !reply.isLiked,
             ),
           );
-      await db.handleChapterCommentReplyLike(reply.id, me, novel, reply.parentCommentAuthorId);
+      await db.handleChapterCommentReplyLike(
+        reply.id,
+        me,
+        novel,
+        reply.parentCommentAuthorId,
+        chapter?.id ?? "",
+      );
     } catch (e) {
       _ref.read(novelChapterCommentRepliesState(reply.commentId).notifier).updateComment(reply);
       CustomToast.error(errorMsg);
@@ -641,7 +651,7 @@ class NovelsController extends StateNotifier<bool> {
       _ref
           .read(novelChapterCommentsStateProvider(commentId).notifier)
           .updateComment(comment.copyWith(repliesCount: comment.repliesCount + 1));
-      await db.handleAddNewChapterCommentReply(replyModel, novel);
+      await db.handleAddNewChapterCommentReply(replyModel, novel, _chapter.id);
     } catch (e) {
       CustomToast.error(errorMsg);
       _ref.read(novelChapterCommentRepliesState(comment.id).notifier).deleteComment(id);

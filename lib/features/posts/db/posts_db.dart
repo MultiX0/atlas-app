@@ -12,7 +12,6 @@ import 'package:atlas_app/core/services/user_vector_service.dart';
 import 'package:atlas_app/features/hashtags/db/hashtags_db.dart';
 import 'package:atlas_app/features/interactions/db/interactions_db.dart';
 import 'package:atlas_app/features/notifications/db/notifications_db.dart';
-import 'package:atlas_app/features/notifications/interfaces/notifications_interface.dart';
 import 'package:atlas_app/features/interactions/models/post_interaction_model.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:dio/dio.dart';
@@ -120,12 +119,12 @@ class PostsDb {
 
       if (parentId != null && parentId.isNotEmpty) {
         final String userId = await getUserIdByPost(parentId);
-        final notification = NotificationsInterface.postRepostNotification(
-          userId: userId,
+        await notificationsDb.repostNotification(
           username: user.username,
-          data: {'route': '${Routes.postPage}/$postId'},
+          userId: userId,
+          postId: postId,
+          senderId: user.userId,
         );
-        await notificationsDb.sendNotificatiosn(notification);
       }
 
       try {
@@ -330,17 +329,14 @@ class PostsDb {
 
   Future<void> handleUserLike(PostModel post, UserModel user) async {
     try {
-      log("Database operation: post.userLiked = ${post.userLiked}");
-
-      log("Inserting like");
-      final notification = NotificationsInterface.postLikeNotification(
-        userId: post.userId,
-        username: user.username,
-        data: {'route': '${Routes.postPage}/${post.postId}'},
-      );
       await Future.wait([
         if ((user.userId != post.userId) && !post.userLiked)
-          notificationsDb.sendNotificatiosn(notification),
+          notificationsDb.postLikeNotification(
+            userId: post.userId,
+            username: user.username,
+            postId: post.postId,
+            senderId: user.userId,
+          ),
         _client.rpc(FunctionNames.toggle_post_like, params: {'target_post_id': post.postId}),
       ]);
     } catch (e) {

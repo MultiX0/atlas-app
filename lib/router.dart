@@ -9,6 +9,8 @@ final navigationShellProvider = Provider<StatefulNavigationShell>((ref) {
   throw UnimplementedError();
 });
 
+final rootNavigationKey = Provider<GlobalKey<NavigatorState>>((ref) => GlobalKey<NavigatorState>());
+
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ValueNotifier<bool>(ref.read(isLoggedProvider));
 
@@ -25,10 +27,12 @@ final routerProvider = Provider<GoRouter>((ref) {
     }
   }
 
+  final _key = ref.read(rootNavigationKey);
+
   return GoRouter(
+    navigatorKey: _key,
     initialLocation: Routes.splashPage,
     refreshListenable: authState,
-
     redirect: (context, state) {
       final splashRoute = state.uri.toString() == Routes.splashPage;
       if (splashRoute) {
@@ -185,6 +189,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        parentNavigatorKey: _key,
         path: "${Routes.hashtagsPage}/:${KeyNames.hashtag}",
         pageBuilder: (context, state) {
           final hashtag = state.pathParameters[KeyNames.hashtag] ?? "";
@@ -230,6 +235,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        parentNavigatorKey: _key,
         path: "${Routes.novelPage}/:id",
         redirect: authRedirect,
         pageBuilder: (context, state) {
@@ -245,6 +251,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
 
       GoRoute(
+        parentNavigatorKey: _key,
         path: "${Routes.postPage}/:id",
         redirect: authRedirect,
         pageBuilder: (context, state) {
@@ -260,6 +267,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
 
       GoRoute(
+        parentNavigatorKey: _key,
         path: "${Routes.postComments}/:id",
         redirect: authRedirect,
         pageBuilder: (context, state) {
@@ -274,6 +282,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
 
       GoRoute(
+        parentNavigatorKey: _key,
         path: "${Routes.comicPage}/:id",
         redirect: authRedirect,
 
@@ -290,6 +299,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
 
       GoRoute(
+        parentNavigatorKey: _key,
         path: "${Routes.user}/:id",
         redirect: authRedirect,
 

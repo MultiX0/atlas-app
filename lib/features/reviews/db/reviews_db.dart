@@ -7,7 +7,6 @@ import 'package:atlas_app/core/common/constants/view_names.dart';
 import 'package:atlas_app/core/common/utils/encrypt.dart';
 import 'package:atlas_app/core/common/widgets/slash_parser.dart';
 import 'package:atlas_app/features/notifications/db/notifications_db.dart';
-import 'package:atlas_app/features/notifications/interfaces/notifications_interface.dart';
 import 'package:atlas_app/features/novels/models/novel_review_model.dart';
 import 'package:atlas_app/features/posts/db/posts_db.dart';
 import 'package:atlas_app/imports.dart';
@@ -66,17 +65,20 @@ class ReviewsDb {
   ) async {
     try {
       final postId = uuid.v4();
-      final notification = NotificationsInterface.novelReviewNotification(
-        novelTitle: review.novelTitle,
-        userId: novelAuthor,
-        username: user.username,
-      );
       final headers = await generateAuthHeaders();
       Map data = review.toMap();
       data['token'] = _client.auth.currentSession!.accessToken;
 
       await Future.wait([
-        if (novelAuthor != user.userId) _notificationsDb.sendNotificatiosn(notification),
+        if (novelAuthor != user.userId)
+          _notificationsDb.newNovelReviewNotification(
+            novelAuthorId: novelAuthor,
+            novelId: review.novelId,
+            novelTitle: review.novelTitle,
+            username: user.username,
+            senderId: user.userId,
+            reviewId: review.id,
+          ),
         // _novelReviewsTable.insert(review.toMap()),
         _dio.post(
           '${appAPI}novel-review',
@@ -290,13 +292,16 @@ class ReviewsDb {
   Future<void> handleNovelReviewLike(NovelReviewModel review, UserModel user) async {
     try {
       if (review.i_liked) {
-        final notification = NotificationsInterface.novelReviewLike(
-          userId: review.userId,
-          username: user.username,
-          novelTitle: review.novelTitle,
-        );
         await Future.wait([
-          if (user.userId != review.userId) _notificationsDb.sendNotificatiosn(notification),
+          if (user.userId != review.userId)
+            _notificationsDb.novelReviewLikeNotification(
+              novelId: review.novelId,
+              novelTitle: review.novelTitle,
+              username: user.username,
+              reviewAuthorId: review.userId,
+              senderId: user.userId,
+              reviewId: review.id,
+            ),
           _novelReviewLikesTable.insert({
             KeyNames.review_id: review.id,
             KeyNames.userId: user.userId,

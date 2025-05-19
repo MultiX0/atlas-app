@@ -16,7 +16,7 @@ class SplashPage extends ConsumerStatefulWidget {
   ConsumerState<ConsumerStatefulWidget> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends ConsumerState<SplashPage> {
+class _SplashPageState extends ConsumerState<SplashPage> with WidgetsBindingObserver {
   final _noScreenshot = NoScreenshot.instance;
   final _appLinks = AppLinks();
   StreamSubscription<Uri>? _linkSubscription;
@@ -36,11 +36,13 @@ class _SplashPageState extends ConsumerState<SplashPage> {
 
     _linkSubscription = _appLinks.uriLinkStream.listen(
       (Uri? uri) {
-        if (uri != null) {
+        final _rootNavigatorKey = ref.read(rootNavigationKey);
+
+        if (uri != null && _rootNavigatorKey.currentContext != null) {
           _pendingDeepLink = uri; // Store incoming deep link
           if (mounted &&
               !ref.read(routerProvider).state.uri.toString().contains(Routes.splashPage)) {
-            context.push(uri.path);
+            GoRouter.of(_rootNavigatorKey.currentContext!).push(uri.path);
             _pendingDeepLink = null; // Clear after handling
           }
         }
@@ -54,6 +56,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   @override
   void dispose() {
     _linkSubscription?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
@@ -62,6 +65,8 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   }
 
   void _handleDeepLink(BuildContext context, Uri uri) async {
+    final _rootNavigatorKey = ref.read(rootNavigationKey);
+
     log("Handling deep link: $uri");
     final path = uri.path;
 
@@ -72,21 +77,23 @@ class _SplashPageState extends ConsumerState<SplashPage> {
       final splashRoute = ref.read(routerProvider).state.uri.toString().contains(Routes.splashPage);
 
       if (splashRoute) {
-        context.go(Routes.home);
+        GoRouter.of(_rootNavigatorKey.currentContext!).go(Routes.home);
+
         await Future.delayed(const Duration(milliseconds: 150));
-        context.push(path);
+        GoRouter.of(_rootNavigatorKey.currentContext!).push(path);
       } else {
         context.push(path);
       }
     } else {
       log("Deep link path is empty or root, navigating home.");
-      context.go(Routes.home);
+      GoRouter.of(_rootNavigatorKey.currentContext!).go(Routes.home);
     }
   }
 
   @override
   void initState() {
     super.initState(); // Call super.initState first
+    WidgetsBinding.instance.addObserver(this); // Observe lifecycle
     initAppLinks();
     enableScreenshot();
     log("==============");
