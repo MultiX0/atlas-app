@@ -1,4 +1,4 @@
-import 'package:atlas_app/core/common/utils/custom_toast.dart';
+import 'package:atlas_app/features/notifications/widgets/notification_icon.dart';
 import 'package:atlas_app/imports.dart';
 
 class MainFeedAppbar extends StatelessWidget {
@@ -29,12 +29,7 @@ class MainFeedAppbar extends StatelessWidget {
           ),
           pinned: false,
           floating: true,
-          actions: [
-            IconButton(
-              onPressed: () => CustomToast.soon(),
-              icon: Icon(LucideIcons.bell, color: AppColors.whiteColor),
-            ),
-          ],
+          actions: const [NotificationIcon()],
           backgroundColor: AppColors.scaffoldBackground,
         ),
       ),

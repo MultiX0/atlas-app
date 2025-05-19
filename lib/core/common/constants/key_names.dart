@@ -153,4 +153,5 @@ class KeyNames {
   static const followed = 'followed';
   static const metadata = 'metadata';
   static const posts_count = 'posts_count';
+  static const is_read = 'is_read';
 }
