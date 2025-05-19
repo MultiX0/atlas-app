@@ -45,4 +45,6 @@ app.*.map.json
 /android/app/release
 
 # ignoring the env
-.env
+.vscode/
+.vscode/settings.json
+.vscode/launch.json
