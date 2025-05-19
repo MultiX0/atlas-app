@@ -309,14 +309,14 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
                     child: TextFormField(
                       controller: _controller,
                       cursorColor: overAllColor,
-                      maxLength: 280,
+                      maxLength: 500,
                       validator: (val) {
                         if (val == null || val.isEmpty) {
                           return 'يرجى ملء محتوى المراجعة';
                         }
 
-                        if (val.length < 40) {
-                          return 'يجب أن تكون المراجعة أكثر من 40 حرفًا';
+                        if (val.length < 30) {
+                          return 'يجب أن تكون المراجعة أكثر من 30 حرفًا';
                         }
 
                         return null;
@@ -327,7 +327,7 @@ class _AddComicReviewState extends ConsumerState<AddComicReview> {
                       decoration: const InputDecoration(
                         errorStyle: TextStyle(fontFamily: arabicPrimaryFont, fontSize: 12),
                         hintStyle: TextStyle(fontFamily: arabicAccentFont),
-                        hintText: "يجب أن تكون المراجعة أكثر من 40 حرفًا",
+                        hintText: "يجب أن تكون المراجعة أكثر من 30 حرفًا",
                         border: InputBorder.none,
                       ),
                     ),

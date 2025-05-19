@@ -75,6 +75,7 @@ class _ReviewsWidgetState extends ConsumerState<ReviewsWidget> {
           userId: review.userId,
           username: review.user!.username,
           createdAt: review.createdAt,
+          spoilers: review.spoilers,
           images: review.images.map((s) => s.toString()).toList(),
           isLiked: review.i_liked,
           likeCount: review.likes_count,

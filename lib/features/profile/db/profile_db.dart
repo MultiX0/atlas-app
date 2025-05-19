@@ -4,7 +4,6 @@ import 'package:atlas_app/core/common/constants/function_names.dart';
 import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/core/common/constants/view_names.dart';
 import 'package:atlas_app/features/notifications/db/notifications_db.dart';
-import 'package:atlas_app/features/notifications/interfaces/notifications_interface.dart';
 import 'package:atlas_app/features/profile/models/follows_model.dart';
 import 'package:atlas_app/imports.dart';
 
@@ -56,12 +55,13 @@ class ProfileDb {
 
   Future<void> toggleFollow(String targetId, bool isFollowed, UserModel me) async {
     try {
-      final notification = NotificationsInterface.followUserNotification(
-        userId: targetId,
-        username: me.username,
-      );
       await Future.wait([
-        if (!isFollowed) notificationsDb.sendNotificatiosn(notification),
+        if (!isFollowed)
+          notificationsDb.userFollowNotification(
+            targetId: targetId,
+            userId: me.userId,
+            username: me.username,
+          ),
         client.rpc(FunctionNames.toggle_follow_user, params: {"target_user_id": targetId}),
       ]);
     } catch (e) {

@@ -136,13 +136,31 @@ class ComicReviewModel {
       i_liked: map[KeyNames.user_liked] ?? false,
       comicId: map[KeyNames.comic_id] ?? "",
       userId: map[KeyNames.userId] ?? "",
-      writingQuality: map[KeyNames.writing_quality] ?? 1.0,
-      storyDevelopment: map[KeyNames.story_development] ?? 1.0,
-      characterDesign: map[KeyNames.character_design] ?? 1.0,
-      updateStability: map[KeyNames.update_stability] ?? 1.0,
-      worldBackground: map[KeyNames.world_background] ?? 1.0,
+      writingQuality:
+          map[KeyNames.writing_quality] is int
+              ? map[KeyNames.writing_quality].toDouble()
+              : map[KeyNames.writing_quality] ?? 1.0,
+      storyDevelopment:
+          map[KeyNames.story_development] is int
+              ? map[KeyNames.story_development].toDouble()
+              : map[KeyNames.story_development] ?? 1.0,
+      characterDesign:
+          map[KeyNames.character_design] is int
+              ? map[KeyNames.character_design].toDouble()
+              : map[KeyNames.character_design] ?? 1.0,
+      updateStability:
+          map[KeyNames.update_stability] is int
+              ? map[KeyNames.update_stability].toDouble()
+              : map[KeyNames.update_stability] ?? 1.0,
+      worldBackground:
+          map[KeyNames.world_background] is int
+              ? map[KeyNames.world_background].toDouble()
+              : map[KeyNames.world_background] ?? 1.0,
+      overall:
+          map[KeyNames.overall] is int
+              ? map[KeyNames.overall].toDouble()
+              : map[KeyNames.overall] ?? 1.0,
       images: List.from(map[KeyNames.images] ?? []),
-      overall: map[KeyNames.overall] ?? 1.0,
       spoilers: map[KeyNames.spoilers] ?? false,
       user: map[KeyNames.user] == null ? null : UserModel.fromMap(map[KeyNames.user]),
       review: map[KeyNames.review_text] ?? "",

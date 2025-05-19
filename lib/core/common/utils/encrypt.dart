@@ -1,4 +1,3 @@
-import 'package:atlas_app/imports.dart';
 import 'package:crypto/crypto.dart';
 import 'package:encrypt/encrypt.dart' as encrypt;
 import 'package:convert/convert.dart';
@@ -6,8 +5,8 @@ import 'dart:typed_data';
 import 'dart:convert';
 import 'dart:math';
 
-final _key = dotenv.env['ENCRYPT_KEY'] ?? '';
-final _apiKey = dotenv.env['API_KEY'] ?? "";
+const _key = String.fromEnvironment('ENCRYPT_KEY');
+const _apiKey = String.fromEnvironment('API_KEY');
 
 String encryptMessage(String message) {
   final keyBytes = encrypt.Key(Uint8List.fromList(hex.decode(_key)));

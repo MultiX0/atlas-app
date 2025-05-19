@@ -4,9 +4,10 @@ import 'package:atlas_app/features/post_comments/widgets/comment_tile.dart';
 import 'package:atlas_app/imports.dart';
 
 class PostCommentRepliesSection extends StatelessWidget {
-  const PostCommentRepliesSection({super.key, required this.comment});
+  const PostCommentRepliesSection({super.key, required this.comment, required this.postCreator});
 
   final PostCommentModel comment;
+  final String postCreator;
 
   @override
   Widget build(BuildContext context) {
@@ -46,6 +47,7 @@ class PostCommentRepliesSection extends StatelessWidget {
                   isReply: true,
                   postId: comment.postId,
                   parentCommentId: comment.id,
+                  postCreator: postCreator,
                 );
               }
 

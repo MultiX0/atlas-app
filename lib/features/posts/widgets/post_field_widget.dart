@@ -154,6 +154,7 @@ class _PostFieldWidgetState extends ConsumerState<PostFieldWidget> {
         children: [
           UserDataWidget(me: me),
           EnhancedFlutterMentions(
+            maxLength: 1500,
             defaultText: widget.defaultText,
             onMarkupChanged: (val) {
               log(val);

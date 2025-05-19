@@ -12,7 +12,6 @@ import 'package:atlas_app/core/services/user_vector_service.dart';
 import 'package:atlas_app/features/hashtags/db/hashtags_db.dart';
 import 'package:atlas_app/features/interactions/db/interactions_db.dart';
 import 'package:atlas_app/features/notifications/db/notifications_db.dart';
-import 'package:atlas_app/features/notifications/interfaces/notifications_interface.dart';
 import 'package:atlas_app/features/interactions/models/post_interaction_model.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:dio/dio.dart';
@@ -77,15 +76,35 @@ class PostsDb {
   }) async {
     try {
       final userId = user.userId;
-      await _postsTable.insert({
-        KeyNames.id: postId,
-        KeyNames.content: post,
-        KeyNames.userId: userId,
-        KeyNames.images: images ?? [],
-        KeyNames.can_reposted: canRepost,
-        KeyNames.comments_open: canComment,
-        KeyNames.parent_post: parentId,
-      });
+      final headers = await generateAuthHeaders();
+      // await _postsTable.insert({
+      //   KeyNames.id: postId,
+      //   KeyNames.content: post,
+      //   KeyNames.userId: userId,
+      //   KeyNames.images: images ?? [],
+      //   KeyNames.can_reposted: canRepost,
+      //   KeyNames.comments_open: canComment,
+      //   KeyNames.parent_post: parentId,
+      // });
+
+      final res = await _dio.post(
+        '${appAPI}post',
+        options: Options(headers: headers),
+        data: jsonEncode({
+          KeyNames.post_id: postId,
+          'post': post,
+          KeyNames.userId: userId,
+          KeyNames.images: images ?? [],
+          'can_reposted': canRepost,
+          'can_comment': canComment,
+          'parent_id': parentId,
+          'token': _client.auth.currentSession!.accessToken,
+        }),
+      );
+
+      if (res.statusCode != 200) {
+        throw Exception(res.data);
+      }
 
       final hashtags = extractHashtagKeyword(post).toSet().toList();
       List<SlashEntity> mentions = [];
@@ -100,11 +119,12 @@ class PostsDb {
 
       if (parentId != null && parentId.isNotEmpty) {
         final String userId = await getUserIdByPost(parentId);
-        final notification = NotificationsInterface.postRepostNotification(
-          userId: userId,
+        await notificationsDb.repostNotification(
           username: user.username,
+          userId: userId,
+          postId: postId,
+          senderId: user.userId,
         );
-        await notificationsDb.sendNotificatiosn(notification);
       }
 
       try {
@@ -205,19 +225,36 @@ class PostsDb {
       List<String> removedMentionsIds = removedMentions.map((m) => m.id).toList();
       final addedMentions =
           mentions.where((mention) => !ogMentions.any((m) => m.id == mention.id)).toList();
-      await _postsTable
-          .update({
-            KeyNames.content: post.content,
-            KeyNames.can_reposted: post.canReposted,
-            KeyNames.comments_open: post.comments_open,
-            KeyNames.updated_at: DateTime.now().toIso8601String(),
-          })
-          .eq(KeyNames.id, post.postId);
+
+      final headers = await generateAuthHeaders();
+
+      final res = await _dio.post(
+        '${appAPI}post-update',
+        options: Options(headers: headers),
+        data: jsonEncode({
+          KeyNames.content: post.content,
+          KeyNames.can_reposted: post.canReposted,
+          KeyNames.comments_open: post.comments_open,
+          KeyNames.id: post.postId,
+          KeyNames.userId: post.userId,
+          'token': _client.auth.currentSession!.accessToken,
+        }),
+      );
+      if (res.statusCode != 200) throw Exception(res.data);
+      // await _postsTable
+      //     .update({
+      //       KeyNames.content: post.content,
+      //       KeyNames.can_reposted: post.canReposted,
+      //       KeyNames.comments_open: post.comments_open,
+      //       KeyNames.updated_at: DateTime.now().toIso8601String(),
+      //     })
+      //     .eq(KeyNames.id, post.postId);
       await Future.wait([
         hashtagDb.removeHashtagsFromPost(removedHashtags, post.postId),
         removeMentionFromPost(removedMentionsIds, post.postId),
         hashtagDb.insertNewHashTag(addedHashtags),
         insertMentions(addedMentions, post.postId),
+        insertEmbedding(id: post.postId, content: post.content, userId: post.userId),
       ]);
       await hashtagDb.insertPostHashTag(addedHashtags, post.postId);
     } catch (e) {
@@ -292,16 +329,14 @@ class PostsDb {
 
   Future<void> handleUserLike(PostModel post, UserModel user) async {
     try {
-      log("Database operation: post.userLiked = ${post.userLiked}");
-
-      log("Inserting like");
-      final notification = NotificationsInterface.postLikeNotification(
-        userId: post.userId,
-        username: user.username,
-      );
       await Future.wait([
         if ((user.userId != post.userId) && !post.userLiked)
-          notificationsDb.sendNotificatiosn(notification),
+          notificationsDb.postLikeNotification(
+            userId: post.userId,
+            username: user.username,
+            postId: post.postId,
+            senderId: user.userId,
+          ),
         _client.rpc(FunctionNames.toggle_post_like, params: {'target_post_id': post.postId}),
       ]);
     } catch (e) {

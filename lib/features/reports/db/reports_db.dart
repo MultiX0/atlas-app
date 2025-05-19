@@ -1,8 +1,13 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:atlas_app/core/common/constants/table_names.dart';
+import 'package:atlas_app/core/common/utils/encrypt.dart';
+import 'package:atlas_app/features/notifications/models/notification_container_model.dart';
 import 'package:atlas_app/features/reports/models/post_report_model.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 final reportsDbProvider = Provider<ReportsDb>((ref) {
   return ReportsDb();
@@ -20,9 +25,34 @@ class ReportsDb {
   SupabaseQueryBuilder get _novelReportsTable => _client.from(TableNames.novel_reports);
   SupabaseQueryBuilder get _usersReportsTable => _client.from(TableNames.user_reports);
 
+  static Dio get _dio => Dio();
+
+  NotificationContainerModel get notification => NotificationContainerModel(
+    body: "هنالك بلاغ جديد الرجاء التحقق منه في أقرب وقت ممكن!",
+    title: "بلاغ جديد",
+    userId: '',
+  );
+
+  Future<void> sendNotificatiosn() async {
+    try {
+      final headers = await generateAuthHeaders();
+      await _dio.post(
+        "${appAPI}report",
+        options: Options(headers: headers),
+        data: jsonEncode({"title": notification.title, "body": notification.body}),
+      );
+    } catch (e) {
+      log(e.toString());
+      if (kDebugMode) {
+        print(e);
+      }
+      rethrow;
+    }
+  }
+
   Future<void> newReport(PostReportModel report) async {
     try {
-      await _postReportsTable.insert(report.toMap());
+      await Future.wait([_postReportsTable.insert(report.toMap()), sendNotificatiosn()]);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -36,12 +66,15 @@ class ReportsDb {
     required String contentId,
   }) async {
     try {
-      await _novelChaptersCommentReport.insert({
-        KeyNames.reporter_id: reporter_id,
-        KeyNames.content: report,
-        KeyNames.is_reply: isReply,
-        KeyNames.content_id: contentId,
-      });
+      await Future.wait([
+        _novelChaptersCommentReport.insert({
+          KeyNames.reporter_id: reporter_id,
+          KeyNames.content: report,
+          KeyNames.is_reply: isReply,
+          KeyNames.content_id: contentId,
+        }),
+        sendNotificatiosn(),
+      ]);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -55,12 +88,15 @@ class ReportsDb {
     required String contentId,
   }) async {
     try {
-      await _postCommentsReportsTable.insert({
-        KeyNames.reporter_id: reporter_id,
-        KeyNames.content: report,
-        KeyNames.is_reply: isReply,
-        KeyNames.content_id: contentId,
-      });
+      await Future.wait([
+        _postCommentsReportsTable.insert({
+          KeyNames.reporter_id: reporter_id,
+          KeyNames.content: report,
+          KeyNames.is_reply: isReply,
+          KeyNames.content_id: contentId,
+        }),
+        sendNotificatiosn(),
+      ]);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -73,11 +109,14 @@ class ReportsDb {
     required String chapter_id,
   }) async {
     try {
-      await _novelChapterReports.insert({
-        KeyNames.reporter_id: reporter_id,
-        KeyNames.chapter_id: chapter_id,
-        KeyNames.content: report,
-      });
+      await Future.wait([
+        _novelChapterReports.insert({
+          KeyNames.reporter_id: reporter_id,
+          KeyNames.chapter_id: chapter_id,
+          KeyNames.content: report,
+        }),
+        sendNotificatiosn(),
+      ]);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -90,11 +129,14 @@ class ReportsDb {
     required String novelId,
   }) async {
     try {
-      await _novelReportsTable.insert({
-        KeyNames.reporter_id: reporter_id,
-        KeyNames.novel_id: novelId,
-        KeyNames.content: report,
-      });
+      await Future.wait([
+        _novelReportsTable.insert({
+          KeyNames.reporter_id: reporter_id,
+          KeyNames.novel_id: novelId,
+          KeyNames.content: report,
+        }),
+        sendNotificatiosn(),
+      ]);
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -108,12 +150,15 @@ class ReportsDb {
     required String details,
   }) async {
     try {
-      await _usersReportsTable.insert({
-        KeyNames.reporter_id: reporter_id,
-        KeyNames.reported_user_id: reported_id,
-        KeyNames.reason: reason,
-        KeyNames.details: details,
-      });
+      await Future.wait([
+        _usersReportsTable.insert({
+          KeyNames.reporter_id: reporter_id,
+          KeyNames.reported_user_id: reported_id,
+          KeyNames.reason: reason,
+          KeyNames.details: details,
+        }),
+        sendNotificatiosn(),
+      ]);
     } catch (e) {
       log(e.toString());
       rethrow;

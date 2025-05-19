@@ -9,17 +9,20 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.google.firebase.messaging.FirebaseMessaging
 
 class MainActivity : FlutterActivity() {
-    private val CHANNEL = "com.example.avif_converter"  // Match exactly with Dart side
+    private val AVIF_CHANNEL = "com.example.avif_converter"  // Match exactly with Dart side
+    private val FCM_CHANNEL = "app.atlasapp/fcm_config"  // Match exactly with Dart side
     private val TAG = "MainActivity"
-
+    
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         
-        Log.d(TAG, "Configuring Flutter engine and setting up AVIF converter channel")
+        Log.d(TAG, "Configuring Flutter engine and setting up channels")
         
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
+        // Set up AVIF converter channel
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, AVIF_CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "convertToAvif" -> {
                     val inputPath = call.argument<String>("inputPath")
@@ -66,6 +69,44 @@ class MainActivity : FlutterActivity() {
                 }
                 else -> {
                     Log.d(TAG, "Method not implemented: ${call.method}")
+                    result.notImplemented()
+                }
+            }
+        }
+        
+        // Set up FCM configuration channel
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, FCM_CHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "disableAutomaticNotificationHandling" -> {
+                    Log.d(TAG, "Disabling automatic FCM notification handling")
+                    try {
+                        // Disable auto initialization
+                        FirebaseMessaging.getInstance().isAutoInitEnabled = false
+                        
+                        // Disable automatic notification display for foreground notifications
+                        // This tells FCM not to automatically display notifications when the app is in the foreground
+                        // Instead, we'll handle them manually with flutter_local_notifications
+                        FirebaseMessaging.getInstance().setDeliveryMetricsExportToBigQuery(false)
+                        
+                        // Set notification channel priority to min to prevent automatic display
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                            val notificationManager = getSystemService(android.app.NotificationManager::class.java)
+                            val channel = notificationManager.getNotificationChannel("com.google.firebase.messaging.default_notification_channel_id")
+                            if (channel != null) {
+                                channel.importance = android.app.NotificationManager.IMPORTANCE_MIN
+                                notificationManager.createNotificationChannel(channel)
+                            }
+                        }
+                        
+                        Log.d(TAG, "Successfully disabled automatic FCM notification handling")
+                        result.success(true)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error disabling automatic FCM notification handling: ${e.message}", e)
+                        result.error("FCM_CONFIG_ERROR", "Failed to disable automatic notifications", e.message)
+                    }
+                }
+                else -> {
+                    Log.d(TAG, "FCM method not implemented: ${call.method}")
                     result.notImplemented()
                 }
             }

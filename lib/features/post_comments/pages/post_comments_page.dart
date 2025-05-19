@@ -128,6 +128,7 @@ class _PostCommentsPageState extends ConsumerState<PostCommentsPage> {
                         final comment = comments[i];
                         return PostCommentTile(
                           key: ValueKey(comment.id),
+                          postCreator: '',
                           comment: comment,
                           postId: comment.postId,
                         );

@@ -6,6 +6,7 @@ import 'dart:developer';
 import 'package:app_links/app_links.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:atlas_app/main.dart';
+import 'package:atlas_app/router.dart';
 import 'package:no_screenshot/no_screenshot.dart';
 
 class SplashPage extends ConsumerStatefulWidget {
@@ -15,7 +16,7 @@ class SplashPage extends ConsumerStatefulWidget {
   ConsumerState<ConsumerStatefulWidget> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends ConsumerState<SplashPage> {
+class _SplashPageState extends ConsumerState<SplashPage> with WidgetsBindingObserver {
   final _noScreenshot = NoScreenshot.instance;
   final _appLinks = AppLinks();
   StreamSubscription<Uri>? _linkSubscription;
@@ -35,8 +36,15 @@ class _SplashPageState extends ConsumerState<SplashPage> {
 
     _linkSubscription = _appLinks.uriLinkStream.listen(
       (Uri? uri) {
-        if (uri != null) {
+        final _rootNavigatorKey = ref.read(rootNavigationKey);
+
+        if (uri != null && _rootNavigatorKey.currentContext != null) {
           _pendingDeepLink = uri; // Store incoming deep link
+          if (mounted &&
+              !ref.read(routerProvider).state.uri.toString().contains(Routes.splashPage)) {
+            GoRouter.of(_rootNavigatorKey.currentContext!).push(uri.path);
+            _pendingDeepLink = null; // Clear after handling
+          }
         }
       },
       onError: (err) {
@@ -48,6 +56,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   @override
   void dispose() {
     _linkSubscription?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
@@ -55,27 +64,36 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     await _noScreenshot.screenshotOn();
   }
 
-  void _handleDeepLink(BuildContext context, Uri uri) {
-    // Pass context
+  void _handleDeepLink(BuildContext context, Uri uri) async {
+    final _rootNavigatorKey = ref.read(rootNavigationKey);
+
     log("Handling deep link: $uri");
-    // Check scheme and host if necessary, though path might be enough if using goRouter
     final path = uri.path;
-    // Use 'go' to replace the splash page entirely with the deep link destination
+
     if (path.isNotEmpty && path != '/') {
-      // Avoid navigating to "/"
-      log("Navigating via context.go to: $path");
-      // Ensure the router provider is accessed safely if needed, but context.go is preferred
-      context.go(Routes.home);
-      context.push(path);
+      log("Navigating to: $path");
+
+      // Check if we're currently on the splash screen
+      final splashRoute = ref.read(routerProvider).state.uri.toString().contains(Routes.splashPage);
+
+      if (splashRoute) {
+        GoRouter.of(_rootNavigatorKey.currentContext!).go(Routes.home);
+
+        await Future.delayed(const Duration(milliseconds: 150));
+        GoRouter.of(_rootNavigatorKey.currentContext!).push(path);
+      } else {
+        context.push(path);
+      }
     } else {
       log("Deep link path is empty or root, navigating home.");
-      context.go(Routes.home); // Fallback to home if path is invalid/empty
+      GoRouter.of(_rootNavigatorKey.currentContext!).go(Routes.home);
     }
   }
 
   @override
   void initState() {
     super.initState(); // Call super.initState first
+    WidgetsBinding.instance.addObserver(this); // Observe lifecycle
     initAppLinks();
     enableScreenshot();
     log("==============");

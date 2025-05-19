@@ -1,13 +1,14 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:atlas_app/core/common/constants/function_names.dart';
-import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/core/common/constants/view_names.dart';
+import 'package:atlas_app/core/common/utils/encrypt.dart';
 import 'package:atlas_app/features/notifications/db/notifications_db.dart';
-import 'package:atlas_app/features/notifications/interfaces/notifications_interface.dart';
 import 'package:atlas_app/features/post_comments/models/comment_model.dart';
 import 'package:atlas_app/features/post_comments/models/reply_model.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:dio/dio.dart';
 
 final postCommentsDbProvider = Provider<PostCommentsDb>((ref) {
   return PostCommentsDb();
@@ -15,12 +16,14 @@ final postCommentsDbProvider = Provider<PostCommentsDb>((ref) {
 
 class PostCommentsDb {
   SupabaseClient get _client => Supabase.instance.client;
-  SupabaseQueryBuilder get _commentsTable => _client.from(TableNames.post_comments);
-  SupabaseQueryBuilder get _commentRepliesTable => _client.from(TableNames.post_comment_replies);
+  // SupabaseQueryBuilder get _commentsTable => _client.from(TableNames.post_comments);
+  // SupabaseQueryBuilder get _commentRepliesTable => _client.from(TableNames.post_comment_replies);
   SupabaseQueryBuilder get _postCommetnRepliesView =>
       _client.from(ViewNames.post_comment_replies_with_likes);
   SupabaseQueryBuilder get _postCommentsView => _client.from(ViewNames.post_comments_with_meta);
   NotificationsDb get _notificationsDb => NotificationsDb();
+
+  Dio get _dio => Dio();
 
   Future<List<PostCommentReplyModel>> getPostCommentsReplies({
     required String commentId,
@@ -65,16 +68,20 @@ class PostCommentsDb {
     required UserModel me,
     required String ownerId,
     required String postAuthorName,
+    required String postId,
   }) async {
     try {
-      final notification = NotificationsInterface.postReplyCommentNotification(
-        userId: ownerId,
-        username: me.username,
-        postTitle: postAuthorName,
-      );
       await Future.wait([
         _client.rpc(FunctionNames.toggle_post_comment_like, params: {'p_comment_id': id}),
-        if (me.userId != ownerId) _notificationsDb.sendNotificatiosn(notification),
+        if (me.userId != ownerId)
+          _notificationsDb.postCommentLikeNotification(
+            commentId: id,
+            ownerId: ownerId,
+            senderId: me.userId,
+            postAuthorName: postAuthorName,
+            postId: postId,
+            username: me.username,
+          ),
       ]);
     } catch (e) {
       log(e.toString());
@@ -87,16 +94,22 @@ class PostCommentsDb {
     required UserModel me,
     required String ownerId,
     required String postAuthorName,
+    required String postId,
+    required String commentId,
   }) async {
     try {
-      final notification = NotificationsInterface.postReplyCommentNotification(
-        userId: ownerId,
-        username: me.username,
-        postTitle: postAuthorName,
-      );
       await Future.wait([
         _client.rpc(FunctionNames.toggle_post_comment_reply_like, params: {'p_reply_id': id}),
-        if (me.userId != ownerId) _notificationsDb.sendNotificatiosn(notification),
+        if (me.userId != ownerId)
+          _notificationsDb.postCommentReplyLikeNotification(
+            replyId: id,
+            ownerId: ownerId,
+            commentId: commentId,
+            postAuthorName: postAuthorName,
+            postId: postId,
+            senderId: me.userId,
+            username: me.username,
+          ),
       ]);
     } catch (e) {
       log(e.toString());
@@ -122,21 +135,35 @@ class PostCommentsDb {
     }
   }
 
-  Future<void> handleAddNewCommentReply(PostCommentReplyModel reply) async {
+  Future<void> handleAddNewCommentReply(
+    PostCommentReplyModel reply, {
+    required String postId,
+  }) async {
     try {
-      final notification = NotificationsInterface.commentReplyNotification(
-        userId: reply.parentAuthorId,
-        username: reply.user!.username,
-      );
+      final headers = await generateAuthHeaders();
+
       await Future.wait([
-        if (reply.userId != reply.parentAuthorId) _notificationsDb.sendNotificatiosn(notification),
-        _commentRepliesTable.insert({
-          KeyNames.id: reply.id,
-          KeyNames.userId: reply.userId,
-          KeyNames.content: reply.content,
-          KeyNames.parent_comment_author_id: reply.parentAuthorId,
-          KeyNames.comment_id: reply.commentId,
-        }),
+        if (reply.userId != reply.parentAuthorId)
+          _notificationsDb.postCommentReplyNotification(
+            commentId: reply.commentId,
+            replyId: reply.id,
+            parentAuthorId: reply.parentAuthorId,
+            postId: postId,
+            senderId: reply.user!.userId,
+            username: reply.user!.username,
+          ),
+        _dio.post(
+          '${appAPI}post-comment-reply',
+          options: Options(headers: headers),
+          data: jsonEncode({
+            KeyNames.id: reply.id,
+            KeyNames.userId: reply.userId,
+            KeyNames.comment_id: reply.commentId,
+            KeyNames.content: reply.content,
+            'token': _client.auth.currentSession!.accessToken,
+            KeyNames.parent_comment_author_id: reply.parentAuthorId,
+          }),
+        ),
       ]);
     } catch (e) {
       log(e.toString());
@@ -146,18 +173,27 @@ class PostCommentsDb {
 
   Future<void> handleAddNewComment(PostModel post, PostCommentModel comment, UserModel me) async {
     try {
-      final notification = NotificationsInterface.postCommentNotification(
-        userId: post.userId,
-        username: me.username,
-      );
+      final headers = await generateAuthHeaders();
       await Future.wait([
-        if (post.userId != me.userId) _notificationsDb.sendNotificatiosn(notification),
-        _commentsTable.insert({
-          KeyNames.id: comment.id,
-          KeyNames.userId: comment.userId,
-          KeyNames.content: comment.content,
-          KeyNames.post_id: post.postId,
-        }),
+        if (post.userId != me.userId)
+          _notificationsDb.postCommentNotification(
+            commentId: comment.id,
+            ownerId: post.userId,
+            postId: post.postId,
+            senderId: me.userId,
+            username: me.username,
+          ),
+        _dio.post(
+          '${appAPI}post-comment',
+          options: Options(headers: headers),
+          data: jsonEncode({
+            KeyNames.id: comment.id,
+            KeyNames.userId: me.userId,
+            KeyNames.post_id: post.postId,
+            KeyNames.content: comment.content,
+            'token': _client.auth.currentSession!.accessToken,
+          }),
+        ),
       ]);
     } catch (e) {
       log(e.toString());

@@ -27,45 +27,44 @@ class ChapterReadingPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    int timeSpent = 0;
-    int lastSavedTime = -60;
+    // First define all state variables
+    final timeSpentRef = useRef(0);
+    final lastSavedTimeRef = useRef(-60);
 
-    void updateTime() {
-      timeSpent += 1;
+    // Hooks must be called in a consistent order
+    // 1. Create scroll controller
+    final scrollController = useScrollController();
 
-      if (timeSpent % 60 == 0 && timeSpent != lastSavedTime) {
-        lastSavedTime = timeSpent;
-        ref.read(novelsControllerProvider.notifier).handleSaveReadingTime(timeSpent);
-      }
-    }
-
-    void useInterval(VoidCallback callback, Duration delay) {
-      final savedCallback = useRef(callback);
-      savedCallback.value = callback;
-
-      useEffect(() {
-        final timer = Timer.periodic(delay, (_) => savedCallback.value());
-        return timer.cancel;
-      }, [delay]);
-    }
-
-    // Initialize screenshot handling
+    // 2. Initialize NoScreenshot instance
     final noScreenshot = useMemoized(() => NoScreenshot.instance);
-    useEffect(() {
-      useInterval(updateTime, const Duration(seconds: 1));
 
+    // 3. Define the update time callback
+    final updateTimeCallback = useCallback(() {
+      timeSpentRef.value += 1;
+
+      if (timeSpentRef.value % 60 == 0 && timeSpentRef.value != lastSavedTimeRef.value) {
+        lastSavedTimeRef.value = timeSpentRef.value;
+        ref.read(novelsControllerProvider.notifier).handleSaveReadingTime(timeSpentRef.value);
+      }
+    }, []);
+
+    // 4. Setup interval hook
+    useEffect(() {
+      final timer = Timer.periodic(const Duration(seconds: 1), (_) => updateTimeCallback());
+      return timer.cancel;
+    }, [updateTimeCallback]);
+
+    // 5. Setup screenshot protection effect
+    useEffect(() {
       if (!kDebugMode) {
         noScreenshot.screenshotOff();
       }
       return () {
         noScreenshot.screenshotOn();
       };
-    }, []);
+    }, [noScreenshot]);
 
-    // Scroll controller
-    final scrollController = useScrollController();
-
-    // Handle chapter view
+    // 6. Setup chapter view effect
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Future.microtask(() {
@@ -75,17 +74,19 @@ class ChapterReadingPage extends HookConsumerWidget {
       return null;
     }, []);
 
-    // Page change callback
-    void onPageChange() {
+    // Page change callback (defined outside the hooks)
+    void onPageChange() async {
       scrollController.jumpTo(0);
+      await Future.delayed(const Duration(milliseconds: 200));
+      ref.read(novelsControllerProvider.notifier).handleSaveReadingTime(timeSpentRef.value);
       ref.read(novelsControllerProvider.notifier).handleChapterView();
     }
 
     return PopScope(
       canPop: true,
-      onPopInvokedWithResult: (_, _) {
+      onPopInvokedWithResult: (_, __) {
         noScreenshot.screenshotOn();
-        ref.read(novelsControllerProvider.notifier).handleSaveReadingTime(timeSpent);
+        ref.read(novelsControllerProvider.notifier).handleSaveReadingTime(timeSpentRef.value);
       },
       child: Scaffold(
         backgroundColor: AppColors.readingBackgroundColor,

@@ -11,6 +11,7 @@ import 'package:atlas_app/features/posts/db/posts_db.dart';
 import 'package:atlas_app/features/posts/providers/post_state.dart';
 import 'package:atlas_app/features/reports/db/reports_db.dart';
 import 'package:atlas_app/imports.dart';
+import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
 final postCommentsControllerProvider =
@@ -30,7 +31,7 @@ class PostCommentsController extends StateNotifier<bool> {
 
   PostModel? postModel;
 
-  Future<void> addChapterComment({required String content, required String postId}) async {
+  Future<void> addPostComment({required String content, required String postId}) async {
     final me = _ref.read(userState.select((s) => s.user!));
     final id = uuid.v4();
 
@@ -66,12 +67,16 @@ class PostCommentsController extends StateNotifier<bool> {
         _ref.read(postStateProvider.notifier).updatePost(newPost);
         postModel = newPost;
       }
-    } catch (e) {
+    } catch (e, trace) {
       _ref.read(postStateProvider.notifier).updatePost(post);
       _ref.read(postCommentReplisStateNotifier(comment.id).notifier).deleteComment(id);
 
       CustomToast.error(errorMsg);
-      log(e.toString());
+      log(e.toString(), stackTrace: trace);
+      if (kDebugMode) {
+        print('$e\n$trace');
+      }
+
       rethrow;
     }
   }
@@ -96,7 +101,9 @@ class PostCommentsController extends StateNotifier<bool> {
 
     final comment = _ref.read(postCommentsStateProvider(post.postId).notifier).getById(commentId);
     try {
-      final _map = _ref.read(postCommentRepliedToProvider)!;
+      final _map = Map.from(_ref.read(postCommentRepliedToProvider) ?? {});
+      _ref.read(postCommentRepliedToProvider.notifier).state = null;
+
       final parentCommentUserId = _map[KeyNames.parent_comment_author_id];
       final me = _ref.read(userState.select((s) => s.user!));
       final replyModel = PostCommentReplyModel(
@@ -123,14 +130,18 @@ class PostCommentsController extends StateNotifier<bool> {
         _ref.read(postStateProvider.notifier).updatePost(newPost);
         postModel = newPost;
       }
-      await db.handleAddNewCommentReply(replyModel);
-    } catch (e) {
+      await db.handleAddNewCommentReply(replyModel, postId: post.postId);
+    } catch (e, trace) {
       CustomToast.error(errorMsg);
       _ref.read(postCommentReplisStateNotifier(comment.id).notifier).deleteComment(id);
       _ref.read(postCommentsStateProvider(post.postId).notifier).updateComment(comment);
       _ref.read(postStateProvider.notifier).updatePost(post);
 
-      log(e.toString());
+      log(e.toString(), stackTrace: trace);
+      if (kDebugMode) {
+        print('$e\n$trace');
+      }
+
       rethrow;
     }
   }
@@ -157,6 +168,8 @@ class PostCommentsController extends StateNotifier<bool> {
         me: me,
         ownerId: reply.userId,
         postAuthorName: post.user.username,
+        postId: post.postId,
+        commentId: reply.commentId,
       );
     } catch (e) {
       _ref.read(postCommentReplisStateNotifier(reply.commentId).notifier).updateComment(reply);
@@ -184,6 +197,7 @@ class PostCommentsController extends StateNotifier<bool> {
         me: me,
         ownerId: post.userId,
         postAuthorName: post.user.username,
+        postId: post.postId,
       );
     } catch (e) {
       _ref.read(postCommentsStateProvider(comment.postId).notifier).updateComment(comment);

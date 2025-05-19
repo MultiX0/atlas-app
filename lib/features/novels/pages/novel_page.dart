@@ -32,11 +32,9 @@ class _NovelPageState extends ConsumerState<NovelPage> with SingleTickerProvider
     super.initState();
   }
 
-  void handleView() async {
-    await Future.microtask(() {
-      ref.read(novelsControllerProvider.notifier).handleNovelView();
-      ref.read(novelsControllerProvider.notifier).handleNovelInteraction();
-    });
+  void handleView() {
+    ref.read(novelsControllerProvider.notifier).handleNovelView();
+    ref.read(novelsControllerProvider.notifier).handleNovelInteraction();
   }
 
   @override

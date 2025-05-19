@@ -20,6 +20,7 @@ class PostCommentTile extends StatelessWidget {
     this.reply,
     this.isReply = false,
     this.parentCommentId,
+    required this.postCreator,
     required this.postId,
   }) : assert(
          (comment != null && reply == null) || (comment == null && reply != null),
@@ -31,6 +32,7 @@ class PostCommentTile extends StatelessWidget {
   final bool isReply;
   final String? parentCommentId;
   final String postId;
+  final String postCreator;
   static final Debouncer _debouncer = Debouncer();
 
   @override
@@ -133,7 +135,7 @@ class PostCommentTile extends StatelessWidget {
               Consumer(
                 builder: (context, ref, _) {
                   final me = ref.read(userState.select((s) => s.user!));
-                  final isMeOrCreator = (me.userId == creatorId) || (user.userId == me.userId);
+                  final isMeOrCreator = (me.userId == creatorId) || (postCreator == me.userId);
                   final isMe = user.userId == me.userId;
                   return Row(
                     children: [
@@ -198,7 +200,7 @@ class PostCommentTile extends StatelessWidget {
                 },
               ),
               if (!isReply && comment != null && comment!.repliesCount > 0) ...[
-                PostCommentRepliesSection(comment: comment!),
+                PostCommentRepliesSection(comment: comment!, postCreator: postCreator),
               ],
               const SizedBox(height: 10),
             ],
@@ -229,6 +231,11 @@ class PostCommentTile extends StatelessWidget {
       };
 
       ref.read(postCommentRepliedToProvider.notifier).state = _map;
+      final repliedToMap = ref.read(postCommentRepliedToProvider);
+      if (repliedToMap == null) {
+        ref.read(postCommentRepliedToProvider.notifier).state = _map;
+      }
+
       if (!isReply) {
         openSheet(context: context, child: const CommentReportSheet(commentType: CommentType.post));
       }

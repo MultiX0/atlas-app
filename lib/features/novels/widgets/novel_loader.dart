@@ -30,14 +30,14 @@ class _NovelLoaderState extends ConsumerState<NovelLoader> {
 
   Future<void> handleNovel() async {
     try {
-      final stateNovel = ref.read(novelViewsStateProvider.notifier).get(widget.novelId);
-      if (stateNovel != null) {
-        ref.read(selectedNovelProvider.notifier).state = stateNovel;
-        setState(() {
-          novel = stateNovel;
-        });
-        return;
-      }
+      // final stateNovel = ref.read(novelViewsStateProvider.notifier).get(widget.novelId);
+      // if (stateNovel != null) {
+      //   ref.read(selectedNovelProvider.notifier).state = stateNovel;
+      //   setState(() {
+      //     novel = stateNovel;
+      //   });
+      //   return;
+      // }
 
       final fetchedNovel = await ref
           .read(novelsControllerProvider.notifier)

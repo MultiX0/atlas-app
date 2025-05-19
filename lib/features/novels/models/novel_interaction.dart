@@ -1,7 +1,6 @@
 import 'package:atlas_app/core/common/constants/key_names.dart';
 
 class NovelInteraction {
-  final String id;
   final String userId;
   final String novelId;
   final bool isFavoried;
@@ -10,7 +9,6 @@ class NovelInteraction {
   final bool shared;
   final DateTime createdAt;
   NovelInteraction({
-    required this.id,
     required this.userId,
     required this.novelId,
     required this.isFavoried,
@@ -21,7 +19,6 @@ class NovelInteraction {
   });
 
   NovelInteraction copyWith({
-    String? id,
     String? userId,
     String? novelId,
     bool? isFavoried,
@@ -31,7 +28,6 @@ class NovelInteraction {
     DateTime? createdAt,
   }) {
     return NovelInteraction(
-      id: id ?? this.id,
       userId: userId ?? this.userId,
       novelId: novelId ?? this.novelId,
       isFavoried: isFavoried ?? this.isFavoried,
@@ -44,7 +40,6 @@ class NovelInteraction {
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
-      KeyNames.id: id,
       KeyNames.userId: userId,
       KeyNames.novel_id: novelId,
       KeyNames.favorited: isFavoried,
@@ -56,7 +51,6 @@ class NovelInteraction {
 
   factory NovelInteraction.fromMap(Map<String, dynamic> map) {
     return NovelInteraction(
-      id: map[KeyNames.id] ?? "",
       userId: map[KeyNames.userId] ?? "",
       novelId: map[KeyNames.novel_id] ?? "",
       isFavoried: map[KeyNames.favorited] ?? false,
