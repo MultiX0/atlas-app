@@ -29,4 +29,5 @@ class Routes {
   static const forgotPassword = '/forgotPassword';
   static const postPage = '/post';
   static const postComments = '/comments';
+  static const notification = '/notification';
 }
