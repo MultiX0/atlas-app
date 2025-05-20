@@ -1,4 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:atlas_app/imports.dart';
+
 class NotificationEventRequest {
   final String recipientId;
   final String senderId;
@@ -14,7 +16,9 @@ class NotificationEventRequest {
   final String? comicReviewId;
   final String? message;
   final dynamic metadata;
-  final String token;
+  final String? token;
+  final UserModel? user;
+  final DateTime? createdAt;
 
   NotificationEventRequest({
     required this.recipientId,
@@ -31,7 +35,9 @@ class NotificationEventRequest {
     this.comicReviewId,
     this.message,
     this.metadata,
-    required this.token,
+    this.token,
+    this.user,
+    this.createdAt,
   });
 
   Map<String, dynamic> toJson() {
@@ -70,7 +76,8 @@ class NotificationEventRequest {
       comicReviewId: json['comic_review_id'],
       message: json['message'],
       metadata: json['metadata'],
-      token: json['token'],
+      user: json[KeyNames.user] != null ? UserModel.fromMap(json[KeyNames.user]) : null,
+      createdAt: DateTime.parse(json[KeyNames.created_at]),
     );
   }
 
@@ -90,6 +97,8 @@ class NotificationEventRequest {
     String? message,
     dynamic metadata,
     String? token,
+    UserModel? user,
+    DateTime? createdAt,
   }) {
     return NotificationEventRequest(
       recipientId: recipientId ?? this.recipientId,
@@ -107,6 +116,8 @@ class NotificationEventRequest {
       message: message ?? this.message,
       metadata: metadata ?? this.metadata,
       token: token ?? this.token,
+      user: user ?? this.user,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 }

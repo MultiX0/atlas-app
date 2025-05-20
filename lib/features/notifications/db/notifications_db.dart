@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:atlas_app/core/common/constants/table_names.dart';
+import 'package:atlas_app/core/common/constants/view_names.dart';
 import 'package:atlas_app/core/common/enum/notificaion_type.dart';
 import 'package:atlas_app/core/common/utils/encrypt.dart';
 import 'package:atlas_app/features/notifications/interfaces/notifications_interface.dart';
@@ -16,6 +17,7 @@ import 'package:rxdart/rxdart.dart';
 class NotificationsDb {
   SupabaseClient get _client => Supabase.instance.client;
   SupabaseQueryBuilder get _notificationsTable => _client.from(TableNames.notifications);
+  SupabaseQueryBuilder get _notificationsView => _client.from(ViewNames.user_notifications_view);
   static Dio get _dio => Dio();
   ProfileDb get _profileDb => ProfileDb();
   String get token => _client.auth.currentSession!.accessToken;
@@ -534,6 +536,20 @@ class NotificationsDb {
           })
           .debounceTime(const Duration(milliseconds: 500))
           .asBroadcastStream();
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<List<NotificationEventRequest>> getUserNotifications(String userId) async {
+    try {
+      final data = await _notificationsView
+          .select("*")
+          .eq(KeyNames.recipient_id, userId)
+          .order(KeyNames.created_at, ascending: false);
+
+      return data.map((n) => NotificationEventRequest.fromJson(n)).toList();
     } catch (e) {
       log(e.toString());
       rethrow;

@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:atlas_app/features/notifications/pages/notification_page.dart';
 import 'package:atlas_app/features/post_comments/pages/post_comments_page.dart';
 import 'package:atlas_app/features/posts/pages/post_page.dart';
 
@@ -118,6 +119,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       buildRoute(path: Routes.chapterCommentsPage, child: const ChapterCommentsPage(), fade: true),
       buildRoute(path: Routes.editProfile, child: const EditProfileScreen(), fade: true),
       buildRoute(path: Routes.addNovelPage, child: const AddNovelPage(edit: false), fade: true),
+      buildRoute(path: Routes.notification, child: const NotificationPage(), fade: true),
 
       GoRoute(
         path: Routes.forgotPassword,

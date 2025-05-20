@@ -154,4 +154,13 @@ class KeyNames {
   static const metadata = 'metadata';
   static const posts_count = 'posts_count';
   static const is_read = 'is_read';
+  static const recipient_id = 'recipient_id';
+  static const sender_id = 'sender_id';
+  static const post_comment_id = 'post_comment_id';
+  static const post_reply_id = 'post_reply_id';
+  static const chapter_comment_id = 'chapter_comment_id';
+  static const chapter_reply_id = 'chapter_reply_id';
+  static const novel_review_id = 'novel_review_id';
+  static const comic_review_id = 'comic_review_id';
+  static const message = 'message';
 }
