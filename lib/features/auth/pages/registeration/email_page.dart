@@ -124,7 +124,7 @@ class _EmailPageState extends ConsumerState<EmailPage> {
         child: Text(
           "هذا البريد الإلكتروني مسجل بالفعل في أطلس!",
           style: TextStyle(
-            fontFamily: accentFont,
+            fontFamily: arabicAccentFont,
             fontSize: 14,
             fontWeight: FontWeight.bold,
             color: AppColors.errorColor,
