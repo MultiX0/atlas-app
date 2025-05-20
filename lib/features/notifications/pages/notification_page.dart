@@ -24,29 +24,38 @@ class NotificationPage extends StatelessWidget {
                     return const Text("empty");
                   }
 
-                  return GroupedListView<NotificationEventRequest, DateTime>(
-                    cacheExtent: MediaQuery.sizeOf(context).height,
-                    addRepaintBoundaries: true,
-                    addSemanticIndexes: true,
-                    elements: notifications, // Don't map to widgets!
-                    groupBy: (element) => element.createdAt!,
-                    groupSeparatorBuilder:
-                        (DateTime date) => Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            appDateFormat(date),
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                  return Directionality(
+                    textDirection: TextDirection.rtl,
+                    child: GroupedListView<NotificationEventRequest, DateTime>(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      cacheExtent: MediaQuery.sizeOf(context).height / 2,
+                      addRepaintBoundaries: true,
+                      addSemanticIndexes: true,
+                      elements: notifications, // Don't map to widgets!
+                      groupBy: (element) => element.createdAt!,
+                      groupSeparatorBuilder:
+                          (DateTime date) => Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 25),
+                            child: Text(
+                              appDateFormat(date),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontFamily: arabicAccentFont,
+                              ),
+                            ),
                           ),
-                        ),
-                    itemBuilder:
-                        (context, notification) => ListTile(
-                          leading: CachedAvatar(avatar: notification.user?.avatar ?? ""),
-                          title: Text(notification.user?.username ?? "unknown"),
-                          subtitle: Text(getNotificationText(notification)),
-                        ),
-                    useStickyGroupSeparators: true,
-                    floatingHeader: true,
-                    order: GroupedListOrder.DESC,
+                      itemBuilder:
+                          (context, notification) => RepaintBoundary(
+                            child: ListTile(
+                              leading: CachedAvatar(avatar: notification.user?.avatar ?? ""),
+                              title: Text(notification.user?.fullName ?? "unknown"),
+                              subtitle: Text(getNotificationText(notification)),
+                            ),
+                          ),
+                      useStickyGroupSeparators: true,
+                      floatingHeader: true,
+                      order: GroupedListOrder.DESC,
+                    ),
                   );
                 },
                 error: (error, _) => AtlasErrorPage(message: error.toString()),
@@ -93,6 +102,12 @@ class NotificationPage extends StatelessWidget {
 
       case NotificationType.novelChapterComment:
         return '$username علّق على فصل من روايتك.';
+
+      case NotificationType.novelChapterCommentLike:
+        return '$username أعجب بتعليقك على الفصل.';
+
+      case NotificationType.novelChapterCommentReply:
+        return '$username ردّ على تعليقك في أحد فصول الرواية.';
 
       case NotificationType.novelChapterReplyLike:
         return '$username أعجب بردّك على تعليق فصل.';
