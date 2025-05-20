@@ -14,6 +14,7 @@ class NotificationIcon extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         log("notifications tapped");
+        context.push(Routes.notification);
       },
       child: Consumer(
         builder: (context, ref, _) {

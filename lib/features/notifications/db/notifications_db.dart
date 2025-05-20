@@ -529,6 +529,7 @@ class NotificationsDb {
     try {
       return _notificationsTable
           .stream(primaryKey: [KeyNames.id])
+          .eq(KeyNames.recipient_id, userId)
           .order(KeyNames.created_at, ascending: false)
           .limit(10)
           .asyncMap((data) {
