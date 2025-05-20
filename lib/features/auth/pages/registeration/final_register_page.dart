@@ -162,7 +162,9 @@ class _FinalRegisterPageState extends ConsumerState<FinalRegisterPage> {
           controller: _passwordController,
           validator: (val) => validatePassword(val),
         ),
-        buildLabel("(يجب أن تكون كلمة المرور مكونة من 8 أحرف على الأقل، بما في ذلك رقم ورمز خاص.)"),
+        buildLabel(
+          "(يجب أن تكون كلمة المرور مكونة من 8 أحرف على الأقل، بما في ذلك رقم ورمز خاص. مثل # - \$ - @)",
+        ),
       ],
     );
   }
@@ -192,7 +194,7 @@ class _FinalRegisterPageState extends ConsumerState<FinalRegisterPage> {
       return "يجب أن تكون كلمة المرور مكونة من 8 أحرف على الأقل.";
     }
     if (!RegExp(r'^(?=.*[0-9])(?=.*[!@#$%^&*()_+=-]).{8,}$').hasMatch(value)) {
-      return "يجب أن تتضمن كلمة المرور على الأقل رقمًا واحدًا ورمزًا خاصًا واحدًا.";
+      return "يجب أن تتضمن كلمة المرور على الأقل رقمًا واحدًا ورمزًا خاصًا واحدًا. مثل # أو @ أو \$";
     }
     return null; // Valid
   }
