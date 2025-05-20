@@ -527,9 +527,10 @@ class NotificationsDb {
     try {
       return _notificationsTable
           .stream(primaryKey: [KeyNames.id])
-          .eq(KeyNames.is_read, false)
-          .map((data) {
-            return data.length;
+          .order(KeyNames.created_at, ascending: false)
+          .limit(10)
+          .asyncMap((data) {
+            return data.where((d) => d[KeyNames.is_read] == false).toList().length;
           })
           .debounceTime(const Duration(milliseconds: 500))
           .asBroadcastStream();
