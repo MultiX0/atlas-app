@@ -17,8 +17,11 @@ class NotificationEventRequest {
   final String? message;
   final dynamic metadata;
   final String? token;
+  final bool isRead;
   final UserModel? user;
   final DateTime? createdAt;
+  final String? id;
+  final String? comic_id;
 
   NotificationEventRequest({
     required this.recipientId,
@@ -38,6 +41,9 @@ class NotificationEventRequest {
     this.token,
     this.user,
     this.createdAt,
+    this.isRead = false,
+    this.id,
+    this.comic_id,
   });
 
   Map<String, dynamic> toJson() {
@@ -78,6 +84,8 @@ class NotificationEventRequest {
       metadata: json['metadata'],
       user: json[KeyNames.user] != null ? UserModel.fromMap(json[KeyNames.user]) : null,
       createdAt: DateTime.parse(json[KeyNames.created_at]),
+      isRead: json[KeyNames.is_read] ?? false,
+      id: json[KeyNames.id] ?? "",
     );
   }
 
@@ -99,6 +107,9 @@ class NotificationEventRequest {
     String? token,
     UserModel? user,
     DateTime? createdAt,
+    String? comic_id,
+    String? id,
+    bool? isRead,
   }) {
     return NotificationEventRequest(
       recipientId: recipientId ?? this.recipientId,
@@ -118,6 +129,9 @@ class NotificationEventRequest {
       token: token ?? this.token,
       user: user ?? this.user,
       createdAt: createdAt ?? this.createdAt,
+      comic_id: comic_id ?? this.comic_id,
+      id: id ?? this.id,
+      isRead: isRead ?? this.isRead,
     );
   }
 }

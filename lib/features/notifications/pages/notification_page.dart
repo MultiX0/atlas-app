@@ -47,9 +47,26 @@ class NotificationPage extends StatelessWidget {
                       itemBuilder:
                           (context, notification) => RepaintBoundary(
                             child: ListTile(
+                              key: ValueKey(notification.id),
+                              onTap: () => onTap(notification, context: context),
                               leading: CachedAvatar(avatar: notification.user?.avatar ?? ""),
                               title: Text(notification.user?.fullName ?? "unknown"),
-                              subtitle: Text(getNotificationText(notification)),
+                              subtitle: Row(
+                                children: [
+                                  Expanded(child: Text(getNotificationText(notification))),
+                                  if (!notification.isRead) ...[
+                                    const SizedBox(width: 15),
+                                    Container(
+                                      width: 8,
+                                      height: 8,
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
                             ),
                           ),
                       useStickyGroupSeparators: true,
@@ -123,6 +140,45 @@ class NotificationPage extends StatelessWidget {
 
       default:
         return '$username تفاعل مع محتواك.';
+    }
+  }
+
+  void onTap(NotificationEventRequest notification, {required BuildContext context}) {
+    Map<NotificationType, Function()> actions = {
+      NotificationType.postLike: () => context.push("${Routes.postPage}/${notification.postId}"),
+      NotificationType.postComment: () => context.push("${Routes.postPage}/${notification.postId}"),
+      NotificationType.postCommentReply:
+          () => context.push("${Routes.postPage}/${notification.postId}"),
+      NotificationType.postMention: () => context.push("${Routes.postPage}/${notification.postId}"),
+      NotificationType.postRepost: () => context.push("${Routes.postPage}/${notification.postId}"),
+      NotificationType.novelFavorite:
+          () => context.push("${Routes.novelPage}/${notification.novelId}"),
+      NotificationType.novelChapterComment:
+          () => context.push("${Routes.novelPage}/${notification.novelId}"),
+      NotificationType.novelChapterCommentLike:
+          () => context.push("${Routes.novelPage}/${notification.novelId}"),
+      NotificationType.novelChapterCommentReply:
+          () => context.push("${Routes.novelPage}/${notification.novelId}"),
+      NotificationType.novelChapterLike:
+          () => context.push("${Routes.novelPage}/${notification.novelId}"),
+      NotificationType.novelChapterReplyLike:
+          () => context.push("${Routes.novelPage}/${notification.novelId}"),
+      NotificationType.novelCommentMention:
+          () => context.push("${Routes.novelPage}/${notification.novelId}"),
+      NotificationType.novelReplyMention:
+          () => context.push("${Routes.novelPage}/${notification.novelId}"),
+      NotificationType.novelReviewLike:
+          () => context.push("${Routes.novelPage}/${notification.novelId}"),
+      NotificationType.novelReviewReply:
+          () => context.push("${Routes.postPage}/${notification.postId}"),
+      NotificationType.comicReviewLike:
+          () => context.push("${Routes.comicPage}/${notification.comic_id}"),
+      NotificationType.comicReviewReply:
+          () => context.push("${Routes.postPage}/${notification.postId}"),
+    };
+
+    if (actions[NotificationType.fromString(notification.type)] != null) {
+      actions[NotificationType.fromString(notification.type)]!();
     }
   }
 }
