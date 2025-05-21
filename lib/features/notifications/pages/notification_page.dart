@@ -153,20 +153,34 @@ class NotificationPage extends StatelessWidget {
       NotificationType.postRepost: () => context.push("${Routes.postPage}/${notification.postId}"),
       NotificationType.novelFavorite:
           () => context.push("${Routes.novelPage}/${notification.novelId}"),
-      NotificationType.novelChapterComment:
-          () => context.push("${Routes.novelPage}/${notification.novelId}"),
-      NotificationType.novelChapterCommentLike:
-          () => context.push("${Routes.novelPage}/${notification.novelId}"),
-      NotificationType.novelChapterCommentReply:
-          () => context.push("${Routes.novelPage}/${notification.novelId}"),
-      NotificationType.novelChapterLike:
-          () => context.push("${Routes.novelPage}/${notification.novelId}"),
-      NotificationType.novelChapterReplyLike:
-          () => context.push("${Routes.novelPage}/${notification.novelId}"),
-      NotificationType.novelCommentMention:
-          () => context.push("${Routes.novelPage}/${notification.novelId}"),
-      NotificationType.novelReplyMention:
-          () => context.push("${Routes.novelPage}/${notification.novelId}"),
+      NotificationType.novelChapterComment: () {
+        context.push("${Routes.novelPage}/${notification.novelId}");
+        context.push("${Routes.novelReadChapter}/${notification.chapterId}");
+      },
+      NotificationType.novelChapterCommentLike: () {
+        context.push("${Routes.novelPage}/${notification.novelId}");
+        context.push("${Routes.novelReadChapter}/${notification.chapterId}");
+      },
+      NotificationType.novelChapterCommentReply: () {
+        context.push("${Routes.novelPage}/${notification.novelId}");
+        context.push("${Routes.novelReadChapter}/${notification.chapterId}");
+      },
+      NotificationType.novelChapterLike: () {
+        context.push("${Routes.novelPage}/${notification.novelId}");
+        context.push("${Routes.novelReadChapter}/${notification.chapterId}");
+      },
+      NotificationType.novelChapterReplyLike: () {
+        context.push("${Routes.novelPage}/${notification.novelId}");
+        context.push("${Routes.novelReadChapter}/${notification.chapterId}");
+      },
+      NotificationType.novelCommentMention: () {
+        context.push("${Routes.novelPage}/${notification.novelId}");
+        context.push("${Routes.novelReadChapter}/${notification.chapterId}");
+      },
+      NotificationType.novelReplyMention: () {
+        context.push("${Routes.novelPage}/${notification.novelId}");
+        context.push("${Routes.novelReadChapter}/${notification.chapterId}");
+      },
       NotificationType.novelReviewLike:
           () => context.push("${Routes.novelPage}/${notification.novelId}"),
       NotificationType.novelReviewReply:
