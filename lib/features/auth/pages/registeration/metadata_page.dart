@@ -257,11 +257,7 @@ class _MetadataPageState extends ConsumerState<MetadataPage> {
       child: GestureDetector(
         child: Text(
           text,
-          style: TextStyle(
-            fontFamily: arabicAccentFont,
-            fontSize: size,
-            color: AppColors.mutedSilver,
-          ),
+          style: TextStyle(fontFamily: arabicAccentFont, fontSize: size, color: color),
         ),
       ),
     );
