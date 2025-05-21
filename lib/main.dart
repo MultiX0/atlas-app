@@ -14,7 +14,9 @@ Future<void> main() async {
   timeago.setLocaleMessages('ar', timeago.ArMessages());
   WidgetsFlutterBinding.ensureInitialized();
   await Future.wait([langdetect.initLangDetect(), supabaseInit(), _firebaseInit()]);
-  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  if (!kDebugMode) {
+    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  }
 
   editChromeSystem();
 

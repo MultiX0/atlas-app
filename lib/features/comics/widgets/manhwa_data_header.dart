@@ -130,7 +130,7 @@ class _ManhwaDataHeaderState extends ConsumerState<ManhwaDataHeader> {
                                     style: const TextStyle(fontFamily: arabicAccentFont),
                                     children: [
                                       TextSpan(
-                                        style: const TextStyle(fontFamily: enAccentFont),
+                                        style: const TextStyle(fontFamily: arabicAccentFont),
                                         text:
                                             comic.publishedDate.from == null
                                                 ? "N/A"

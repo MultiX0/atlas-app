@@ -5,7 +5,7 @@ import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/core/common/widgets/app_refresh.dart';
 import 'package:atlas_app/features/novels/providers/chapter_comments_state.dart';
-import 'package:atlas_app/features/novels/providers/providers.dart';
+import 'package:atlas_app/features/novels/providers/chapter_state.dart';
 import 'package:atlas_app/features/novels/widgets/chapter_comment_input.dart';
 import 'package:atlas_app/features/novels/widgets/chapter_comment_tile.dart';
 import 'package:atlas_app/features/novels/widgets/empty_chapters.dart';
@@ -13,7 +13,9 @@ import 'package:atlas_app/features/novels/widgets/reply_status_widget.dart';
 import 'package:atlas_app/imports.dart';
 
 class ChapterCommentsPage extends ConsumerStatefulWidget {
-  const ChapterCommentsPage({super.key});
+  const ChapterCommentsPage({super.key, required this.chapterId});
+
+  final String chapterId;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _ChapterCommentsPageState();
@@ -43,8 +45,7 @@ class _ChapterCommentsPageState extends ConsumerState<ChapterCommentsPage> {
       _debouncer.debounce(
         duration: duration,
         onDebounce: () {
-          final chapter = ref.read(selectedChapterProvider)!;
-          ref.read(novelChapterCommentsStateProvider(chapter.id).notifier).fetchData();
+          ref.read(novelChapterCommentsStateProvider(widget.chapterId).notifier).fetchData();
         },
       );
     }
@@ -68,9 +69,10 @@ class _ChapterCommentsPageState extends ConsumerState<ChapterCommentsPage> {
   }
 
   Future<void> fetchData({bool refresh = false}) async {
-    await Future.microtask(() {
-      final chapter = ref.read(selectedChapterProvider)!;
-      ref.read(novelChapterCommentsStateProvider(chapter.id).notifier).fetchData(refresh: refresh);
+    await Future.microtask(() async {
+      await ref
+          .read(novelChapterCommentsStateProvider(widget.chapterId).notifier)
+          .fetchData(refresh: refresh);
     });
   }
 
@@ -92,7 +94,7 @@ class _ChapterCommentsPageState extends ConsumerState<ChapterCommentsPage> {
       appBar: AppBar(
         title: Consumer(
           builder: (context, ref, _) {
-            final chapter = ref.read(selectedChapterProvider)!;
+            final chapter = ref.read(chapterStateProvider(widget.chapterId)).chapter!;
             final text = chapter.title ?? "فصل رقم: ${chapter.number.toInt()}";
             return Text(text);
           },
@@ -103,7 +105,7 @@ class _ChapterCommentsPageState extends ConsumerState<ChapterCommentsPage> {
           Expanded(
             child: Consumer(
               builder: (context, ref, _) {
-                final chapter = ref.read(selectedChapterProvider)!;
+                final chapter = ref.read(chapterStateProvider(widget.chapterId)).chapter!;
                 final notifier = novelChapterCommentsStateProvider(chapter.id);
                 final comments = ref.watch(notifier.select((s) => s.comments));
                 final isLoading = ref.watch(notifier.select((s) => s.isLoading));
@@ -135,7 +137,11 @@ class _ChapterCommentsPageState extends ConsumerState<ChapterCommentsPage> {
                           );
                         }
                         final comment = comments[i];
-                        return ChapterCommentTile(key: ValueKey(comment.id), comment: comment);
+                        return ChapterCommentTile(
+                          key: ValueKey(comment.id),
+                          comment: comment,
+                          chapterId: comment.chapterId,
+                        );
                       },
                     ),
                   ),
@@ -146,7 +152,7 @@ class _ChapterCommentsPageState extends ConsumerState<ChapterCommentsPage> {
 
           Divider(height: 0.35, color: AppColors.mutedSilver.withValues(alpha: .15)),
           const ReplyStatusWidget(commentType: CommentType.novel),
-          const ChaptersCommentInput(commentType: CommentType.novel),
+          ChaptersCommentInput(commentType: CommentType.novel, chapterId: widget.chapterId),
         ],
       ),
     );

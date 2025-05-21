@@ -5,5 +5,5 @@ import 'package:atlas_app/imports.dart';
 
 final selectedNovelProvider = StateProvider<NovelModel?>((ref) => null);
 final selectedDraft = StateProvider<ChapterDraftModel?>((ref) => null);
-final selectedChapterProvider = StateProvider<ChapterModel?>((ref) => null);
 final repliedToProvider = StateProvider<Map<String, dynamic>?>((ref) => null);
+final currentChapterProvider = StateProvider<ChapterModel?>((ref) => null);
