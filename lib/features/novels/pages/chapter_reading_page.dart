@@ -15,6 +15,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:no_screenshot/no_screenshot.dart';
+import 'package:share_plus/share_plus.dart';
 
 // Provider for memoizing parsed segments
 final segmentsProvider = Provider.family<List<List<Line>>, String>((ref, chapterId) {
@@ -114,7 +115,18 @@ class ChapterReadingPage extends HookConsumerWidget {
           actions: [
             IconButton(
               onPressed: () => openReportSheet(context, ref, chapterId),
+              tooltip: "ابلاغ",
               icon: const Icon(TablerIcons.report),
+            ),
+            IconButton(
+              onPressed: () async {
+                final _url = 'app.atlasapp.app${Routes.novelReadChapter}/$chapterId';
+                final text =
+                    'قرأت فصلًا مشوّقًا من رواية على تطبيق أطلس! تقدر تقرأه من هنا 👉 $_url';
+                await Share.share(text);
+              },
+              tooltip: "مشاركة",
+              icon: const Icon(TablerIcons.share_2),
             ),
           ],
         ),

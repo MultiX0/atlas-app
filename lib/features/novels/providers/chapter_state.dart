@@ -38,7 +38,9 @@ class ChapterState extends StateNotifier<_HelperClass> {
       final chapterData = await _novelDb.getChapterById(chapterId: _chapterId);
       final allChapters = _ref.read(chaptersStateProvider(chapterData.novelId));
       if (allChapters.chapters.isEmpty) {
-        await _ref.read(chaptersStateProvider(chapterData.novelId).notifier).fetchData();
+        await _ref
+            .read(chaptersStateProvider(chapterData.novelId).notifier)
+            .fetchData(refresh: true);
       }
       state = state.copyWith(isLoading: false, chapter: chapterData, error: null);
 

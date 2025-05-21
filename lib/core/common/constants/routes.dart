@@ -22,7 +22,7 @@ class Routes {
   static const novelPage = '/novel';
   static const addNovelChapterPage = '/addChapterPage';
   static const novelChapterDrafts = '/chapterDraftsPage';
-  static const novelReadChapter = '/novelReadChapter';
+  static const novelReadChapter = '/novel/chapter';
   static const chapterCommentsPage = '/chapterCommentsPage';
   static const comicPage = '/comic';
   static const editProfile = '/editProfile';

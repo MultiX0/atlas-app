@@ -28,11 +28,11 @@ class _NovelChaptersState extends ConsumerState<NovelChapters> {
   }
 
   void initialFetch() async {
-    Future.microtask(fetch);
+    Future.microtask(() => fetch(true));
   }
 
-  void fetch() {
-    ref.read(chaptersStateProvider(widget.novelId).notifier).fetchData();
+  void fetch(bool refresh) {
+    ref.read(chaptersStateProvider(widget.novelId).notifier).fetchData(refresh: refresh);
   }
 
   @override
@@ -42,7 +42,7 @@ class _NovelChaptersState extends ConsumerState<NovelChapters> {
   }
 
   void refresh() async {
-    ref.read(chaptersStateProvider(widget.novelId).notifier).fetchData(refresh: true);
+    fetch(true);
   }
 
   @override
@@ -110,7 +110,7 @@ class _NovelChaptersState extends ConsumerState<NovelChapters> {
                                 ).select((state) => state.hasReachedEnd),
                               );
                               if (!hasReachedEnd) {
-                                fetch();
+                                fetch(false);
                               } else {
                                 log("No more data to fetch (hasReachedEnd)");
                               }
