@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:atlas_app/features/novels/db/novels_db.dart';
 import 'package:atlas_app/features/novels/models/novel_chapter_comment_model.dart';
+import 'package:atlas_app/features/novels/providers/chapter_state.dart';
 import 'package:atlas_app/imports.dart';
 
 class _HelperClass {
@@ -86,6 +87,10 @@ class ChapterCommentsState extends StateNotifier<_HelperClass> {
         updateState(error: null, isLoading: true);
       } else {
         updateState(error: null, loadingMore: true, isLoading: false);
+      }
+      final chapter = _ref.read(chapterStateProvider(_chapterId)).chapter;
+      if (chapter == null) {
+        await _ref.read(chapterStateProvider(_chapterId).notifier).fetchData();
       }
 
       const _pageSize = 20;

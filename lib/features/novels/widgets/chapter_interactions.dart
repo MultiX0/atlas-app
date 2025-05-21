@@ -24,7 +24,7 @@ class _NovelChapterInteractionsState extends State<NovelChapterInteractions> {
 
     return Consumer(
       builder: (context, ref, _) {
-        final chapter = ref.watch(selectedChapterProvider)!;
+        final chapter = ref.watch(currentChapterProvider)!;
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -36,8 +36,11 @@ class _NovelChapterInteractionsState extends State<NovelChapterInteractions> {
                     onTap: (a) async {
                       _debouncer.debounce(
                         duration: const Duration(milliseconds: 300),
-                        onDebounce: () {
-                          ref.read(novelsControllerProvider.notifier).handleChapterLike(chapter);
+                        onDebounce: () async {
+                          bool liked = await ref
+                              .read(novelsControllerProvider.notifier)
+                              .handleChapterLike(chapter);
+                          return liked;
                         },
                       );
                       return true;
@@ -53,7 +56,7 @@ class _NovelChapterInteractionsState extends State<NovelChapterInteractions> {
               child: _InteractionButton(
                 icon: LucideIcons.message_circle,
                 count: chapter.commentsCount,
-                onPressed: () => context.push(Routes.chapterCommentsPage),
+                onPressed: () => context.push("${Routes.chapterCommentsPage}/${chapter.id}"),
                 tooltip: 'التعليقات',
                 countStyle: countStyle,
               ),

@@ -78,6 +78,17 @@ class NovelsDb {
     }
   }
 
+  Future<ChapterModel> getChapterById({required String chapterId}) async {
+    try {
+      final data = await _chaptersView.select("*").eq(KeyNames.id, chapterId).maybeSingle();
+      if (data == null) throw 'there is no chapters with this id: $chapterId';
+      return ChapterModel.fromMap(data);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
   Future<List<NovelChapterCommentWithMeta>> getChapterComments({
     required String chapterId,
     required int startIndex,
@@ -194,7 +205,7 @@ class NovelsDb {
     try {
       await _client.rpc(FunctionNames.log_novel_view, params: {'p_novel_id': novelId});
     } catch (e) {
-      log(e.toString());
+      log("handleNovelView Exception:$e");
       rethrow;
     }
   }

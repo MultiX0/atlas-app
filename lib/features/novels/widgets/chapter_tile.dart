@@ -25,8 +25,8 @@ class ChapterTile extends StatelessWidget {
             builder: (context, ref, _) {
               return ListTile(
                 onTap: () {
-                  ref.read(selectedChapterProvider.notifier).state = chapter;
-                  context.push(Routes.novelReadChapter);
+                  ref.read(currentChapterProvider.notifier).state = chapter;
+                  context.push("${Routes.novelReadChapter}/${chapter.id}");
                 },
 
                 title: Row(

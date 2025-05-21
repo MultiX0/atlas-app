@@ -21,6 +21,7 @@ import 'package:atlas_app/features/novels/models/novel_preview_model.dart';
 import 'package:atlas_app/features/novels/models/novels_genre_model.dart';
 import 'package:atlas_app/features/novels/providers/chapter_comments_replies.dart';
 import 'package:atlas_app/features/novels/providers/chapter_comments_state.dart';
+import 'package:atlas_app/features/novels/providers/chapter_state.dart';
 import 'package:atlas_app/features/novels/providers/chapters_state.dart';
 import 'package:atlas_app/features/novels/providers/drafts_state.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
@@ -57,9 +58,9 @@ class NovelsController extends StateNotifier<bool> {
       final data = await db.getNovel(id);
       state = false;
       return data;
-    } catch (e) {
+    } catch (e, trace) {
+      log(e.toString(), stackTrace: trace);
       state = false;
-      log(e.toString());
       rethrow;
     }
   }
@@ -232,14 +233,16 @@ class NovelsController extends StateNotifier<bool> {
     required List<Map<String, dynamic>> jsonContent,
     required String title,
     required String draftId,
+    String? ogChapterId,
   }) async {
     try {
       final novelId = _ref.read(selectedNovelProvider)!.id;
       final _title = title.isEmpty ? null : title;
 
       final draftState = _ref.read(novelChapterDraftsProvider(novelId).notifier).exists(draftId);
-      if (!draftState) {
-        final _number = _ref.read(selectedChapterProvider.select((s) => s!.number));
+      if (!draftState && ogChapterId != null) {
+        final chapter = await _ref.read(chapterStateProvider(ogChapterId).notifier).fetchData();
+        final _number = chapter.number;
         await newDraft(jsonContent: jsonContent, title: title, number: _number);
         return;
       }
@@ -302,9 +305,10 @@ class NovelsController extends StateNotifier<bool> {
     }
   }
 
-  Future<void> handleChapterView() async {
+  Future<void> handleChapterView(String chapterId) async {
     try {
-      final chapter = _ref.read(selectedChapterProvider)!;
+      ChapterModel? chapter = _ref.read(chapterStateProvider(chapterId)).chapter;
+      chapter ??= await _ref.read(chapterStateProvider(chapterId).notifier).fetchData();
       if (chapter.has_viewed_recently) return;
       final me = _ref.read(userState.select((s) => s.user!));
       final novel = _ref.read(selectedNovelProvider)!;
@@ -320,7 +324,7 @@ class NovelsController extends StateNotifier<bool> {
     }
   }
 
-  Future<void> handleChapterLike(ChapterModel chapter) async {
+  Future<bool> handleChapterLike(ChapterModel chapter) async {
     try {
       final me = _ref.read(userState.select((s) => s.user!));
       final novel = _ref.read(selectedNovelProvider)!;
@@ -328,11 +332,14 @@ class NovelsController extends StateNotifier<bool> {
         isLiked: !chapter.isLiked,
         likeCount: chapter.isLiked ? chapter.likeCount - 1 : chapter.likeCount + 1,
       );
-      _ref.read(selectedChapterProvider.notifier).state = newChapter;
+      _ref.read(chapterStateProvider(chapter.id).notifier).updateChapter(newChapter);
+      _ref.read(currentChapterProvider.notifier).state = newChapter;
       _ref.read(chaptersStateProvider(chapter.novelId).notifier).updateChapter(newChapter);
       await db.handleChapterLike(chapter, me, novel);
+      return newChapter.isLiked;
     } catch (e) {
-      _ref.read(selectedChapterProvider.notifier).state = chapter;
+      _ref.read(chapterStateProvider(chapter.id).notifier).updateChapter(chapter);
+      _ref.read(currentChapterProvider.notifier).state = chapter;
       _ref.read(chaptersStateProvider(chapter.novelId).notifier).updateChapter(chapter);
       CustomToast.error(errorMsg);
       log(e.toString());
@@ -348,8 +355,8 @@ class NovelsController extends StateNotifier<bool> {
       await db.handleNovelView(novel.id);
       _ref.read(novelViewsStateProvider.notifier).updateNovel(_newNovel);
       _ref.read(selectedNovelProvider.notifier).state = _newNovel;
-    } catch (e) {
-      log(e.toString());
+    } catch (e, trace) {
+      log(e.toString(), stackTrace: trace);
       rethrow;
     }
   }
@@ -358,7 +365,7 @@ class NovelsController extends StateNotifier<bool> {
     try {
       final novel = _ref.read(selectedNovelProvider)!;
       final me = _ref.read(userState.select((s) => s.user!));
-      final interaction = await _interactionsDb.getNovelInteraction(novel.id);
+      final interaction = await _interactionsDb.getNovelInteraction(novel.id, me.userId);
       if (novel.interaction == null || interaction == null) {
         final interaction = await newNovelInteraction(novel: novel, user: me);
         await _interactionsDb.upsertNovelInteraction(interaction);
@@ -366,8 +373,8 @@ class NovelsController extends StateNotifier<bool> {
       } else {
         _ref.read(selectedNovelProvider.notifier).state = novel.copyWith(interaction: interaction);
       }
-    } catch (e) {
-      log(e.toString());
+    } catch (e, trace) {
+      log(e.toString(), stackTrace: trace);
       rethrow;
     }
   }
@@ -507,9 +514,11 @@ class NovelsController extends StateNotifier<bool> {
     required bool isReply,
     required String id,
     required String commentId,
+    required String chapterId,
   }) async {
     try {
-      final chapter = _ref.read(selectedChapterProvider)!;
+      ChapterModel? chapter = _ref.read(chapterStateProvider(chapterId)).chapter;
+      chapter ??= await _ref.read(chapterStateProvider(chapterId).notifier).fetchData();
       if (isReply) {
         _ref.read(novelChapterCommentRepliesState(commentId).notifier).deleteComment(id);
         await db.deleteChapterCommentReply(id);
@@ -519,7 +528,7 @@ class NovelsController extends StateNotifier<bool> {
       }
       final newChapter = chapter.copyWith(commentsCount: chapter.commentsCount - 1);
       _ref.read(chaptersStateProvider(chapter.novelId).notifier).updateChapter(newChapter);
-      _ref.read(selectedChapterProvider.notifier).state = newChapter;
+      _ref.read(chapterStateProvider(chapterId).notifier).updateChapter(newChapter);
 
       CustomToast.success("تم حذف التعليق بنجاح");
     } catch (e) {
@@ -528,8 +537,10 @@ class NovelsController extends StateNotifier<bool> {
     }
   }
 
-  Future<void> addChapterComment(String content) async {
-    final chapter = _ref.read(selectedChapterProvider.select((s) => s!));
+  Future<void> addChapterComment(String content, {required String chapterId}) async {
+    ChapterModel? chapter = _ref.read(chapterStateProvider(chapterId)).chapter;
+    chapter ??= await _ref.read(chapterStateProvider(chapterId).notifier).fetchData();
+
     final novel = _ref.read(selectedNovelProvider)!;
     final me = _ref.read(userState.select((s) => s.user!));
     final id = uuid.v4();
@@ -558,7 +569,7 @@ class NovelsController extends StateNotifier<bool> {
       );
       final newChapter = chapter.copyWith(commentsCount: chapter.commentsCount + 1);
       _ref.read(chaptersStateProvider(chapter.novelId).notifier).updateChapter(newChapter);
-      _ref.read(selectedChapterProvider.notifier).state = newChapter;
+      _ref.read(chapterStateProvider(chapterId).notifier).updateChapter(newChapter);
     } catch (e) {
       _ref.read(novelChapterCommentsStateProvider(chapter.id).notifier).deleteComment(comment.id);
       CustomToast.error(errorMsg);
@@ -591,10 +602,15 @@ class NovelsController extends StateNotifier<bool> {
     }
   }
 
-  Future<void> handleChapterCommentReplyLike(NovelChapterCommentReplyWithLikes reply) async {
+  Future<void> handleChapterCommentReplyLike(
+    NovelChapterCommentReplyWithLikes reply, {
+    required String chapterId,
+  }) async {
     try {
       final me = _ref.read(userState.select((s) => s.user!));
-      final chapter = _ref.read(selectedChapterProvider);
+      ChapterModel? chapter = _ref.read(chapterStateProvider(chapterId)).chapter;
+      chapter ??= await _ref.read(chapterStateProvider(chapterId).notifier).fetchData();
+
       final novel = _ref.read(selectedNovelProvider)!;
       _ref
           .read(novelChapterCommentRepliesState(reply.commentId).notifier)
@@ -609,7 +625,7 @@ class NovelsController extends StateNotifier<bool> {
         me,
         novel,
         reply.parentCommentAuthorId,
-        chapter?.id ?? "",
+        chapter.id,
       );
     } catch (e) {
       _ref.read(novelChapterCommentRepliesState(reply.commentId).notifier).updateComment(reply);
@@ -619,12 +635,18 @@ class NovelsController extends StateNotifier<bool> {
     }
   }
 
-  Future<void> replyToComment({required String commentId, required String replyContent}) async {
+  Future<void> replyToComment({
+    required String commentId,
+    required String replyContent,
+    required String chapterId,
+  }) async {
     final novel = _ref.read(selectedNovelProvider)!;
     final id = uuid.v4();
-    final _chapter = _ref.read(selectedChapterProvider)!;
+    ChapterModel? chapter = _ref.read(chapterStateProvider(chapterId)).chapter;
+    chapter ??= await _ref.read(chapterStateProvider(chapterId).notifier).fetchData();
+
     final comment = _ref
-        .read(novelChapterCommentsStateProvider(_chapter.id).notifier)
+        .read(novelChapterCommentsStateProvider(chapter.id).notifier)
         .getById(commentId);
     try {
       final _map = Map.from(_ref.read(repliedToProvider) ?? {});
@@ -651,7 +673,7 @@ class NovelsController extends StateNotifier<bool> {
       _ref
           .read(novelChapterCommentsStateProvider(commentId).notifier)
           .updateComment(comment.copyWith(repliesCount: comment.repliesCount + 1));
-      await db.handleAddNewChapterCommentReply(replyModel, novel, _chapter.id);
+      await db.handleAddNewChapterCommentReply(replyModel, novel, chapter.id);
     } catch (e) {
       CustomToast.error(errorMsg);
       _ref.read(novelChapterCommentRepliesState(comment.id).notifier).deleteComment(id);
@@ -695,10 +717,16 @@ class NovelsController extends StateNotifier<bool> {
     }
   }
 
-  Future<void> addChapterReport({required String report, required BuildContext context}) async {
+  Future<void> addChapterReport({
+    required String report,
+    required BuildContext context,
+    required String chapterId,
+  }) async {
     try {
       final me = _ref.read(userState.select((s) => s.user!));
-      final chapter = _ref.read(selectedChapterProvider)!;
+      ChapterModel? chapter = _ref.read(chapterStateProvider(chapterId)).chapter;
+      chapter ??= await _ref.read(chapterStateProvider(chapterId).notifier).fetchData();
+
       await reportsDb.addChapterReport(
         report: report,
         reporter_id: me.userId,
