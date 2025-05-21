@@ -189,7 +189,7 @@ class NotificationsDb {
         userId: parentCommentAuthorId,
         username: username,
         novelTitle: novelTitle,
-        data: {'route': "${Routes.novelPage}/$novelId"},
+        data: {'route': "${Routes.novelReadChapter}/$chapterId"},
       );
 
       final event = NotificationEventRequest(
@@ -221,7 +221,7 @@ class NotificationsDb {
       final notification = NotificationsInterface.novelChapterCommentNotification(
         userId: authorId,
         username: username,
-        data: {'route': "${Routes.novelPage}/$novelId"},
+        data: {'route': "${Routes.novelReadChapter}/$chapterId"},
       );
 
       final event = NotificationEventRequest(
@@ -280,7 +280,8 @@ class NotificationsDb {
       final notification = NotificationsInterface.novelChapterLikeNotification(
         userId: authorId,
         username: username,
-        data: {'route': "${Routes.novelPage}/$novelId"},
+        data: {'route': "${Routes.novelReadChapter}/$chapterId"},
+
         novelTitle: novelTitle,
       );
       final event = NotificationEventRequest(
@@ -311,7 +312,8 @@ class NotificationsDb {
       final notification = NotificationsInterface.novelChapterLikeCommentNotification(
         userId: commentOwnerId,
         username: username,
-        data: {'route': "${Routes.novelPage}/$novelId"},
+        data: {'route': "${Routes.novelReadChapter}/$chapterId"},
+
         novelTitle: novelTitle,
       );
       final event = NotificationEventRequest(
