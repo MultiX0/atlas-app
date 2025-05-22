@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:atlas_app/features/novels/db/novels_db.dart';
 import 'package:atlas_app/features/novels/models/chapter_model.dart';
 import 'package:atlas_app/features/novels/providers/chapters_state.dart';
+import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/imports.dart';
 
 class _HelperClass {
@@ -36,12 +37,21 @@ class ChapterState extends StateNotifier<_HelperClass> {
     try {
       state = state.copyWith(isLoading: true);
       final chapterData = await _novelDb.getChapterById(chapterId: _chapterId);
+      _ref.read(currentChapterProvider.notifier).state = chapterData;
+
       final allChapters = _ref.read(chaptersStateProvider(chapterData.novelId));
+      final novel = _ref.read(selectedNovelProvider);
       if (allChapters.chapters.isEmpty) {
         await _ref
             .read(chaptersStateProvider(chapterData.novelId).notifier)
             .fetchData(refresh: true);
       }
+
+      if (novel == null) {
+        final _novel = await _novelDb.getNovel(chapterData.novelId);
+        _ref.read(selectedNovelProvider.notifier).state = _novel;
+      }
+
       state = state.copyWith(isLoading: false, chapter: chapterData, error: null);
 
       return chapterData;

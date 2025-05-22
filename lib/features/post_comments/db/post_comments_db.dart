@@ -174,27 +174,26 @@ class PostCommentsDb {
   Future<void> handleAddNewComment(PostModel post, PostCommentModel comment, UserModel me) async {
     try {
       final headers = await generateAuthHeaders();
-      await Future.wait([
-        if (post.userId != me.userId)
-          _notificationsDb.postCommentNotification(
-            commentId: comment.id,
-            ownerId: post.userId,
-            postId: post.postId,
-            senderId: me.userId,
-            username: me.username,
-          ),
-        _dio.post(
-          '${appAPI}post-comment',
-          options: Options(headers: headers),
-          data: jsonEncode({
-            KeyNames.id: comment.id,
-            KeyNames.userId: me.userId,
-            KeyNames.post_id: post.postId,
-            KeyNames.content: comment.content,
-            'token': _client.auth.currentSession!.accessToken,
-          }),
-        ),
-      ]);
+      await _dio.post(
+        '${appAPI}post-comment',
+        options: Options(headers: headers),
+        data: jsonEncode({
+          KeyNames.id: comment.id,
+          KeyNames.userId: me.userId,
+          KeyNames.post_id: post.postId,
+          KeyNames.content: comment.content,
+          'token': _client.auth.currentSession!.accessToken,
+        }),
+      );
+      if (post.userId != me.userId) {
+        await _notificationsDb.postCommentNotification(
+          commentId: comment.id,
+          ownerId: post.userId,
+          postId: post.postId,
+          senderId: me.userId,
+          username: me.username,
+        );
+      }
     } catch (e) {
       log(e.toString());
       rethrow;

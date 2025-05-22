@@ -131,8 +131,11 @@ class ChapterCommentTile extends StatelessWidget {
               ),
               Consumer(
                 builder: (context, ref, _) {
-                  final me = ref.read(userState.select((s) => s.user!));
-                  final novel = ref.read(selectedNovelProvider)!;
+                  final me = ref.read(userState.select((s) => s.user));
+                  if (me == null) return const Text("error with user data");
+                  final novel = ref.read(selectedNovelProvider);
+                  if (novel == null) return const Text("error with novel data");
+
                   final isMeOrCreator = (me.userId == novel.userId) || (user.userId == me.userId);
                   final isMe = user.userId == me.userId;
                   return Row(
