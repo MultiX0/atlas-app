@@ -154,6 +154,8 @@ class PostsDb {
         FunctionNames.mark_post_as_seen,
         params: {'p_user_id': userId, 'p_post_id': postId},
       );
+
+      log("marked as seen");
     } catch (e) {
       log(e.toString());
       rethrow;

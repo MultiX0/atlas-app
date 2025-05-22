@@ -130,8 +130,9 @@ class MainFeedState extends StateNotifier<_HelperClass> {
             .map((entry) => entry.key)
             .toList();
 
-    if (indexes.isNotEmpty) {
-      log("Post not found in state: ${postModel.postId}");
+    // FIX: Change `isNotEmpty` to `isEmpty`
+    if (indexes.isEmpty) {
+      log("Post with ID ${postModel.postId} not found in state, cannot update.");
       return;
     }
 
@@ -141,6 +142,7 @@ class MainFeedState extends StateNotifier<_HelperClass> {
     }
 
     state = state.copyWith(posts: posts);
+    log("Post with ID ${postModel.postId} updated successfully.");
   }
 
   void updatePost(PostModel post) {

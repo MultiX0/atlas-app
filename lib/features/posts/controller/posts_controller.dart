@@ -142,7 +142,7 @@ class PostsController extends StateNotifier<bool> {
     }
   }
 
-  Future<void> likesMiddleware({required PostModel post, required PostLikeEnum postType}) async {
+  Future<bool> likesMiddleware({required PostModel post, required PostLikeEnum postType}) async {
     try {
       log(postType.name);
       final me = _ref.read(userState.select((s) => s.user!));
@@ -179,6 +179,7 @@ class PostsController extends StateNotifier<bool> {
         db.handleUserLike(post, me),
         _interactionsDb.upsertPostInteraction(newInteraction),
       ]);
+      return newPost.userLiked;
     } catch (e) {
       CustomToast.error(errorMsg);
       log(e.toString());

@@ -30,9 +30,28 @@ class ProfileHeader extends ConsumerWidget {
     final double avatarVisibleOverlap = avatarRadius + avatarBorder;
     final double topHeaderHeight = bannerHeight + avatarVisibleOverlap + 10;
 
+    double calculateBioHeight(String bioText, BuildContext context) {
+      if (bioText.isEmpty) return 0.0;
+
+      final textPainter = TextPainter(
+        text: TextSpan(
+          text: bioText,
+          style: const TextStyle(fontWeight: FontWeight.w600), // Match your bio style
+        ),
+        textDirection: TextDirection.ltr, // Or TextDirection.rtl if your app is RTL
+        maxLines: null, // Allow multiple lines
+      )..layout(
+        maxWidth: MediaQuery.of(context).size.width - (20 * 2),
+      ); // Account for horizontal padding
+
+      return textPainter.height;
+    }
+
+    final double bioTextHeight = calculateBioHeight(_user!.bio ?? '', context);
+
     double bottomHeaderEstimatedHeight = 160.0;
-    if (_user!.bio != null && _user.bio!.isNotEmpty) {
-      bottomHeaderEstimatedHeight += 40.0;
+    if (_user.bio != null && _user.bio!.isNotEmpty) {
+      bottomHeaderEstimatedHeight += bioTextHeight + 15;
     }
 
     final double totalExpandedHeight = topHeaderHeight + bottomHeaderEstimatedHeight;
