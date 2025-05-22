@@ -1,4 +1,4 @@
-import 'dart:developer';
+// import 'dart:developer';
 
 // import 'package:atlas_app/features/profile/db/profile_db.dart';
 import 'package:atlas_app/imports.dart';
@@ -64,7 +64,7 @@ class UserState extends StateNotifier<UserStateHelper> {
       }
       final userId = _client.auth.currentSession!.user.id;
       UserModel user = await _db.getUserData(userId);
-      log("user data: $user");
+      // log("user data: $user");
       await Future.delayed(const Duration(milliseconds: 100));
       state = UserStateHelper(user: user, isLoading: false, hasError: false, isInitlized: true);
       _ref.read(isLoggedProvider.notifier).updateState(true);
@@ -73,7 +73,7 @@ class UserState extends StateNotifier<UserStateHelper> {
       await Future.delayed(const Duration(milliseconds: 100));
       state = UserStateHelper(isLoading: false, hasError: true, error: e.toString());
       _ref.read(isLoggedProvider.notifier).updateState(false);
-      log(e.toString());
+      // log(e.toString());
       rethrow;
     }
   }

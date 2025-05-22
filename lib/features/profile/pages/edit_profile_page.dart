@@ -322,7 +322,7 @@ class EditBody extends StatelessWidget {
               controller: bioController,
               minLines: 1,
               maxLength: 150,
-              maxLines: null,
+              maxLines: 3,
               decoration: InputDecoration(
                 labelText: "البايو",
                 labelStyle: const TextStyle(
