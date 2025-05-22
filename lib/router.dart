@@ -137,6 +137,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: "${Routes.novelReadChapter}/:id",
         name: Routes.novelReadChapter,
+        redirect: authRedirect,
+
         pageBuilder: (context, state) {
           final id = ((state.pathParameters as Map<String, dynamic>)["id"] ?? "").toString().trim();
 
@@ -152,6 +154,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: "${Routes.chapterCommentsPage}/:id",
         name: Routes.chapterCommentsPage,
+        redirect: authRedirect,
+
         pageBuilder: (context, state) {
           final id = ((state.pathParameters as Map<String, dynamic>)["id"] ?? "").toString().trim();
 
