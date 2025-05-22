@@ -83,6 +83,12 @@ class ChapterCommentsState extends StateNotifier<_HelperClass> {
         return;
       }
 
+      final me = _ref.read(userState).user;
+      if (me == null) {
+        final auth = AuthDb();
+        final me = await auth.getUserData(Supabase.instance.client.auth.currentSession!.user.id);
+        _ref.read(userState.notifier).updateState(me);
+      }
       if (state.comments.isEmpty || refresh) {
         updateState(error: null, isLoading: true);
       } else {
