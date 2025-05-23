@@ -115,8 +115,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       buildRoute(path: Routes.manhwaPage, child: const ManhwaPage(fromSearch: true), fade: true),
       buildRoute(path: Routes.addNovelChapterPage, child: const AddChapterPage(), fade: true),
       buildRoute(path: Routes.novelChapterDrafts, child: const ChapterDraftsPage(), fade: true),
-      buildRoute(path: Routes.novelReadChapter, child: const ChapterReadingPage(), fade: true),
-      buildRoute(path: Routes.chapterCommentsPage, child: const ChapterCommentsPage(), fade: true),
       buildRoute(path: Routes.editProfile, child: const EditProfileScreen(), fade: true),
       buildRoute(path: Routes.addNovelPage, child: const AddNovelPage(edit: false), fade: true),
       buildRoute(path: Routes.notification, child: const NotificationPage(), fade: true),
@@ -129,6 +127,40 @@ final routerProvider = Provider<GoRouter>((ref) {
 
           return CustomTransitionPage(
             child: ForgotPasswordPage(email: email),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+          );
+        },
+      ),
+
+      GoRoute(
+        path: "${Routes.novelReadChapter}/:id",
+        name: Routes.novelReadChapter,
+        redirect: authRedirect,
+
+        pageBuilder: (context, state) {
+          final id = ((state.pathParameters as Map<String, dynamic>)["id"] ?? "").toString().trim();
+
+          return CustomTransitionPage(
+            child: ChapterReadingPage(chapterId: id),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+          );
+        },
+      ),
+
+      GoRoute(
+        path: "${Routes.chapterCommentsPage}/:id",
+        name: Routes.chapterCommentsPage,
+        redirect: authRedirect,
+
+        pageBuilder: (context, state) {
+          final id = ((state.pathParameters as Map<String, dynamic>)["id"] ?? "").toString().trim();
+
+          return CustomTransitionPage(
+            child: ChapterCommentsPage(chapterId: id),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);
             },

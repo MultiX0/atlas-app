@@ -51,13 +51,17 @@ class InteractionsDb {
     }
   }
 
-  Future<NovelInteraction?> getNovelInteraction(String novelId) async {
+  Future<NovelInteraction?> getNovelInteraction(String novelId, String userId) async {
     try {
       final data =
-          await _novelInteractionsTable.select("*").eq(KeyNames.novel_id, novelId).maybeSingle();
+          await _novelInteractionsTable
+              .select("*")
+              .eq(KeyNames.novel_id, novelId)
+              .eq(KeyNames.userId, userId)
+              .maybeSingle();
       return data == null ? null : NovelInteraction.fromMap(data);
     } catch (e, trace) {
-      log(e.toString(), stackTrace: trace);
+      log("getNovelInteraction Exception: $e", stackTrace: trace);
       rethrow;
     }
   }

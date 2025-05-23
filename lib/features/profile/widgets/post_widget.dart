@@ -5,6 +5,7 @@ import 'package:atlas_app/core/common/enum/post_like_enum.dart';
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/features/posts/controller/posts_controller.dart';
+import 'package:atlas_app/features/posts/db/posts_db.dart';
 import 'package:atlas_app/features/posts/providers/post_state.dart';
 import 'package:atlas_app/features/profile/provider/providers.dart';
 import 'package:atlas_app/features/profile/widgets/post_body_widget.dart';
@@ -40,7 +41,10 @@ class PostWidget extends ConsumerWidget {
 
     return RepaintBoundary(
       child: GestureDetector(
-        onTap: () => onComment(context, postRoute, ref: ref),
+        onTap: () {
+          ref.read(postsDbProvider).seePost(post.postId, me.userId);
+          onComment(context, postRoute, ref: ref);
+        },
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 0),
           child: Column(
@@ -110,9 +114,10 @@ class PostWidget extends ConsumerWidget {
     _debouncer.debounce(
       duration: const Duration(milliseconds: 200),
       onDebounce: () async {
-        await ref
+        final result = await ref
             .read(postsControllerProvider.notifier)
             .likesMiddleware(post: post, postType: postLikeType);
+        return result;
       },
     );
 

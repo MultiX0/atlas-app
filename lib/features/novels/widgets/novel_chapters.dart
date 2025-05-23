@@ -28,11 +28,11 @@ class _NovelChaptersState extends ConsumerState<NovelChapters> {
   }
 
   void initialFetch() async {
-    Future.microtask(fetch);
+    Future.microtask(() => fetch(true));
   }
 
-  void fetch() {
-    ref.read(chaptersStateProvider(widget.novelId).notifier).fetchData();
+  void fetch(bool refresh) {
+    ref.read(chaptersStateProvider(widget.novelId).notifier).fetchData(refresh: refresh);
   }
 
   @override
@@ -42,7 +42,7 @@ class _NovelChaptersState extends ConsumerState<NovelChapters> {
   }
 
   void refresh() async {
-    ref.read(chaptersStateProvider(widget.novelId).notifier).fetchData(refresh: true);
+    fetch(true);
   }
 
   @override
@@ -52,6 +52,8 @@ class _NovelChaptersState extends ConsumerState<NovelChapters> {
         builder: (context, ref, _) {
           final novelCreator = ref.read(selectedNovelProvider.select((s) => s!.userId));
           final novelColor = ref.read(selectedNovelProvider.select((s) => s!.color));
+          final novelId = ref.read(selectedNovelProvider.select((s) => s!.id));
+
           final me = ref.read(userState.select((s) => s.user!.userId));
           bool isCreator = me == novelCreator;
           return Scaffold(
@@ -64,7 +66,7 @@ class _NovelChaptersState extends ConsumerState<NovelChapters> {
 
                       onPressed: () {
                         ref.read(selectedDraft.notifier).state = null;
-                        context.push(Routes.addNovelChapterPage);
+                        context.push("${Routes.addNovelChapterPage}/$novelId");
                       },
                     )
                     : null,
@@ -108,7 +110,7 @@ class _NovelChaptersState extends ConsumerState<NovelChapters> {
                                 ).select((state) => state.hasReachedEnd),
                               );
                               if (!hasReachedEnd) {
-                                fetch();
+                                fetch(false);
                               } else {
                                 log("No more data to fetch (hasReachedEnd)");
                               }

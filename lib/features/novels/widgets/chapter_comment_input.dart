@@ -9,8 +9,9 @@ import 'package:atlas_app/features/posts/providers/post_state.dart';
 import 'package:atlas_app/imports.dart';
 
 class ChaptersCommentInput extends StatefulWidget {
-  const ChaptersCommentInput({super.key, required this.commentType});
+  const ChaptersCommentInput({super.key, required this.commentType, this.chapterId});
   final CommentType commentType;
+  final String? chapterId;
 
   @override
   State<ChaptersCommentInput> createState() => _ChaptersCommentInputState();
@@ -53,7 +54,9 @@ class _ChaptersCommentInputState extends State<ChaptersCommentInput> {
                   if (widget.commentType == CommentType.novel) {
                     final replitedTo = ref.read(repliedToProvider);
                     if (replitedTo == null || replitedTo.isEmpty) {
-                      ref.read(novelsControllerProvider.notifier).addChapterComment(input);
+                      ref
+                          .read(novelsControllerProvider.notifier)
+                          .addChapterComment(input, chapterId: widget.chapterId!);
                       _postFieldKey.currentState?.clearText();
                       return;
                     }
@@ -63,6 +66,7 @@ class _ChaptersCommentInputState extends State<ChaptersCommentInput> {
                         .replyToComment(
                           commentId: replitedTo[KeyNames.comment_id],
                           replyContent: input,
+                          chapterId: widget.chapterId!,
                         );
                   } else if (widget.commentType == CommentType.post) {
                     final replitedTo = ref.read(postCommentRepliedToProvider);

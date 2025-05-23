@@ -4,7 +4,7 @@ import 'package:atlas_app/imports.dart';
 
 class ChapterButtonsController extends StatelessWidget {
   const ChapterButtonsController({super.key, required this.onPageChange});
-  final VoidCallback onPageChange;
+  final Function(String) onPageChange;
 
   @override
   Widget build(BuildContext context) {
@@ -17,8 +17,8 @@ class ChapterButtonsController extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 25),
       child: Consumer(
         builder: (context, ref, _) {
-          final id = ref.watch(selectedChapterProvider.select((s) => s!.id));
-          final novelId = ref.read(selectedChapterProvider.select((s) => s!.novelId));
+          final id = ref.watch(currentChapterProvider.select((s) => s!.id));
+          final novelId = ref.read(currentChapterProvider.select((s) => s!.novelId));
           final stateNotifier = chaptersStateProvider(novelId).notifier;
 
           bool isFirst = ref.read(stateNotifier).isFirst(id);
@@ -32,8 +32,8 @@ class ChapterButtonsController extends StatelessWidget {
                   child: InkWell(
                     onTap: () {
                       final next = ref.read(stateNotifier).getNext(id);
-                      ref.read(selectedChapterProvider.notifier).state = next;
-                      onPageChange();
+
+                      onPageChange(next!.id);
                     },
                     child: const Padding(
                       padding: EdgeInsets.symmetric(vertical: 10),
@@ -49,8 +49,7 @@ class ChapterButtonsController extends StatelessWidget {
                   child: InkWell(
                     onTap: () {
                       final prev = ref.read(stateNotifier).getPrev(id);
-                      ref.read(selectedChapterProvider.notifier).state = prev;
-                      onPageChange();
+                      onPageChange(prev!.id);
                     },
 
                     child: const Padding(

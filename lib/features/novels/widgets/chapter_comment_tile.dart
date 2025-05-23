@@ -19,6 +19,7 @@ class ChapterCommentTile extends StatelessWidget {
     this.comment,
     this.reply,
     this.isReply = false,
+    required this.chapterId,
     this.parentCommentId,
   }) : assert(
          (comment != null && reply == null) || (comment == null && reply != null),
@@ -29,6 +30,7 @@ class ChapterCommentTile extends StatelessWidget {
   final NovelChapterCommentReplyWithLikes? reply;
   final bool isReply;
   final String? parentCommentId;
+  final String chapterId;
   static final Debouncer _debouncer = Debouncer();
 
   @override
@@ -129,8 +131,11 @@ class ChapterCommentTile extends StatelessWidget {
               ),
               Consumer(
                 builder: (context, ref, _) {
-                  final me = ref.read(userState.select((s) => s.user!));
-                  final novel = ref.read(selectedNovelProvider)!;
+                  final me = ref.read(userState.select((s) => s.user));
+                  if (me == null) return const Text("error with user data");
+                  final novel = ref.read(selectedNovelProvider);
+                  if (novel == null) return const Text("error with novel data");
+
                   final isMeOrCreator = (me.userId == novel.userId) || (user.userId == me.userId);
                   final isMe = user.userId == me.userId;
                   return Row(
@@ -268,7 +273,12 @@ class ChapterCommentTile extends StatelessWidget {
                 context.pop();
                 ref
                     .read(novelsControllerProvider.notifier)
-                    .handleCommentDelete(isReply: isReply, id: id, commentId: commentId);
+                    .handleCommentDelete(
+                      isReply: isReply,
+                      id: id,
+                      commentId: commentId,
+                      chapterId: chapterId,
+                    );
               },
               child: const Text("الااستمرار", style: btnStyle),
             ),
@@ -293,7 +303,9 @@ class ChapterCommentTile extends StatelessWidget {
       onDebounce: () {
         if (isReply) {
           // Call the appropriate method for handling reply likes
-          ref.read(novelsControllerProvider.notifier).handleChapterCommentReplyLike(reply!);
+          ref
+              .read(novelsControllerProvider.notifier)
+              .handleChapterCommentReplyLike(reply!, chapterId: chapterId);
         } else {
           ref.read(novelsControllerProvider.notifier).handleChapterCommentLike(comment!);
         }
@@ -345,6 +357,7 @@ class CommentRepliesSection extends StatelessWidget {
                   reply: replies[i],
                   isReply: true,
                   parentCommentId: comment.id,
+                  chapterId: comment.chapterId,
                 );
               }
 

@@ -92,7 +92,7 @@ class _GenreSelectionSheetState extends State<GenreSelectionSheet> {
                   selectedGenres.removeWhere((g) => g.name == genre.name);
                 } else {
                   // Add genre if not already selected and less than 3 genres selected
-                  if (selectedGenres.length >= 3) {
+                  if (selectedGenres.length >= 5) {
                     return;
                   }
                   selectedGenres.add(genre);

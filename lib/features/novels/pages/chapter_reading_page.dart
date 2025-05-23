@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:atlas_app/core/common/utils/custom_action_sheet.dart';
 import 'package:atlas_app/core/common/utils/delta_parser.dart';
+import 'package:atlas_app/core/common/widgets/error_widget.dart';
 import 'package:atlas_app/core/common/widgets/reports/report_widget.dart';
 import 'package:atlas_app/features/novels/controller/novels_controller.dart';
+import 'package:atlas_app/features/novels/providers/chapter_state.dart';
 import 'package:atlas_app/features/novels/providers/providers.dart';
 import 'package:atlas_app/features/novels/widgets/chapter_buttons_controller.dart';
 import 'package:atlas_app/features/novels/widgets/chapter_interactions.dart';
@@ -13,23 +15,39 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:no_screenshot/no_screenshot.dart';
+import 'package:share_plus/share_plus.dart';
 
 // Provider for memoizing parsed segments
 final segmentsProvider = Provider.family<List<List<Line>>, String>((ref, chapterId) {
-  final chapter = ref.watch(selectedChapterProvider)!;
+  final chapterData = ref.watch(chapterStateProvider(chapterId));
+  final chapter = chapterData.chapter;
+  if (chapter == null) {
+    return [];
+  }
   final operations = chapter.content;
   final lines = parseDelta(operations);
   return groupLinesIntoSegments(lines);
 });
 
 class ChapterReadingPage extends HookConsumerWidget {
-  const ChapterReadingPage({super.key});
+  const ChapterReadingPage({super.key, required this.chapterId});
+
+  final String chapterId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // First define all state variables
     final timeSpentRef = useRef(0);
     final lastSavedTimeRef = useRef(-60);
+
+    // Fetch chapter data
+    useEffect(() {
+      Future.microtask(() async {
+        final chapter = await ref.read(chapterStateProvider(chapterId).notifier).fetchData();
+        ref.read(currentChapterProvider.notifier).state = chapter;
+      });
+      return null;
+    }, [chapterId]);
 
     // Hooks must be called in a consistent order
     // 1. Create scroll controller
@@ -68,19 +86,22 @@ class ChapterReadingPage extends HookConsumerWidget {
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Future.microtask(() {
-          ref.read(novelsControllerProvider.notifier).handleChapterView();
+          ref.read(novelsControllerProvider.notifier).handleChapterView(chapterId);
         });
       });
       return null;
     }, []);
 
     // Page change callback (defined outside the hooks)
-    void onPageChange() async {
-      scrollController.jumpTo(0);
-      await Future.delayed(const Duration(milliseconds: 200));
+    void onPageChange(String id) {
       ref.read(novelsControllerProvider.notifier).handleSaveReadingTime(timeSpentRef.value);
-      ref.read(novelsControllerProvider.notifier).handleChapterView();
+      context.pushReplacement("${Routes.novelReadChapter}/$id");
     }
+
+    // Watch loading state
+    final chapterState = ref.watch(chapterStateProvider(chapterId));
+    final isLoading = chapterState.isLoading;
+    final error = chapterState.error != null;
 
     return PopScope(
       canPop: true,
@@ -93,42 +114,61 @@ class ChapterReadingPage extends HookConsumerWidget {
         appBar: AppBar(
           actions: [
             IconButton(
-              onPressed: () => openReportSheet(context, ref),
+              onPressed: () => openReportSheet(context, ref, chapterId),
+              tooltip: "ابلاغ",
               icon: const Icon(TablerIcons.report),
+            ),
+            IconButton(
+              onPressed: () async {
+                final _url = 'app.atlasapp.app${Routes.novelReadChapter}/$chapterId';
+                final text =
+                    'قرأت فصلًا مشوّقًا من رواية على تطبيق أطلس! تقدر تقرأه من هنا 👉 $_url';
+                await Share.share(text);
+              },
+              tooltip: "مشاركة",
+              icon: const Icon(TablerIcons.share_2),
             ),
           ],
         ),
-        body: Directionality(
-          textDirection: TextDirection.rtl,
-          child: ListView.builder(
-            controller: scrollController,
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-            itemCount: 3, // Segments + Interactions + Buttons
-            itemBuilder: (context, index) {
-              if (index == 0) {
-                return _buildChapterContent(ref);
-              } else if (index == 1) {
-                return const Column(
-                  children: [
-                    SizedBox(height: 15),
-                    NovelChapterInteractions(),
-                    SizedBox(height: 15),
-                  ],
-                );
-              } else {
-                return ChapterButtonsController(onPageChange: onPageChange);
-              }
-            },
-          ),
-        ),
+        body:
+            error
+                ? AtlasErrorPage(message: chapterState.error!)
+                : isLoading
+                ? const Loader()
+                : Directionality(
+                  textDirection: TextDirection.rtl,
+                  child: ListView.builder(
+                    controller: scrollController,
+                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                    itemCount: 3, // Segments + Interactions + Buttons
+                    itemBuilder: (context, index) {
+                      if (index == 0) {
+                        return _buildChapterContent(ref);
+                      } else if (index == 1) {
+                        return const Column(
+                          children: [
+                            SizedBox(height: 15),
+                            NovelChapterInteractions(),
+                            SizedBox(height: 15),
+                          ],
+                        );
+                      } else {
+                        return ChapterButtonsController(onPageChange: (id) => onPageChange(id));
+                      }
+                    },
+                  ),
+                ),
       ),
     );
   }
 
   Widget _buildChapterContent(WidgetRef ref) {
     // Watch segments provider (memoized)
-    final chapter = ref.read(selectedChapterProvider)!;
-    final segments = ref.watch(segmentsProvider(chapter.id)); // Use a unique chapter ID if needed
+    final segments = ref.watch(segmentsProvider(chapterId));
+
+    if (segments.isEmpty) {
+      return const Center(child: Text("No content available"));
+    }
 
     return ListView.builder(
       shrinkWrap: true,
@@ -239,7 +279,7 @@ void share(BuildContext context, String part) {
   openSheet(context: context, child: ShareWidget(content: part), scrollControlled: true);
 }
 
-void openReportSheet(BuildContext context, WidgetRef ref) {
+void openReportSheet(BuildContext context, WidgetRef ref, String chapterId) {
   openSheet(
     context: context,
     child: ReportSheet(
@@ -273,7 +313,7 @@ void openReportSheet(BuildContext context, WidgetRef ref) {
       onSubmit: (reason) {
         ref
             .read(novelsControllerProvider.notifier)
-            .addChapterReport(report: reason, context: context);
+            .addChapterReport(report: reason, context: context, chapterId: chapterId);
       },
     ),
   );

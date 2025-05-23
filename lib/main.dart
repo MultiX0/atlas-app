@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:atlas_app/core/services/secure_storage_service.dart';
 import 'package:atlas_app/core/services/syste_chrome.dart';
 import 'package:atlas_app/firebase_options.dart';
+import 'package:error_stack/error_stack.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
@@ -13,8 +14,12 @@ import 'imports.dart';
 Future<void> main() async {
   timeago.setLocaleMessages('ar', timeago.ArMessages());
   WidgetsFlutterBinding.ensureInitialized();
+  await ErrorStack.init();
+
   await Future.wait([langdetect.initLangDetect(), supabaseInit(), _firebaseInit()]);
-  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  if (!kDebugMode) {
+    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  }
 
   editChromeSystem();
 

@@ -2,12 +2,21 @@ import 'package:atlas_app/core/common/enum/notificaion_type.dart';
 import 'package:atlas_app/core/common/widgets/cached_avatar.dart';
 import 'package:atlas_app/core/common/widgets/error_widget.dart';
 import 'package:atlas_app/features/notifications/controller/notifications_controller.dart';
+import 'package:atlas_app/features/notifications/db/notifications_db.dart';
 import 'package:atlas_app/features/notifications/models/notification_event_model.dart';
+import 'package:atlas_app/features/novels/widgets/empty_chapters.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:grouped_list/grouped_list.dart';
 
-class NotificationPage extends StatelessWidget {
+class NotificationPage extends StatefulWidget {
   const NotificationPage({super.key});
+
+  @override
+  State<NotificationPage> createState() => _NotificationPageState();
+}
+
+class _NotificationPageState extends State<NotificationPage> {
+  List<String> readedIds = [];
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +30,7 @@ class NotificationPage extends StatelessWidget {
               .when(
                 data: (notifications) {
                   if (notifications.isEmpty) {
-                    return const Text("empty");
+                    return const EmptyChapters(text: 'لايوجد لديك أي اشعارات');
                   }
 
                   return Directionality(
@@ -54,7 +63,8 @@ class NotificationPage extends StatelessWidget {
                               subtitle: Row(
                                 children: [
                                   Expanded(child: Text(getNotificationText(notification))),
-                                  if (!notification.isRead) ...[
+                                  if (!notification.isRead &&
+                                      !readedIds.contains(notification.id)) ...[
                                     const SizedBox(width: 15),
                                     Container(
                                       width: 8,
@@ -143,7 +153,14 @@ class NotificationPage extends StatelessWidget {
     }
   }
 
-  void onTap(NotificationEventRequest notification, {required BuildContext context}) {
+  void onTap(NotificationEventRequest notification, {required BuildContext context}) async {
+    if (!notification.isRead) {
+      setState(() {
+        readedIds.add(notification.id!);
+      });
+      NotificationsDb notificationsDb = NotificationsDb();
+      await notificationsDb.markNotificationAsRead(notification.id!);
+    }
     Map<NotificationType, Function()> actions = {
       NotificationType.postLike: () => context.push("${Routes.postPage}/${notification.postId}"),
       NotificationType.postComment: () => context.push("${Routes.postPage}/${notification.postId}"),
@@ -153,20 +170,34 @@ class NotificationPage extends StatelessWidget {
       NotificationType.postRepost: () => context.push("${Routes.postPage}/${notification.postId}"),
       NotificationType.novelFavorite:
           () => context.push("${Routes.novelPage}/${notification.novelId}"),
-      NotificationType.novelChapterComment:
-          () => context.push("${Routes.novelPage}/${notification.novelId}"),
-      NotificationType.novelChapterCommentLike:
-          () => context.push("${Routes.novelPage}/${notification.novelId}"),
-      NotificationType.novelChapterCommentReply:
-          () => context.push("${Routes.novelPage}/${notification.novelId}"),
-      NotificationType.novelChapterLike:
-          () => context.push("${Routes.novelPage}/${notification.novelId}"),
-      NotificationType.novelChapterReplyLike:
-          () => context.push("${Routes.novelPage}/${notification.novelId}"),
-      NotificationType.novelCommentMention:
-          () => context.push("${Routes.novelPage}/${notification.novelId}"),
-      NotificationType.novelReplyMention:
-          () => context.push("${Routes.novelPage}/${notification.novelId}"),
+      NotificationType.novelChapterComment: () {
+        context.push("${Routes.novelPage}/${notification.novelId}");
+        context.push("${Routes.novelReadChapter}/${notification.chapterId}");
+      },
+      NotificationType.novelChapterCommentLike: () {
+        context.push("${Routes.novelPage}/${notification.novelId}");
+        context.push("${Routes.novelReadChapter}/${notification.chapterId}");
+      },
+      NotificationType.novelChapterCommentReply: () {
+        context.push("${Routes.novelPage}/${notification.novelId}");
+        context.push("${Routes.novelReadChapter}/${notification.chapterId}");
+      },
+      NotificationType.novelChapterLike: () {
+        context.push("${Routes.novelPage}/${notification.novelId}");
+        context.push("${Routes.novelReadChapter}/${notification.chapterId}");
+      },
+      NotificationType.novelChapterReplyLike: () {
+        context.push("${Routes.novelPage}/${notification.novelId}");
+        context.push("${Routes.novelReadChapter}/${notification.chapterId}");
+      },
+      NotificationType.novelCommentMention: () {
+        context.push("${Routes.novelPage}/${notification.novelId}");
+        context.push("${Routes.novelReadChapter}/${notification.chapterId}");
+      },
+      NotificationType.novelReplyMention: () {
+        context.push("${Routes.novelPage}/${notification.novelId}");
+        context.push("${Routes.novelReadChapter}/${notification.chapterId}");
+      },
       NotificationType.novelReviewLike:
           () => context.push("${Routes.novelPage}/${notification.novelId}"),
       NotificationType.novelReviewReply:

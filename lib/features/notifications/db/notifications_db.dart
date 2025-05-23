@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:atlas_app/core/common/constants/function_names.dart';
 import 'package:atlas_app/core/common/constants/table_names.dart';
 import 'package:atlas_app/core/common/constants/view_names.dart';
 import 'package:atlas_app/core/common/enum/notificaion_type.dart';
@@ -189,7 +190,7 @@ class NotificationsDb {
         userId: parentCommentAuthorId,
         username: username,
         novelTitle: novelTitle,
-        data: {'route': "${Routes.novelPage}/$novelId"},
+        data: {'route': "${Routes.novelReadChapter}/$chapterId"},
       );
 
       final event = NotificationEventRequest(
@@ -221,7 +222,7 @@ class NotificationsDb {
       final notification = NotificationsInterface.novelChapterCommentNotification(
         userId: authorId,
         username: username,
-        data: {'route': "${Routes.novelPage}/$novelId"},
+        data: {'route': "${Routes.novelReadChapter}/$chapterId"},
       );
 
       final event = NotificationEventRequest(
@@ -280,7 +281,8 @@ class NotificationsDb {
       final notification = NotificationsInterface.novelChapterLikeNotification(
         userId: authorId,
         username: username,
-        data: {'route': "${Routes.novelPage}/$novelId"},
+        data: {'route': "${Routes.novelReadChapter}/$chapterId"},
+
         novelTitle: novelTitle,
       );
       final event = NotificationEventRequest(
@@ -311,7 +313,8 @@ class NotificationsDb {
       final notification = NotificationsInterface.novelChapterLikeCommentNotification(
         userId: commentOwnerId,
         username: username,
-        data: {'route': "${Routes.novelPage}/$novelId"},
+        data: {'route': "${Routes.novelReadChapter}/$chapterId"},
+
         novelTitle: novelTitle,
       );
       final event = NotificationEventRequest(
@@ -551,6 +554,18 @@ class NotificationsDb {
           .order(KeyNames.created_at, ascending: false);
 
       return data.map((n) => NotificationEventRequest.fromJson(n)).toList();
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> markNotificationAsRead(String notificationId) async {
+    try {
+      await _client.rpc(
+        FunctionNames.mark_notification_as_read,
+        params: {'target_notification_id': notificationId},
+      );
     } catch (e) {
       log(e.toString());
       rethrow;
