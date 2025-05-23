@@ -247,7 +247,7 @@ class _AddNovelPageState extends ConsumerState<AddNovelPage> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Text(
-              "يمكنك أختيار 3 تصنيفات كحد أقصى",
+              "يمكنك أختيار 5 تصنيفات كحد أقصى",
               style: TextStyle(
                 color: AppColors.mutedSilver.withValues(alpha: .65),
                 fontFamily: arabicPrimaryFont,
