@@ -146,20 +146,23 @@ class MainFeedState extends StateNotifier<_HelperClass> {
   }
 
   void updatePost(PostModel post) {
-    List<PostModel> updatedPosts = List<PostModel>.from(state.posts);
-
+    final posts = List<PostModel>.from(state.posts);
     List<int> indexes =
-        updatedPosts
+        posts
             .asMap()
             .entries
             .where((entry) => entry.value.postId == post.postId)
             .map((entry) => entry.key)
             .toList();
-    if (indexes.isEmpty) return;
-    for (final index in indexes) {
-      updatedPosts[index] = post;
+
+    if (indexes.isEmpty) {
+      log("Post with ID ${post.postId} not found in state, cannot update.");
+      return;
     }
-    state = state.copyWith(posts: updatedPosts);
+    for (final index in indexes) {
+      posts[index] = post;
+    }
+    state = state.copyWith(posts: posts);
   }
 }
 

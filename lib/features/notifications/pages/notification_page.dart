@@ -58,8 +58,16 @@ class _NotificationPageState extends State<NotificationPage> {
                             child: ListTile(
                               key: ValueKey(notification.id),
                               onTap: () => onTap(notification, context: context),
-                              leading: CachedAvatar(avatar: notification.user?.avatar ?? ""),
-                              title: Text(notification.user?.fullName ?? "unknown"),
+                              leading: CachedAvatar(
+                                avatar: notification.user?.avatar ?? "",
+                                onTap:
+                                    () => context.push("${Routes.user}/${notification.senderId}"),
+                              ),
+                              title: GestureDetector(
+                                onTap:
+                                    () => context.push("${Routes.user}/${notification.senderId}"),
+                                child: Text(notification.user?.fullName ?? "unknown"),
+                              ),
                               subtitle: Row(
                                 children: [
                                   Expanded(child: Text(getNotificationText(notification))),

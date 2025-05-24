@@ -102,7 +102,7 @@ class _PostOptionsSheetState extends State<PostOptions> {
                     );
                   } catch (e) {
                     setState(() {
-                      isPinned = !isPinned;
+                      isSaved = !isSaved;
                     });
                     log(e.toString());
                     rethrow;

@@ -249,7 +249,9 @@ class PostsController extends StateNotifier<bool> {
     final hashtag = _ref.read(selectedHashtagProvider);
 
     try {
-      _ref.read(postStateProvider.notifier).updatePost(post.copyWith(isSaved: !post.isSaved));
+      _ref
+          .read(postStateProvider.notifier)
+          .updatePost(post.copyWith(isSaved: !post.isSaved, userLiked: post.userLiked));
 
       switch (postType) {
         case PostLikeEnum.HASHTAG:
@@ -271,7 +273,7 @@ class PostsController extends StateNotifier<bool> {
         case PostLikeEnum.GENERAL:
           _ref
               .read(mainFeedStateProvider(me.userId).notifier)
-              .updatePost(post.copyWith(isSaved: !post.isSaved));
+              .updatePost(post.copyWith(isSaved: !post.isSaved, userLiked: post.userLiked));
           _ref
               .read(hashtagStateProvider(hashtag).notifier)
               .updatePost(post.copyWith(isSaved: !post.isSaved));
