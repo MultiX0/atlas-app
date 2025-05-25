@@ -10,7 +10,7 @@ class Routes {
   static const aiPage = '/aiPage';
   static const explore = '/explore';
   static const library = '/library';
-  static const scrolls = '/scrolls';
+  static const dashs = '/dashs';
   static const user = '/user';
   static const profile = '/profile';
   static const search = '/searchPage';

@@ -27,13 +27,13 @@ class _MainFeedPageState extends ConsumerState<MainFeedPage> {
   final Debouncer _debouncer = Debouncer();
   @override
   void initState() {
+    super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!fetched) {
         fetchData();
       }
       _scrollController.addListener(_onScroll);
     });
-    super.initState();
   }
 
   DateTime? _lastCheck;

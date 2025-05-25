@@ -45,4 +45,5 @@ class TableNames {
   static const post_comment_replies = 'post_comment_replies';
   static const novel_interactions = 'novel_interactions';
   static const notifications = 'notifications';
+  static const dashs = 'dashs';
 }

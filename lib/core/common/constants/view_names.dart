@@ -13,4 +13,5 @@ class ViewNames {
   static const post_comments_with_meta = 'post_comments_with_meta';
   static const post_comment_replies_with_likes = 'post_comment_replies_with_likes';
   static const user_notifications_view = 'user_notifications_view';
+  static const dashs_view = 'dashs_view';
 }

@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:atlas_app/features/dashs/pages/dashs_page.dart';
 import 'package:atlas_app/features/notifications/pages/notification_page.dart';
 import 'package:atlas_app/features/post_comments/pages/post_comments_page.dart';
 import 'package:atlas_app/features/posts/pages/post_page.dart';
@@ -88,7 +89,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [buildRoute(path: Routes.makePostPage, child: const SizedBox(), fade: true)],
           ),
           StatefulShellBranch(
-            routes: [buildRoute(path: Routes.scrolls, child: const ScrollsPage(), fade: true)],
+            routes: [buildRoute(path: Routes.dashs, child: const DashsPage(), fade: true)],
           ),
           StatefulShellBranch(
             routes: [buildRoute(path: Routes.library, child: const LibraryPage(), fade: true)],
