@@ -36,7 +36,8 @@ class NotificationsDb {
       if (kDebugMode) {
         print(e);
       }
-      rethrow;
+      //  dont throw  any errors
+      return;
     }
   }
 
@@ -53,7 +54,8 @@ class NotificationsDb {
       if (kDebugMode) {
         print(e);
       }
-      rethrow;
+      //  dont throw  any errors
+      return;
     }
   }
 

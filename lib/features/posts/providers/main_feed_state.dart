@@ -92,8 +92,8 @@ class MainFeedState extends StateNotifier<_HelperClass> {
       }
 
       const _pageSize = 20;
-      final currentPage = refresh ? 1 : state.currentPage;
-      final startIndex = refresh ? 0 : state.posts.length;
+      final currentPage = refresh ? (state.currentPage + 1) : state.currentPage;
+      final startIndex = state.posts.length;
       final posts = await _db.getMainFeeds(
         userId: _userId,
         page: currentPage,
@@ -102,7 +102,7 @@ class MainFeedState extends StateNotifier<_HelperClass> {
       );
 
       final updatedposts = refresh ? posts : [...state.posts, ...posts];
-      final newPageNumber = refresh ? 1 : state.currentPage + 1;
+      final newPageNumber = state.currentPage + 1;
 
       updateState(
         loadingMore: false,

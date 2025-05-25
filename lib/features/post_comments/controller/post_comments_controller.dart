@@ -130,7 +130,7 @@ class PostCommentsController extends StateNotifier<bool> {
         _ref.read(postStateProvider.notifier).updatePost(newPost);
         postModel = newPost;
       }
-      await db.handleAddNewCommentReply(replyModel, postId: post.postId);
+      await db.handleAddNewCommentReply(replyModel, postId: post.postId, me: me);
     } catch (e, trace) {
       CustomToast.error(errorMsg);
       _ref.read(postCommentReplisStateNotifier(comment.id).notifier).deleteComment(id);

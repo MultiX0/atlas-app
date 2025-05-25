@@ -138,33 +138,33 @@ class PostCommentsDb {
   Future<void> handleAddNewCommentReply(
     PostCommentReplyModel reply, {
     required String postId,
+    required UserModel me,
   }) async {
     try {
       final headers = await generateAuthHeaders();
 
-      await Future.wait([
-        if (reply.userId != reply.parentAuthorId)
-          _notificationsDb.postCommentReplyNotification(
-            commentId: reply.commentId,
-            replyId: reply.id,
-            parentAuthorId: reply.parentAuthorId,
-            postId: postId,
-            senderId: reply.user!.userId,
-            username: reply.user!.username,
-          ),
-        _dio.post(
-          '${appAPI}post-comment-reply',
-          options: Options(headers: headers),
-          data: jsonEncode({
-            KeyNames.id: reply.id,
-            KeyNames.userId: reply.userId,
-            KeyNames.comment_id: reply.commentId,
-            KeyNames.content: reply.content,
-            'token': _client.auth.currentSession!.accessToken,
-            KeyNames.parent_comment_author_id: reply.parentAuthorId,
-          }),
-        ),
-      ]);
+      await _dio.post(
+        '${appAPI}post-comment-reply',
+        options: Options(headers: headers),
+        data: jsonEncode({
+          KeyNames.id: reply.id,
+          KeyNames.userId: reply.userId,
+          KeyNames.comment_id: reply.commentId,
+          KeyNames.content: reply.content,
+          'token': _client.auth.currentSession!.accessToken,
+          KeyNames.parent_comment_author_id: reply.parentAuthorId,
+        }),
+      );
+      if (reply.parentAuthorId != me.userId) {
+        await _notificationsDb.postCommentReplyNotification(
+          commentId: reply.commentId,
+          replyId: reply.id,
+          parentAuthorId: reply.parentAuthorId,
+          postId: postId,
+          senderId: reply.user!.userId,
+          username: reply.user!.username,
+        );
+      }
     } catch (e) {
       log(e.toString());
       rethrow;
