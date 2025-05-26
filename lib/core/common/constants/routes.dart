@@ -30,4 +30,6 @@ class Routes {
   static const postPage = '/post';
   static const postComments = '/comments';
   static const notification = '/notification';
+  static const newDash = '/new-dash';
+  static const dashPage = '/dash';
 }

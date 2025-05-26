@@ -213,7 +213,11 @@ class ProfileHeader extends ConsumerWidget {
                   fontFamily: accentFont,
                 ),
               ),
-              const Visibility(visible: false, child: Icon(LucideIcons.badge_check)),
+              if (user.isAdmin) ...[const SizedBox(width: 5)],
+              Visibility(
+                visible: user.isAdmin,
+                child: const Icon(LucideIcons.badge_check, color: AppColors.primary, size: 18),
+              ),
             ],
           ),
           Text(

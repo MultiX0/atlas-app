@@ -163,4 +163,5 @@ class KeyNames {
   static const novel_review_id = 'novel_review_id';
   static const comic_review_id = 'comic_review_id';
   static const message = 'message';
+  static const is_admin = 'is_admin';
 }

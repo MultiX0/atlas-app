@@ -15,7 +15,6 @@ import 'package:atlas_app/features/notifications/db/notifications_db.dart';
 import 'package:atlas_app/features/interactions/models/post_interaction_model.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 
 final postsDbProvider = Provider<PostsDb>((ref) {
   return PostsDb();
@@ -372,11 +371,34 @@ class PostsDb {
     }
   }
 
+  Future<List<String>> getPrioritizedRandomPostIds({
+    required String userId,
+    int limit = 20,
+    required int page,
+  }) async {
+    final response = await _client.rpc(
+      'get_randomized_prioritized_posts',
+      params: {'user_uuid': userId, 'limit_count': limit, 'page': page},
+    );
+    if (response == null) return [];
+    if (response is List) {
+      final ids = response.map((item) => item['post_id']).whereType<String>().toList();
+      log(ids.toString());
+      return ids;
+    } else {
+      return [];
+    }
+  }
+
   Future<List<String>> fetchUserRecommendation({required String userId, required int page}) async {
     try {
       final url = '${appAPI}recommend-posts?user_id=$userId&page=$page';
       final headers = await generateAuthHeaders();
-      final options = Options(headers: headers);
+      final options = Options(
+        headers: headers,
+        sendTimeout: const Duration(microseconds: 2),
+        receiveTimeout: const Duration(seconds: 2),
+      );
       final res = await _dio.get(url, options: options);
       if (res.statusCode != null && res.statusCode! >= 200 && res.statusCode! <= 299) {
         if (res.data == null) {
@@ -384,7 +406,7 @@ class PostsDb {
           return [];
         }
 
-        final data = jsonDecode(res.data.toString());
+        final data = res.data;
 
         if (data is List) {
           return List<String>.from(
@@ -413,16 +435,22 @@ class PostsDb {
       var query = _postsView.select("*");
 
       if (ids.isNotEmpty) {
-        query = query.inFilter(KeyNames.post_id, ids);
-        if (!kDebugMode) {
-          //remove personal posts from the feeds in prod
-          query = query.neq(KeyNames.userId, userId);
-        }
-      } else {
-        query.range(startAt, startAt + pageSize - 1);
+        query = query.inFilter(KeyNames.post_id, ids).neq(KeyNames.userId, userId);
       }
 
-      final data = await query;
+      if (ids.length < pageSize) {
+        final _ids = await getPrioritizedRandomPostIds(userId: userId, limit: pageSize, page: page);
+        List<String> newIds = List.from(ids);
+        newIds.addAll(_ids);
+
+        query = _postsView
+            .select('*')
+            .inFilter(KeyNames.post_id, newIds)
+            .neq(KeyNames.userId, userId);
+      }
+
+      var data = await query;
+
       final idIndexMap = {for (var i = 0; i < ids.length; i++) ids[i]: i};
       data.sort(
         (a, b) => (idIndexMap[a[KeyNames.post_id]] ?? ids.length).compareTo(

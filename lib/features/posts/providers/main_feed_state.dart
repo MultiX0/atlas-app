@@ -78,7 +78,8 @@ class MainFeedState extends StateNotifier<_HelperClass> {
 
   Future<void> fetchData({bool refresh = false}) async {
     try {
-      if (state.loadingMore) return;
+      log('current page: ${state.currentPage}');
+      if (state.loadingMore && !refresh) return;
 
       if (!refresh && state.hasReachedEnd) {
         log("reach end of the data");
@@ -92,14 +93,20 @@ class MainFeedState extends StateNotifier<_HelperClass> {
       }
 
       const _pageSize = 20;
-      final currentPage = refresh ? (state.currentPage + 1) : state.currentPage;
-      final startIndex = state.posts.length;
+      final currentPage = state.currentPage;
+      final startIndex = refresh ? 0 : state.posts.length;
       final posts = await _db.getMainFeeds(
         userId: _userId,
         page: currentPage,
         startAt: startIndex,
         pageSize: _pageSize,
       );
+
+      log("post length: ${posts.length}");
+
+      if (posts.isEmpty || posts.length < _pageSize / 2) {
+        state = state.copyWith(currentPage: 0);
+      }
 
       final updatedposts = refresh ? posts : [...state.posts, ...posts];
       final newPageNumber = state.currentPage + 1;

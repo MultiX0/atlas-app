@@ -1,6 +1,8 @@
 import 'dart:developer';
 
-// import 'package:atlas_app/features/dashs/pages/dashs_page.dart';
+import 'package:atlas_app/features/dashs/pages/dash_page.dart';
+import 'package:atlas_app/features/dashs/pages/dashs_page.dart';
+import 'package:atlas_app/features/dashs/pages/new_dash_page.dart';
 import 'package:atlas_app/features/notifications/pages/notification_page.dart';
 import 'package:atlas_app/features/post_comments/pages/post_comments_page.dart';
 import 'package:atlas_app/features/posts/pages/post_page.dart';
@@ -88,12 +90,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [buildRoute(path: Routes.makePostPage, child: const SizedBox(), fade: true)],
           ),
-          // StatefulShellBranch(
-          //   routes: [buildRoute(path: Routes.dashs, child: const DashsPage(), fade: true)],
-          // ),
           StatefulShellBranch(
-            routes: [buildRoute(path: Routes.dashs, child: const ScrollsPage(), fade: true)],
+            routes: [buildRoute(path: Routes.dashs, child: const DashsPage(), fade: true)],
           ),
+          // StatefulShellBranch(
+          // routes: [buildRoute(path: Routes.dashs, child: const ScrollsPage(), fade: true)],
+          // ),
           StatefulShellBranch(
             routes: [buildRoute(path: Routes.library, child: const LibraryPage(), fade: true)],
           ),
@@ -122,6 +124,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       buildRoute(path: Routes.editProfile, child: const EditProfileScreen(), fade: true),
       buildRoute(path: Routes.addNovelPage, child: const AddNovelPage(edit: false), fade: true),
       buildRoute(path: Routes.notification, child: const NotificationPage(), fade: true),
+      buildRoute(path: Routes.newDash, child: const NewDashPage(), fade: true),
 
       GoRoute(
         path: Routes.forgotPassword,
@@ -148,6 +151,23 @@ final routerProvider = Provider<GoRouter>((ref) {
 
           return CustomTransitionPage(
             child: ChapterReadingPage(chapterId: id),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+          );
+        },
+      ),
+
+      GoRoute(
+        path: "${Routes.dashPage}/:id",
+        name: Routes.dashPage,
+        redirect: authRedirect,
+
+        pageBuilder: (context, state) {
+          final id = ((state.pathParameters as Map<String, dynamic>)["id"] ?? "").toString().trim();
+
+          return CustomTransitionPage(
+            child: DashPage(dashId: id),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);
             },

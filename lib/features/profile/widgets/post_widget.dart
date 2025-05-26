@@ -74,7 +74,10 @@ class PostWidget extends ConsumerWidget {
                 post: post,
                 hashtag: hashtag,
                 hasArabic: hasArabic,
-                onComment: () => onComment(context, postRoute, ref: ref),
+                onComment: () {
+                  ref.read(postsDbProvider).seePost(post.postId, me.userId);
+                  onComment(context, postRoute, ref: ref);
+                },
                 onLike: (_) => onLike(ref, me.userId),
                 onRepost: () => onRepost(ref),
                 onShare: onShare,

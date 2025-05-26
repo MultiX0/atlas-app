@@ -77,6 +77,15 @@ class ChapterCommentTile extends StatelessWidget {
                               Row(
                                 children: [
                                   Text(user.username),
+                                  if (user.isAdmin) ...[const SizedBox(width: 5)],
+                                  Visibility(
+                                    visible: user.isAdmin,
+                                    child: const Icon(
+                                      LucideIcons.badge_check,
+                                      color: AppColors.primary,
+                                      size: 14,
+                                    ),
+                                  ),
                                   const SizedBox(width: 5),
                                   const Text(' · '),
                                   Text(

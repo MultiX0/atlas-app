@@ -47,6 +47,15 @@ class PostHeaderWidget extends StatelessWidget {
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
+                    if (user.isAdmin) ...[const SizedBox(width: 5)],
+                    Visibility(
+                      visible: user.isAdmin,
+                      child: const Icon(
+                        LucideIcons.badge_check,
+                        color: AppColors.primary,
+                        size: 14,
+                      ),
+                    ),
                     const SizedBox(width: 5),
                     const Text("·"),
                     const SizedBox(width: 5),

@@ -4,6 +4,7 @@ import 'package:atlas_app/core/common/enum/post_like_enum.dart';
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/core/common/widgets/app_refresh.dart';
+import 'package:atlas_app/core/common/widgets/general_loading.dart';
 import 'package:atlas_app/features/novels/widgets/empty_chapters.dart';
 import 'package:atlas_app/features/posts/db/posts_db.dart';
 import 'package:atlas_app/features/posts/providers/main_feed_state.dart';
@@ -85,13 +86,13 @@ class _MainFeedPageState extends ConsumerState<MainFeedPage> {
   final Set<String> _alreadyMarkedSeen = {};
   void _onVisible(double visibleFraction, String postId) {
     // Mark as seen only if more than 60% visible and not already marked
-    if (!_alreadyMarkedSeen.contains(postId) && visibleFraction > 0.6) {
+    if (!_alreadyMarkedSeen.contains(postId) && visibleFraction > 0.75) {
       _seenTimer?.cancel();
       _seenTimer = Timer(const Duration(milliseconds: 500), () {
         ref.read(postsDbProvider).seePost(postId, userId);
         _alreadyMarkedSeen.add(postId);
       });
-    } else if (visibleFraction <= 0.6) {
+    } else if (visibleFraction <= 0.75) {
       _seenTimer?.cancel();
     }
   }
@@ -125,7 +126,7 @@ class _MainFeedPageState extends ConsumerState<MainFeedPage> {
           slivers: [
             const MainFeedAppbar(),
             if (state.isLoading)
-              const SliverFillRemaining(child: Loader())
+              const SliverFillRemaining(child: GeneralLoading())
             else
               SliverList.builder(
                 addRepaintBoundaries: true,

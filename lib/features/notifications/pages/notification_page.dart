@@ -41,7 +41,13 @@ class _NotificationPageState extends State<NotificationPage> {
                       addRepaintBoundaries: true,
                       addSemanticIndexes: true,
                       elements: notifications, // Don't map to widgets!
-                      groupBy: (element) => element.createdAt!,
+                      groupBy:
+                          (element) => DateTime(
+                            element.createdAt!.year,
+                            element.createdAt!.month,
+                            element.createdAt!.day,
+                          ),
+
                       groupSeparatorBuilder:
                           (DateTime date) => Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 25),
@@ -63,11 +69,7 @@ class _NotificationPageState extends State<NotificationPage> {
                                 onTap:
                                     () => context.push("${Routes.user}/${notification.senderId}"),
                               ),
-                              title: GestureDetector(
-                                onTap:
-                                    () => context.push("${Routes.user}/${notification.senderId}"),
-                                child: Text(notification.user?.fullName ?? "unknown"),
-                              ),
+                              title: Text(notification.user?.fullName ?? "unknown"),
                               subtitle: Row(
                                 children: [
                                   Expanded(child: Text(getNotificationText(notification))),

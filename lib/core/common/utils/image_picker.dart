@@ -6,9 +6,25 @@ import 'package:atlas_app/features/theme/app_theme.dart';
 import 'package:image_cropper/image_cropper.dart' as c;
 import 'package:image_picker/image_picker.dart';
 
+Future<XFile?> singlePicker() async {
+  try {
+    final ImagePicker picker = ImagePicker();
+
+    final image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    return image;
+  } catch (e) {
+    log(e.toString());
+    throw Exception(e);
+  }
+}
+
 Future<List<File>> imagePicker(bool single) async {
   try {
     final ImagePicker picker = ImagePicker();
+    if (single) {
+      final image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+      return image != null ? [File(image.path)] : [];
+    }
     final List<XFile> images = await picker.pickMultiImage(limit: 4, imageQuality: 70);
     List<File> selectedImages = [];
 

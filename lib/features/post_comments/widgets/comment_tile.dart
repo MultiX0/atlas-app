@@ -80,6 +80,15 @@ class PostCommentTile extends StatelessWidget {
                               Row(
                                 children: [
                                   Text(user.username),
+                                  if (user.isAdmin) ...[const SizedBox(width: 5)],
+                                  Visibility(
+                                    visible: user.isAdmin,
+                                    child: const Icon(
+                                      LucideIcons.badge_check,
+                                      color: AppColors.primary,
+                                      size: 14,
+                                    ),
+                                  ),
                                   const SizedBox(width: 5),
                                   const Text(' · '),
                                   Text(
@@ -88,6 +97,7 @@ class PostCommentTile extends StatelessWidget {
                                   ),
                                 ],
                               ),
+
                               const SizedBox(height: 5),
                               if (isEdited || updatedAt != null) ...[
                                 const Text(

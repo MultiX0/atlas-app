@@ -16,6 +16,7 @@ class UserModel {
   final bool? is_follow_me;
   final bool? followed;
   final int postsCount;
+  final bool isAdmin;
   UserModel({
     required this.fullName,
     required this.username,
@@ -27,6 +28,7 @@ class UserModel {
     this.metadata,
     required this.followers_count,
     required this.following_count,
+    this.isAdmin = false,
     this.is_follow_me,
     this.followed,
   });
@@ -74,6 +76,7 @@ class UserModel {
       metadata:
           map[KeyNames.metadata] == null ? null : UserMetadata.fromMap(map[KeyNames.metadata]),
       postsCount: map[KeyNames.posts_count] ?? 0,
+      isAdmin: map[KeyNames.is_admin] ?? false,
       // metadata: UserMetadata.fromMap(map['metadata'] as Map<String, dynamic>),
     );
   }

@@ -55,15 +55,12 @@ class ProfileDb {
 
   Future<void> toggleFollow(String targetId, bool isFollowed, UserModel me) async {
     try {
-      await Future.wait([
-        if (!isFollowed)
-          notificationsDb.userFollowNotification(
-            targetId: targetId,
-            userId: me.userId,
-            username: me.username,
-          ),
-        client.rpc(FunctionNames.toggle_follow_user, params: {"target_user_id": targetId}),
-      ]);
+      await client.rpc(FunctionNames.toggle_follow_user, params: {"target_user_id": targetId});
+      await notificationsDb.userFollowNotification(
+        targetId: targetId,
+        userId: me.userId,
+        username: me.username,
+      );
     } catch (e) {
       log(e.toString());
       rethrow;

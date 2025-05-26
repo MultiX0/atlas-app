@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:atlas_app/imports.dart';
 import 'package:atlas_app/core/common/widgets/cached_avatar.dart';
 import 'package:atlas_app/features/comics/widgets/rating_bar_display.dart';
 
@@ -12,6 +11,7 @@ class ReviewHeader extends ConsumerWidget {
     required this.rating,
     required this.color,
     required this.isMe,
+    required this.isAdmin,
     this.itemSize = 12,
     this.iconSize = 20,
     this.onMenuPressed,
@@ -23,6 +23,7 @@ class ReviewHeader extends ConsumerWidget {
   final double rating;
   final Color color;
   final bool isMe;
+  final bool isAdmin;
   final double itemSize;
   final double iconSize;
   final VoidCallback? onMenuPressed;
@@ -38,7 +39,21 @@ class ReviewHeader extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("@$username"),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text("@$username"),
+                    if (isAdmin) ...[const SizedBox(width: 5)],
+                    Visibility(
+                      visible: isAdmin,
+                      child: const Icon(
+                        LucideIcons.badge_check,
+                        color: AppColors.primary,
+                        size: 14,
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 5),
                 RatingBarDisplay(rating: rating, color: color, itemSize: itemSize),
               ],

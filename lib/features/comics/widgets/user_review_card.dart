@@ -25,6 +25,7 @@ class UserReviewCard extends ConsumerStatefulWidget {
     required this.reviewsCount,
     required this.onLike,
     required this.spoilers,
+    required this.isAdmin,
     this.updatedAt,
     this.onRepost,
     this.onMenuPressed,
@@ -53,6 +54,7 @@ class UserReviewCard extends ConsumerStatefulWidget {
   final EdgeInsets padding;
   final EdgeInsets cardPadding;
   final bool spoilers;
+  final bool isAdmin;
 
   @override
   ConsumerState<UserReviewCard> createState() => _UserReviewCardState();
@@ -107,6 +109,7 @@ class _UserReviewCardState extends ConsumerState<UserReviewCard> {
           rating: widget.rating,
           color: widget.color,
           isMe: isMe,
+          isAdmin: widget.isAdmin,
           onMenuPressed: widget.onMenuPressed,
         ),
         const SizedBox(height: 8),

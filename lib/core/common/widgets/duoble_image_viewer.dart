@@ -30,6 +30,9 @@ class DoubleImageViewer extends StatelessWidget {
               maxWidthDiskCache: (size.width / 2).toInt(),
               maxHeightDiskCache: (size.width / 2).toInt(),
               fit: BoxFit.cover,
+              errorWidget:
+                  (context, url, error) =>
+                      Container(color: Colors.grey[600], child: const Icon(Icons.broken_image)),
             ),
           ),
           const SizedBox(width: 4),
@@ -40,6 +43,9 @@ class DoubleImageViewer extends StatelessWidget {
               maxHeightDiskCache: (size.width / 2).toInt(),
               maxWidthDiskCache: (size.width / 2).toInt(),
               fit: BoxFit.cover,
+              errorWidget:
+                  (context, url, error) =>
+                      Container(color: Colors.grey[600], child: const Icon(Icons.broken_image)),
             ),
           ),
         ],

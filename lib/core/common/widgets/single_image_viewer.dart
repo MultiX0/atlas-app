@@ -33,6 +33,9 @@ class SingleImageViewer extends StatelessWidget {
               fit: BoxFit.cover,
               maxHeightDiskCache: min(size.width.toInt(), 500), // Cap at 500px
               maxWidthDiskCache: min(size.width.toInt(), 500),
+              errorWidget:
+                  (context, url, error) =>
+                      Container(color: Colors.grey[600], child: const Icon(Icons.broken_image)),
             ),
           ),
         ),

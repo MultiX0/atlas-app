@@ -20,7 +20,8 @@ class DashsActionButton extends StatelessWidget {
             child: RepaintBoundary(
               key: const Key('dashs-floating-btn'),
               child: FloatingActionButton(
-                onPressed: show ? null : () {},
+                heroTag: 'dashs-fab',
+                onPressed: show ? null : () => context.push(Routes.newDash),
                 backgroundColor: AppColors.primary.withValues(alpha: .6),
                 child: Icon(Icons.add, color: AppColors.whiteColor),
               ),

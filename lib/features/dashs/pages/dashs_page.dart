@@ -4,6 +4,7 @@ import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/core/common/widgets/app_refresh.dart';
 import 'package:atlas_app/core/common/widgets/error_widget.dart';
 import 'package:atlas_app/features/dashs/providers/dashs_state_provider.dart';
+import 'package:atlas_app/features/dashs/widgets/dash_image.dart';
 import 'package:atlas_app/features/dashs/widgets/dashs_action_button.dart';
 import 'package:atlas_app/features/dashs/widgets/dashs_appbar.dart';
 import 'package:atlas_app/features/dashs/widgets/dashs_loading.dart';
@@ -151,14 +152,7 @@ class _DashsPageState extends ConsumerState<DashsPage> {
                       return const Loader();
                     }
                     final dash = dashs[i];
-                    return ClipRRect(
-                      key: ValueKey(dash.id),
-                      borderRadius: BorderRadius.circular(15),
-                      child: Image(
-                        image: CachedNetworkImageProvider(dash.image),
-                        fit: BoxFit.cover,
-                      ),
-                    );
+                    return SimpleDynamicImage(imageUrl: dash.image, imageId: dash.id);
                   },
                 ),
               ),

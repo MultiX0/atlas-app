@@ -1,3 +1,5 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
@@ -32,6 +34,18 @@ class DashsDb {
     }
   }
 
+  Future<DashModel> getDashById(String id) async {
+    try {
+      final data = await _dashsView.select("*").eq(KeyNames.id, id).maybeSingle();
+      if (data == null) throw 'no dash with this id: $id';
+
+      return DashModel.fromMap(data);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
   Future<void> postDash({
     required String userId,
     required String token,
@@ -43,14 +57,14 @@ class DashsDb {
         throw Exception('File does not exist');
       }
 
+      log("image path: ${file.path}");
+
       var data = dio.FormData.fromMap({
-        'files': [
-          await dio.MultipartFile.fromFile(
-            file.path,
-            filename: 'dark-anime-girl-with-red-eyes-desktop-wallpaper.jpg',
-            contentType: MediaType('image', 'jpeg'), // Specify content type
-          ),
-        ],
+        // Change 'files' to 'image'
+        'files': await dio.MultipartFile.fromFile(
+          file.path,
+          contentType: MediaType('image', 'webp'), // Specify content type
+        ),
         'user_id': userId,
         'token': token,
         'content': content,
@@ -63,7 +77,7 @@ class DashsDb {
         'https://api.atlasapp.app/v1/post-dash',
         options: dio.Options(
           method: 'POST',
-          headers: {'Content-Type': 'multipart/form-data', ...headers},
+          headers: {...headers, 'Content-Type': 'multipart/form-data'},
           sendTimeout: const Duration(seconds: 30),
           receiveTimeout: const Duration(seconds: 30),
         ),

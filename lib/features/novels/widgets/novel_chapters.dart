@@ -52,7 +52,7 @@ class _NovelChaptersState extends ConsumerState<NovelChapters> {
         builder: (context, ref, _) {
           final novelCreator = ref.read(selectedNovelProvider.select((s) => s!.userId));
           final novelColor = ref.read(selectedNovelProvider.select((s) => s!.color));
-          final novelId = ref.read(selectedNovelProvider.select((s) => s!.id));
+          // final novelId = ref.read(selectedNovelProvider.select((s) => s!.id));
 
           final me = ref.read(userState.select((s) => s.user!.userId));
           bool isCreator = me == novelCreator;
@@ -66,7 +66,7 @@ class _NovelChaptersState extends ConsumerState<NovelChapters> {
 
                       onPressed: () {
                         ref.read(selectedDraft.notifier).state = null;
-                        context.push("${Routes.addNovelChapterPage}/$novelId");
+                        context.push(Routes.addNovelChapterPage);
                       },
                     )
                     : null,

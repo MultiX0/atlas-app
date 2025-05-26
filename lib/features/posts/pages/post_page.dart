@@ -5,6 +5,7 @@ import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/core/common/widgets/app_refresh.dart';
 import 'package:atlas_app/core/common/widgets/error_widget.dart';
+import 'package:atlas_app/core/common/widgets/general_loading.dart';
 import 'package:atlas_app/features/novels/widgets/chapter_comment_input.dart';
 import 'package:atlas_app/features/novels/widgets/empty_chapters.dart';
 import 'package:atlas_app/features/novels/widgets/reply_status_widget.dart';
@@ -201,7 +202,7 @@ class _PostPageState extends ConsumerState<PostPage> {
                 );
               },
               error: (error, _) => AtlasErrorPage(message: error.toString()),
-              loading: () => const Loader(),
+              loading: () => const GeneralLoading(single: true),
             ),
       ),
     );

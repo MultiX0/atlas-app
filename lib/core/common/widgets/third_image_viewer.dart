@@ -37,6 +37,9 @@ class ThirdImageViewer extends StatelessWidget {
               maxHeightDiskCache: (imageWidth / 1.5).toInt(),
               maxWidthDiskCache: (imageWidth / 2).toInt(),
               fit: BoxFit.cover,
+              errorWidget:
+                  (context, url, error) =>
+                      Container(color: Colors.grey[600], child: const Icon(Icons.broken_image)),
             ),
           ),
           const SizedBox(width: 4),
@@ -55,6 +58,11 @@ class ThirdImageViewer extends StatelessWidget {
                       maxHeightDiskCache: (imageWidth / 3).toInt(),
                       maxWidthDiskCache: (imageWidth / 2).toInt(),
                       fit: BoxFit.cover,
+                      errorWidget:
+                          (context, url, error) => Container(
+                            color: Colors.grey[600],
+                            child: const Icon(Icons.broken_image),
+                          ),
                     ),
                   ],
                 ),
@@ -69,6 +77,11 @@ class ThirdImageViewer extends StatelessWidget {
                       maxHeightDiskCache: (imageWidth / 3).toInt(),
                       maxWidthDiskCache: (imageWidth / 2).toInt(),
                       fit: BoxFit.cover,
+                      errorWidget:
+                          (context, url, error) => Container(
+                            color: Colors.grey[600],
+                            child: const Icon(Icons.broken_image),
+                          ),
                     ),
                     if (remainingCount > 0)
                       Container(

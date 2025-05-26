@@ -4,6 +4,7 @@ import 'package:atlas_app/core/common/enum/post_like_enum.dart';
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/debouncer/debouncer.dart';
 import 'package:atlas_app/core/common/widgets/app_refresh.dart';
+import 'package:atlas_app/core/common/widgets/general_loading.dart';
 import 'package:atlas_app/features/auth/controller/auth_controller.dart';
 import 'package:atlas_app/features/profile/controller/profile_controller.dart';
 import 'package:atlas_app/features/profile/provider/profile_posts_state.dart';
@@ -145,7 +146,7 @@ class _ProfilePostsPageState extends ConsumerState<ProfilePostsPage> {
               ),
             );
           },
-          child: const Loader(),
+          child: const GeneralLoading(),
         ),
       ),
     );

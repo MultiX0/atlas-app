@@ -344,7 +344,7 @@ class NotificationsDb {
       final notification = NotificationsInterface.followUserNotification(
         userId: targetId,
         username: username,
-        data: {'route': '${Routes.postPage}/$userId'},
+        data: {'route': '${Routes.user}/$userId'},
       );
 
       final event = NotificationEventRequest(

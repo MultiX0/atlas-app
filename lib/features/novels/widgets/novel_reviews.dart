@@ -80,6 +80,7 @@ class _ReviewsWidgetState extends ConsumerState<NovelReviewsWidget> {
           createdAt: review.createdAt,
           images: review.images.map((s) => s.toString()).toList(),
           isLiked: review.i_liked,
+          isAdmin: review.user?.isAdmin ?? false,
           likeCount: review.likes_count,
           onMenuPressed:
               () => openSheet(
