@@ -28,9 +28,13 @@ class _ExploreNovelsPageState extends ConsumerState<ExploreComicsPage> {
     super.initState();
   }
 
+  DateTime? _lastCheck;
   void _onScroll() {
-    if (_isBottom) {
-      const duration = Duration(milliseconds: 100);
+    final now = DateTime.now();
+    if (_lastCheck != null && now.difference(_lastCheck!).inMilliseconds < 500) return;
+    _lastCheck = now;
+    if (_isAtSeventyPercent) {
+      const duration = Duration(milliseconds: 500);
       _debouncer.debounce(
         duration: duration,
         onDebounce: () {
@@ -40,13 +44,15 @@ class _ExploreNovelsPageState extends ConsumerState<ExploreComicsPage> {
     }
   }
 
-  bool get _isBottom {
+  bool get _isAtSeventyPercent {
     if (!_scrollController.hasClients) return false;
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.offset;
-    var threshold = MediaQuery.sizeOf(context).height / 2;
 
-    return maxScroll - currentScroll <= threshold;
+    // Calculate 70% of the total scrollable content
+    final seventyPercentThreshold = maxScroll * 0.65;
+
+    return currentScroll >= seventyPercentThreshold;
   }
 
   void fetchData() async {

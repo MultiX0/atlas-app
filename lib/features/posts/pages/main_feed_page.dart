@@ -42,7 +42,7 @@ class _MainFeedPageState extends ConsumerState<MainFeedPage> {
     final now = DateTime.now();
     if (_lastCheck != null && now.difference(_lastCheck!).inMilliseconds < 500) return;
     _lastCheck = now;
-    if (_isBottom) {
+    if (_isAtSeventyPercent) {
       const duration = Duration(milliseconds: 500);
       _debouncer.debounce(
         duration: duration,
@@ -53,13 +53,15 @@ class _MainFeedPageState extends ConsumerState<MainFeedPage> {
     }
   }
 
-  bool get _isBottom {
+  bool get _isAtSeventyPercent {
     if (!_scrollController.hasClients) return false;
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.offset;
-    var threshold = MediaQuery.sizeOf(context).height / 2;
 
-    return maxScroll - currentScroll <= threshold;
+    // Calculate 70% of the total scrollable content
+    final seventyPercentThreshold = maxScroll * 0.7;
+
+    return currentScroll >= seventyPercentThreshold;
   }
 
   void fetchData() async {
