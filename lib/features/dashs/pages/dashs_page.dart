@@ -113,7 +113,7 @@ class _DashsPageState extends ConsumerState<DashsPage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar: DashsAppBar(provider: _isScrolling),
+        appBar: DashsAppBar(provider: _isScrolling, keyValue: 'dashs-appbar', title: 'ومضات'),
         floatingActionButton: DashsActionButton(provider: _isScrolling),
 
         body: Consumer(
@@ -152,7 +152,10 @@ class _DashsPageState extends ConsumerState<DashsPage> {
                       return const Loader();
                     }
                     final dash = dashs[i];
-                    return SimpleDynamicImage(imageUrl: dash.image, imageId: dash.id);
+                    return GestureDetector(
+                      onTap: () => context.push("${Routes.dashPage}/${dash.id}"),
+                      child: SimpleDynamicImage(imageUrl: dash.image, imageId: dash.id),
+                    );
                   },
                 ),
               ),

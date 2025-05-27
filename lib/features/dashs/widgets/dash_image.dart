@@ -5,11 +5,17 @@ import 'package:shimmer/shimmer.dart';
 class SimpleDynamicImage extends StatelessWidget {
   final String imageUrl;
   final String imageId;
+  final double raduis;
 
   static final Map<String, Size> _cache = {};
   static final Map<String, Future<Size>> _pendingRequests = {};
 
-  const SimpleDynamicImage({super.key, required this.imageUrl, required this.imageId});
+  const SimpleDynamicImage({
+    super.key,
+    required this.imageUrl,
+    required this.imageId,
+    this.raduis = 15,
+  });
 
   Future<Size> _getImageDimensions() async {
     // Return cached result if available
@@ -66,7 +72,7 @@ class SimpleDynamicImage extends StatelessWidget {
   Widget build(BuildContext context) {
     return ClipRRect(
       key: ValueKey(imageId),
-      borderRadius: BorderRadius.circular(15),
+      borderRadius: BorderRadius.circular(raduis),
       child: ConstrainedBox(
         constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * .75),
         child: FutureBuilder<Size>(

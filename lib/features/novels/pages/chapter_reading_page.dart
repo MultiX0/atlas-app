@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:atlas_app/core/common/utils/custom_action_sheet.dart';
 import 'package:atlas_app/core/common/utils/delta_parser.dart';
@@ -46,6 +47,13 @@ class ChapterReadingPage extends HookConsumerWidget {
         final chapter = await ref.read(chapterStateProvider(chapterId).notifier).fetchData();
         ref.read(currentChapterProvider.notifier).state = chapter;
       });
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Future.microtask(() {
+          log("view chapter");
+          ref.read(novelsControllerProvider.notifier).handleChapterView(chapterId);
+        });
+      });
       return null;
     }, [chapterId]);
 
@@ -81,16 +89,6 @@ class ChapterReadingPage extends HookConsumerWidget {
         noScreenshot.screenshotOn();
       };
     }, [noScreenshot]);
-
-    // 6. Setup chapter view effect
-    useEffect(() {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Future.microtask(() {
-          ref.read(novelsControllerProvider.notifier).handleChapterView(chapterId);
-        });
-      });
-      return null;
-    }, []);
 
     // Page change callback (defined outside the hooks)
     void onPageChange(String id) {

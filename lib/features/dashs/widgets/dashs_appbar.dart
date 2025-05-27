@@ -1,8 +1,19 @@
 import 'package:atlas_app/imports.dart';
 
 class DashsAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const DashsAppBar({super.key, required this.provider});
+  const DashsAppBar({
+    super.key,
+    required this.provider,
+    this.centerTitle = false,
+    required this.keyValue,
+    required this.title,
+    this.actions,
+  });
   final StateProvider<bool> provider;
+  final String keyValue;
+  final String title;
+  final bool centerTitle;
+  final List<Widget>? actions;
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +28,7 @@ class DashsAppBar extends StatelessWidget implements PreferredSizeWidget {
             duration: const Duration(milliseconds: 250),
             opacity: show ? 0.0 : 1.0,
             child: RepaintBoundary(
-              child: AppBar(key: const Key('dashs-appbar'), title: const Text('ومضات')),
+              child: AppBar(key: Key(keyValue), title: Text(title), actions: actions),
             ),
           ),
         );
