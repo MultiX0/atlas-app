@@ -1081,7 +1081,7 @@ characters {
               poster: c[KeyNames.image] ?? "",
               banner: c[KeyNames.banner] ?? "",
               description:
-                  c[KeyNames.ar_synopsis].toString().isEmpty
+                  (c[KeyNames.ar_synopsis] ?? "").toString().isEmpty
                       ? "سيتم اضافة القصة في وقت لاحق"
                       : c[KeyNames.ar_synopsis],
               color: c[KeyNames.theme_color] ?? '0084ff',

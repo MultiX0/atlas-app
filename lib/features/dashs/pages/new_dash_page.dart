@@ -73,7 +73,6 @@ class _NewDashPageState extends ConsumerState<NewDashPage> {
                           child: Container(
                             width: MediaQuery.sizeOf(context).width,
                             constraints: BoxConstraints(maxHeight: maxHeight),
-                            height: imageHeigh,
                             decoration: BoxDecoration(
                               color: AppColors.scaffoldForeground.withValues(alpha: .5),
                               borderRadius: BorderRadius.circular(15),

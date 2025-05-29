@@ -2,7 +2,7 @@ import 'package:atlas_app/imports.dart';
 
 class DashsActionButton extends StatelessWidget {
   const DashsActionButton({super.key, required this.provider});
-  final StateProvider<bool> provider;
+  final AutoDisposeStateProvider<bool> provider;
 
   @override
   Widget build(BuildContext context) {

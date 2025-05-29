@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:atlas_app/core/common/constants/key_names.dart';
 import 'package:atlas_app/features/auth/models/user_model.dart';
+import 'package:atlas_app/features/dashs/models/dash_interaction_model.dart';
 
 class DashModel {
   final String id;
@@ -10,7 +11,19 @@ class DashModel {
   final String userId;
   final UserModel? user;
   final String image;
-  DashModel({required this.id, this.content, required this.userId, this.user, required this.image});
+  final DashInteractionModel? interaction;
+  final DateTime createdAt;
+  final bool liked;
+  DashModel({
+    required this.id,
+    this.content,
+    required this.userId,
+    this.user,
+    required this.image,
+    this.interaction,
+    required this.liked,
+    required this.createdAt,
+  });
 
   DashModel copyWith({
     String? id,
@@ -18,13 +31,19 @@ class DashModel {
     String? userId,
     UserModel? user,
     String? image,
+    bool? liked,
+    DateTime? createdAt,
+    DashInteractionModel? interaction,
   }) {
     return DashModel(
       id: id ?? this.id,
       content: content ?? this.content,
       userId: userId ?? this.userId,
       user: user ?? this.user,
+      interaction: interaction ?? this.interaction,
       image: image ?? this.image,
+      liked: liked ?? this.liked,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 
@@ -40,6 +59,7 @@ class DashModel {
       KeyNames.userId: userId,
       // KeyNames.user: user?.toMap(),
       KeyNames.image: image,
+      KeyNames.liked: liked,
     };
   }
 
@@ -50,6 +70,13 @@ class DashModel {
       userId: map[KeyNames.userId] ?? "",
       user: map[KeyNames.user] != null ? UserModel.fromMap(map[KeyNames.user]) : null,
       image: map[KeyNames.image] ?? "",
+      interaction:
+          map[KeyNames.interaction] != null
+              ? DashInteractionModel.fromMap(map[KeyNames.interaction])
+              : null,
+
+      liked: map[KeyNames.liked] ?? false,
+      createdAt: DateTime.parse(map[KeyNames.created_at]),
     );
   }
 

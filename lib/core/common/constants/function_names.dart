@@ -42,4 +42,5 @@ class FunctionNames {
   static const get_user_chapters_read_count = 'get_user_chapters_read_count';
   static const handle_comic_interaction = 'handle_comic_interaction';
   static const mark_notification_as_read = 'mark_notification_as_read';
+  static const upsert_dash_interaction = 'upsert_dash_interaction';
 }

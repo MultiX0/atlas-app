@@ -94,7 +94,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [buildRoute(path: Routes.dashs, child: const DashsPage(), fade: true)],
           ),
           // StatefulShellBranch(
-          //   routes: [buildRoute(path: Routes.dashs, child: const ScrollsPage(), fade: true)],
+          // routes: [buildRoute(path: Routes.dashs, child: const ScrollsPage(), fade: true)],
           // ),
           StatefulShellBranch(
             routes: [buildRoute(path: Routes.library, child: const LibraryPage(), fade: true)],

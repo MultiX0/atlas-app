@@ -12,7 +12,7 @@ import 'package:atlas_app/features/novels/widgets/empty_chapters.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
-final _isScrolling = StateProvider<bool>((ref) {
+final _isScrolling = StateProvider.autoDispose<bool>((ref) {
   return false;
 });
 
@@ -134,14 +134,15 @@ class _DashsPageState extends ConsumerState<DashsPage> {
                 alignment: Alignment.center,
                 child: MasonryGridView.builder(
                   controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
                   key: const Key('dashs-list'),
                   padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
                   cacheExtent: MediaQuery.sizeOf(context).height,
                   addRepaintBoundaries: true,
                   itemCount: dashs.isEmpty ? 1 : dashs.length + (loadingMore ? 1 : 0),
                   shrinkWrap: (dashs.isEmpty),
-                  mainAxisSpacing: 10,
-                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 5,
+                  crossAxisSpacing: 5,
                   gridDelegate: SliverSimpleGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: (dashs.isEmpty) ? 1 : 2,
                   ),

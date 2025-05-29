@@ -9,7 +9,7 @@ class DashsAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.title,
     this.actions,
   });
-  final StateProvider<bool> provider;
+  final AutoDisposeStateProvider<bool> provider;
   final String keyValue;
   final String title;
   final bool centerTitle;
@@ -23,7 +23,7 @@ class DashsAppBar extends StatelessWidget implements PreferredSizeWidget {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 350),
           curve: Curves.easeInOut,
-          height: show ? 0 : kToolbarHeight,
+          height: kToolbarHeight,
           child: AnimatedOpacity(
             duration: const Duration(milliseconds: 250),
             opacity: show ? 0.0 : 1.0,

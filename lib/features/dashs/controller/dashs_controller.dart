@@ -6,7 +6,9 @@ import 'dart:io';
 import 'package:atlas_app/core/common/utils/custom_toast.dart';
 import 'package:atlas_app/core/common/utils/file_compressor.dart';
 import 'package:atlas_app/features/dashs/db/dashs_db.dart';
+import 'package:atlas_app/features/dashs/models/dash_interaction_model.dart';
 import 'package:atlas_app/features/dashs/models/dash_model.dart';
+import 'package:atlas_app/features/dashs/providers/dash_page_state.dart';
 import 'package:atlas_app/imports.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 
@@ -55,6 +57,43 @@ class DashsController extends StateNotifier<bool> {
   Future<DashModel> getDashById(String id) async {
     try {
       return await _db.getDashById(id);
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> upsertDashInteraction({
+    required String dashId,
+    required int timeSpent,
+    bool? liked,
+  }) async {
+    try {
+      DashInteractionModel interaction;
+      DashModel _dash;
+      final me = _ref.read(userState.select((s) => s.user!));
+      final dashFromState = _ref.read(dashPageStateProvider(dashId));
+      if (dashFromState.dash == null) {
+        final dash = await _db.getDashById(dashId);
+        _dash = dash;
+        _ref.read(dashPageStateProvider(dashId).notifier).updateDash(dash);
+      } else {
+        _dash = dashFromState.dash!;
+      }
+      interaction = DashInteractionModel(
+        dashId: dashId,
+        user_id: me.userId,
+        time_spent: (timeSpent + (_dash.interaction?.time_spent ?? 0)),
+        liked: liked ?? _dash.liked,
+      );
+
+      _ref
+          .read(dashPageStateProvider(dashId).notifier)
+          .updateDash(_dash.copyWith(interaction: interaction));
+
+      // log("current time spent: ${_dash.interaction?.time_spent}");
+      await _db.upsertDashInteraction(interaction);
+      await _db.updateDashsEmbedding(me.userId);
     } catch (e) {
       log(e.toString());
       rethrow;

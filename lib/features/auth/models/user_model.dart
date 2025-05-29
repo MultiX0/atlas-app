@@ -17,6 +17,7 @@ class UserModel {
   final bool? followed;
   final int postsCount;
   final bool isAdmin;
+  final bool official;
   UserModel({
     required this.fullName,
     required this.username,
@@ -24,6 +25,7 @@ class UserModel {
     required this.avatar,
     required this.banner,
     required this.postsCount,
+    this.official = false,
     this.bio,
     this.metadata,
     required this.followers_count,
@@ -77,6 +79,8 @@ class UserModel {
           map[KeyNames.metadata] == null ? null : UserMetadata.fromMap(map[KeyNames.metadata]),
       postsCount: map[KeyNames.posts_count] ?? 0,
       isAdmin: map[KeyNames.is_admin] ?? false,
+      official: map[KeyNames.official] ?? false,
+
       // metadata: UserMetadata.fromMap(map['metadata'] as Map<String, dynamic>),
     );
   }
@@ -119,8 +123,12 @@ class UserModel {
     bool? is_follow_me,
     bool? followed,
     int? postsCount,
+    bool? isAdmin,
+    bool? official,
   }) {
     return UserModel(
+      official: official ?? this.official,
+      isAdmin: isAdmin ?? this.isAdmin,
       fullName: fullName ?? this.fullName,
       username: username ?? this.username,
       userId: userId ?? this.userId,

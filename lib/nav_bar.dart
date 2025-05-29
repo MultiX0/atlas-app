@@ -52,8 +52,8 @@ class MyNavBar extends ConsumerWidget {
                     BottomNavigationBarItem(icon: Icon(TablerIcons.category_2)),
                     BottomNavigationBarItem(icon: Icon(TablerIcons.edit)),
 
-                    BottomNavigationBarItem(icon: Icon(TablerIcons.device_tv)),
-                    // BottomNavigationBarItem(icon: Icon(LucideIcons.layout_dashboard)),
+                    // BottomNavigationBarItem(icon: Icon(TablerIcons.device_tv)),
+                    BottomNavigationBarItem(icon: Icon(LucideIcons.layout_dashboard)),
                     BottomNavigationBarItem(icon: Icon(LucideIcons.library)),
                     BottomNavigationBarItem(icon: Icon(TablerIcons.user)),
                   ],

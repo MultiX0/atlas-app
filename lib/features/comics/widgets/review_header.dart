@@ -15,6 +15,7 @@ class ReviewHeader extends ConsumerWidget {
     this.itemSize = 12,
     this.iconSize = 20,
     this.onMenuPressed,
+    required this.official,
   });
 
   final String userId;
@@ -27,6 +28,7 @@ class ReviewHeader extends ConsumerWidget {
   final double itemSize;
   final double iconSize;
   final VoidCallback? onMenuPressed;
+  final bool official;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -43,9 +45,9 @@ class ReviewHeader extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text("@$username"),
-                    if (isAdmin) ...[const SizedBox(width: 5)],
+                    if (isAdmin || official) ...[const SizedBox(width: 5)],
                     Visibility(
-                      visible: isAdmin,
+                      visible: (isAdmin || official),
                       child: const Icon(
                         LucideIcons.badge_check,
                         color: AppColors.primary,

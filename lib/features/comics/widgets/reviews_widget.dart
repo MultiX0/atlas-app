@@ -80,6 +80,7 @@ class _ReviewsWidgetState extends ConsumerState<ReviewsWidget> {
           isLiked: review.i_liked,
           likeCount: review.likes_count,
           isAdmin: review.user?.isAdmin ?? false,
+          official: review.user?.official ?? false,
           onMenuPressed:
               () => openSheet(
                 context: context,

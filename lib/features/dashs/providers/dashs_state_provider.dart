@@ -10,6 +10,7 @@ class _HelperClass {
   final bool isLoading;
   final bool loadingMore;
   final bool hasReachedEnd;
+  final int currentPage;
   final String? error;
   _HelperClass({
     required this.dashs,
@@ -17,6 +18,7 @@ class _HelperClass {
     required this.hasReachedEnd,
     this.error,
     required this.loadingMore,
+    required this.currentPage,
   });
 
   _HelperClass copyWith({
@@ -25,6 +27,7 @@ class _HelperClass {
     bool? hasReachedEnd,
     String? error,
     bool? loadingMore,
+    int? currentPage,
   }) {
     return _HelperClass(
       dashs: dashs ?? this.dashs,
@@ -32,6 +35,7 @@ class _HelperClass {
       hasReachedEnd: hasReachedEnd ?? this.hasReachedEnd,
       error: error ?? this.error,
       loadingMore: loadingMore ?? this.loadingMore,
+      currentPage: currentPage ?? this.currentPage,
     );
   }
 }
@@ -51,6 +55,7 @@ class DashsState extends StateNotifier<_HelperClass> {
           hasReachedEnd: false,
           error: null,
           loadingMore: false,
+          currentPage: 1,
         ),
       );
 
@@ -71,10 +76,16 @@ class DashsState extends StateNotifier<_HelperClass> {
       const _dashsSize = 15;
       final startIndex = refresh ? 0 : state.dashs.length;
 
-      final newDashs = await _db.getDashs(startAt: startIndex, pageSize: _dashsSize);
+      final newDashs = await _db.getDashs(
+        startAt: startIndex,
+        pageSize: _dashsSize,
+        currentPage: state.currentPage,
+        userId: _userId,
+      );
 
       final hasReachedEnd = newDashs.length < _dashsSize;
       final updatedDashs = refresh ? newDashs : [...state.dashs, ...newDashs];
+      final currentPage = refresh ? 1 : (state.currentPage + 1);
 
       state = state.copyWith(
         loadingMore: false,
@@ -82,6 +93,7 @@ class DashsState extends StateNotifier<_HelperClass> {
         error: null,
         isLoading: false,
         dashs: updatedDashs,
+        currentPage: currentPage,
       );
     } catch (e) {
       log(e.toString());

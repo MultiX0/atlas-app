@@ -670,7 +670,7 @@ class NovelsDb {
     try {
       final ids = await fetchUserRecommendation(userId: userId, page: page);
       log(ids.toString());
-      var query = _novelsTable.select("*");
+      var query = _novelsView.select("*");
 
       if (ids.isNotEmpty) {
         log("there is recommendation data");
@@ -679,7 +679,23 @@ class NovelsDb {
         query.filter(KeyNames.published_at, 'not.is', null).range(startAt, startAt + pageSize - 1);
       }
 
-      final novelData = await query;
+      var novelData = await query;
+      if (novelData.length < pageSize) {
+        final ids = await fetchUserRecommendation(userId: userId, page: (page + 1));
+        var query = _novelsView.select("*");
+
+        log("there is recommendation data");
+
+        query
+            .not(KeyNames.id, 'in', ids)
+            .filter(KeyNames.published_at, 'not', null)
+            .neq(KeyNames.userId, userId)
+            .order(KeyNames.published_at, ascending: false)
+            .range(0, pageSize);
+
+        novelData = await query;
+      }
+
       final idIndexMap = {for (var i = 0; i < ids.length; i++) ids[i]: i};
       novelData.sort(
         (a, b) => (idIndexMap[a[KeyNames.id]] ?? ids.length).compareTo(

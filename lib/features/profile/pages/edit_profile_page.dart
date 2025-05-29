@@ -85,9 +85,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               }
             },
             onBannerTap: () async {
-              final pickedFile = await profilePhotoPicker(
-                size: Size(size.width / 2, size.width * .85),
-              );
+              final double bannerHeight = size.width * 0.30;
+              final pickedFile = await profilePhotoPicker(size: Size(bannerHeight, size.width));
               if (pickedFile != null) {
                 setState(() {
                   _selectedBanner = File(pickedFile.absolute.path);
