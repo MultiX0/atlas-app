@@ -171,13 +171,13 @@ class _DashPageState extends ConsumerState<DashPage> {
                   const SizedBox(height: 5),
                   DashUserCard(dash: dash),
                   if (dash.content != null && dash.content!.isNotEmpty) ...[
-                    const SizedBox(height: 5),
                     RepaintBoundary(
                       child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
                         child: Directionality(
                           textDirection: TextDirection.rtl,
                           child: CommentRichTextView(
+                            key: ValueKey("content-${dash.id}"),
                             text: dash.content!,
                             style: const TextStyle(fontFamily: arabicAccentFont, fontSize: 16),
                           ),
@@ -189,7 +189,7 @@ class _DashPageState extends ConsumerState<DashPage> {
 
                   if (recommendations.isNotEmpty) ...[
                     const Padding(
-                      padding: EdgeInsets.only(left: 16, right: 16, top: 16.0, bottom: 8),
+                      padding: EdgeInsets.only(left: 16, right: 16, top: 16.0, bottom: 5),
                       child: Text(
                         textDirection: TextDirection.rtl,
                         "اقتراحات مشابهة",

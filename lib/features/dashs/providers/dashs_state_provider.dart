@@ -65,7 +65,7 @@ class DashsState extends StateNotifier<_HelperClass> {
     try {
       state = state.copyWith(error: null);
 
-      if (state.hasReachedEnd && !refresh) return;
+      if ((state.hasReachedEnd && !refresh) || state.loadingMore) return;
 
       if (state.dashs.isEmpty || refresh) {
         state = state.copyWith(error: null, isLoading: true);

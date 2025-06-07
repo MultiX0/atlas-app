@@ -76,7 +76,7 @@ class _DashsPageState extends ConsumerState<DashsPage> {
     final currentScroll = _scrollController.offset;
 
     // Calculate 70% of the total scrollable content
-    final seventyPercentThreshold = maxScroll * 0.65;
+    final seventyPercentThreshold = maxScroll * 0.5;
 
     return currentScroll >= seventyPercentThreshold;
   }
@@ -130,17 +130,18 @@ class _DashsPageState extends ConsumerState<DashsPage> {
 
             return AppRefresh(
               onRefresh: () async => refresh(),
-              child: Align(
-                alignment: Alignment.center,
+
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                controller: _scrollController,
                 child: MasonryGridView.builder(
-                  controller: _scrollController,
-                  physics: const AlwaysScrollableScrollPhysics(),
+                  physics: const NeverScrollableScrollPhysics(),
                   key: const Key('dashs-list'),
                   padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
-                  cacheExtent: MediaQuery.sizeOf(context).height,
+                  cacheExtent: MediaQuery.sizeOf(context).height * 2,
                   addRepaintBoundaries: true,
                   itemCount: dashs.isEmpty ? 1 : dashs.length + (loadingMore ? 1 : 0),
-                  shrinkWrap: (dashs.isEmpty),
+                  shrinkWrap: true,
                   mainAxisSpacing: 5,
                   crossAxisSpacing: 5,
                   gridDelegate: SliverSimpleGridDelegateWithFixedCrossAxisCount(

@@ -33,8 +33,8 @@ class MasonryShimmerLoading extends StatelessWidget {
     return MasonryGridView.builder(
       padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
       itemCount: 20,
-      mainAxisSpacing: 10,
-      crossAxisSpacing: 10,
+      mainAxisSpacing: 5,
+      crossAxisSpacing: 5,
       gridDelegate: const SliverSimpleGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
       itemBuilder: (context, index) {
         return Shimmer.fromColors(

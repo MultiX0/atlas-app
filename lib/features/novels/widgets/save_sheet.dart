@@ -75,7 +75,10 @@ class ChapterSaveSheet extends StatelessWidget {
                       }
                       ref
                           .read(novelsControllerProvider.notifier)
-                          .publishChapter(draft.copyWith(content: jsonContent), context);
+                          .publishChapter(
+                            draft.copyWith(content: jsonContent, title: title),
+                            context,
+                          );
                     },
                     icons: TablerIcons.checks,
                   );
